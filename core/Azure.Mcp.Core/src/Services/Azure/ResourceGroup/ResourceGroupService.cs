@@ -1,6 +1,7 @@
 // Copyright (c) Microsoft Corporation.
 // Licensed under the MIT License.
 
+using Azure.Mcp.Core.Areas.Server.Commands.Runtime;
 using Azure.Mcp.Core.Models.ResourceGroup;
 using Azure.Mcp.Core.Options;
 using Azure.Mcp.Core.Services.Azure.Subscription;
@@ -18,11 +19,11 @@ public class ResourceGroupService(ICacheService cacheService, ISubscriptionServi
     private const string CacheKey = "resourcegroups";
     private static readonly TimeSpan s_cacheDuration = TimeSpan.FromHours(1);
 
-    public async Task<List<ResourceGroupInfo>> GetResourceGroups(string subscription, string? tenant = null, RetryPolicyOptions? retryPolicy = null)
+    public async Task<List<ResourceGroupInfo>> GetResourceGroups(McpUserContext userContext, string subscription, string? tenant = null, RetryPolicyOptions? retryPolicy = null)
     {
         ValidateRequiredParameters(subscription);
 
-        var subscriptionResource = await _subscriptionService.GetSubscription(subscription, tenant, retryPolicy);
+        var subscriptionResource = await _subscriptionService.GetSubscription(userContext, subscription, tenant, retryPolicy);
         var subscriptionId = subscriptionResource.Data.SubscriptionId;
 
         // Try to get from cache first
@@ -55,11 +56,11 @@ public class ResourceGroupService(ICacheService cacheService, ISubscriptionServi
         }
     }
 
-    public async Task<ResourceGroupInfo?> GetResourceGroup(string subscription, string resourceGroupName, string? tenant = null, RetryPolicyOptions? retryPolicy = null)
+    public async Task<ResourceGroupInfo?> GetResourceGroup(McpUserContext userContext, string subscription, string resourceGroupName, string? tenant = null, RetryPolicyOptions? retryPolicy = null)
     {
         ValidateRequiredParameters(subscription, resourceGroupName);
 
-        var subscriptionResource = await _subscriptionService.GetSubscription(subscription, tenant, retryPolicy);
+        var subscriptionResource = await _subscriptionService.GetSubscription(userContext, subscription, tenant, retryPolicy);
         var subscriptionId = subscriptionResource.Data.SubscriptionId;
 
         // Try to get from cache first
@@ -72,7 +73,7 @@ public class ResourceGroupService(ICacheService cacheService, ISubscriptionServi
 
         try
         {
-            var rg = await GetResourceGroupResource(subscription, resourceGroupName, tenant, retryPolicy);
+            var rg = await GetResourceGroupResource(userContext, subscription, resourceGroupName, tenant, retryPolicy);
             if (rg == null)
             {
                 return null;
@@ -89,13 +90,13 @@ public class ResourceGroupService(ICacheService cacheService, ISubscriptionServi
         }
     }
 
-    public async Task<ResourceGroupResource?> GetResourceGroupResource(string subscription, string resourceGroupName, string? tenant = null, RetryPolicyOptions? retryPolicy = null)
+    public async Task<ResourceGroupResource?> GetResourceGroupResource(McpUserContext userContext, string subscription, string resourceGroupName, string? tenant = null, RetryPolicyOptions? retryPolicy = null)
     {
         ValidateRequiredParameters(subscription, resourceGroupName);
 
         try
         {
-            var subscriptionResource = await _subscriptionService.GetSubscription(subscription, tenant, retryPolicy);
+            var subscriptionResource = await _subscriptionService.GetSubscription(userContext, subscription, tenant, retryPolicy);
             var resourceGroupResponse = await subscriptionResource.GetResourceGroups()
                 .GetAsync(resourceGroupName)
                 .ConfigureAwait(false);

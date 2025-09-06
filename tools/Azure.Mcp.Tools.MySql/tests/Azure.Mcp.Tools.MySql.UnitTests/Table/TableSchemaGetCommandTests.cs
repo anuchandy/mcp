@@ -3,6 +3,7 @@
 
 using System.Text.Json;
 using System.Text.Json.Serialization;
+using Azure.Mcp.Core.Areas.Server.Commands.Runtime;
 using Azure.Mcp.Core.Models.Command;
 using Azure.Mcp.Tools.MySql.Commands.Table;
 using Azure.Mcp.Tools.MySql.Services;
@@ -35,7 +36,7 @@ public class TableSchemaGetCommandTests
     public async Task ExecuteAsync_ReturnsSchema_WhenSuccessful()
     {
         var expectedSchema = new List<string> { "id INT PRIMARY KEY", "name VARCHAR(100) NOT NULL", "email VARCHAR(255)" };
-        _mysqlService.GetTableSchemaAsync("sub123", "rg1", "user1", "server1", "db1", "users").Returns(expectedSchema);
+        _mysqlService.GetTableSchemaAsync(McpUserContext.Empty, "sub123", "rg1", "user1", "server1", "db1", "users").Returns(expectedSchema);
 
         var command = new TableSchemaGetCommand(_logger);
         var args = command.GetCommand().Parse([
@@ -46,7 +47,7 @@ public class TableSchemaGetCommandTests
             "--database", "db1",
             "--table", "users"
         ]);
-        var context = new CommandContext(_serviceProvider);
+        var context = new CommandContext(_serviceProvider, McpUserContext.Empty);
 
         var response = await command.ExecuteAsync(context, args);
 
@@ -63,7 +64,7 @@ public class TableSchemaGetCommandTests
     [Fact]
     public async Task ExecuteAsync_ReturnsError_WhenTableNotFound()
     {
-        _mysqlService.GetTableSchemaAsync("sub123", "rg1", "user1", "server1", "db1", "nonexistent").ThrowsAsync(new ArgumentException("Table not found"));
+        _mysqlService.GetTableSchemaAsync(McpUserContext.Empty, "sub123", "rg1", "user1", "server1", "db1", "nonexistent").ThrowsAsync(new ArgumentException("Table not found"));
 
         var command = new TableSchemaGetCommand(_logger);
         var args = command.GetCommand().Parse([
@@ -74,7 +75,7 @@ public class TableSchemaGetCommandTests
             "--database", "db1",
             "--table", "nonexistent"
         ]);
-        var context = new CommandContext(_serviceProvider);
+        var context = new CommandContext(_serviceProvider, McpUserContext.Empty);
 
         var response = await command.ExecuteAsync(context, args);
 

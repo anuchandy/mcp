@@ -5,6 +5,7 @@ using System.CommandLine;
 using System.Text.Json;
 using System.Text.Json.Serialization;
 using Azure.Mcp.Core.Models;
+using Azure.Mcp.Core.Areas.Server.Commands.Runtime;
 using Azure.Mcp.Core.Models.Command;
 using Azure.Mcp.Core.Options;
 using Azure.Mcp.Tools.Storage.Commands.Table;
@@ -37,7 +38,7 @@ public class TableListCommandTests
 
         _serviceProvider = collection.BuildServiceProvider();
         _command = new(_logger);
-        _context = new(_serviceProvider);
+        _context = new CommandContext(_serviceProvider, McpUserContext.Empty);
         _commandDefinition = _command.GetCommand();
     }
 
@@ -47,7 +48,7 @@ public class TableListCommandTests
         // Arrange
         var expectedTables = new List<string> { "table1", "table2" };
 
-        _storageService.ListTables(Arg.Is(_knownAccount), Arg.Is(_knownSubscription),
+        _storageService.ListTables(Arg.Any<McpUserContext>(), Arg.Is(_knownAccount), Arg.Is(_knownSubscription),
             Arg.Is(AuthMethod.Credential), Arg.Any<string>(), Arg.Any<string>(), Arg.Any<RetryPolicyOptions>())
                 .Returns(expectedTables);
 
@@ -75,7 +76,7 @@ public class TableListCommandTests
     public async Task ExecuteAsync_ReturnsNull_WhenNoTables()
     {
         // Arrange
-        _storageService.ListTables(Arg.Is(_knownAccount), Arg.Is(_knownSubscription),
+        _storageService.ListTables(Arg.Any<McpUserContext>(), Arg.Is(_knownAccount), Arg.Is(_knownSubscription),
             Arg.Is(AuthMethod.Credential), Arg.Any<string>(), Arg.Any<string>(), Arg.Any<RetryPolicyOptions>())
             .Returns([]);
 
@@ -99,7 +100,7 @@ public class TableListCommandTests
         // Arrange
         var expectedError = "Test error";
 
-        _storageService.ListTables(Arg.Is(_knownAccount), Arg.Is(_knownSubscription),
+        _storageService.ListTables(Arg.Any<McpUserContext>(), Arg.Is(_knownAccount), Arg.Is(_knownSubscription),
             Arg.Is(AuthMethod.Credential), Arg.Any<string>(), Arg.Any<string>(), Arg.Any<RetryPolicyOptions>())
             .ThrowsAsync(new Exception(expectedError));
 

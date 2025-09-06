@@ -4,6 +4,7 @@
 using System.CommandLine;
 using System.Text.Json;
 using System.Text.Json.Serialization;
+using Azure.Mcp.Core.Areas.Server.Commands.Runtime;
 using Azure.Mcp.Core.Models.Command;
 using Azure.Mcp.Core.Options;
 using Azure.Mcp.Tools.KeyVault.Commands.Key;
@@ -43,7 +44,7 @@ public class KeyCreateCommandTests
 
         _serviceProvider = collection.BuildServiceProvider();
         _command = new(_logger);
-        _context = new(_serviceProvider);
+        _context = new CommandContext(_serviceProvider, McpUserContext.Empty);
         _commandDefinition = _command.GetCommand();
 
         _knownKeyVaultKey = new KeyVaultKey(_knownKeyName);
@@ -64,6 +65,7 @@ public class KeyCreateCommandTests
     {
         // Arrange
         _keyVaultService.CreateKey(
+            Arg.Any<McpUserContext>(),
             Arg.Is(_knownVaultName),
             Arg.Is(_knownKeyName),
             Arg.Is(_knownKeyType.ToString()),
@@ -121,6 +123,7 @@ public class KeyCreateCommandTests
         var expectedError = "Test error";
 
         _keyVaultService.CreateKey(
+            Arg.Any<McpUserContext>(),
             Arg.Is(_knownVaultName),
             Arg.Is(_knownKeyName),
             Arg.Is(_knownKeyType.ToString()),

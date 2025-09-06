@@ -2,6 +2,7 @@
 // Licensed under the MIT License.
 
 using Azure.Core;
+using Azure.Mcp.Core.Areas.Server.Commands.Runtime;
 using Azure.Mcp.Core.Options;
 using Azure.Mcp.Core.Services.Azure;
 using Azure.Mcp.Core.Services.Azure.Tenant;
@@ -15,6 +16,7 @@ public class AuthorizationService(ITenantService tenantService)
     : BaseAzureService(tenantService), IAuthorizationService
 {
     public async Task<List<RoleAssignment>> ListRoleAssignments(
+        McpUserContext userContext,
         string? scope,
         string? tenantId = null,
         RetryPolicyOptions? retryPolicy = null)
@@ -23,7 +25,7 @@ public class AuthorizationService(ITenantService tenantService)
 
         try
         {
-            ArmClient armClient = await CreateArmClientAsync(tenantId, retryPolicy);
+            ArmClient armClient = await CreateArmClientAsync(userContext, tenantId, retryPolicy);
             ResourceIdentifier scopeResourceId = new(scope!);
             RoleAssignmentCollection resources = armClient.GetRoleAssignments(scopeResourceId);
             List<RoleAssignment> roleAssignments = [];

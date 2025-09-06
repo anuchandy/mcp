@@ -1,6 +1,7 @@
 // Copyright (c) Microsoft Corporation.
 // Licensed under the MIT License.
 
+using Azure.Mcp.Core.Areas.Server.Commands.Runtime;
 using Azure.Mcp.Core.Models.Command;
 using Azure.Mcp.Core.Options;
 using Azure.Mcp.Tools.Monitor.Commands.Metrics;
@@ -89,6 +90,7 @@ public class MetricsDefinitionsCommandTests
         if (shouldSucceed)
         {
             _service.ListMetricDefinitionsAsync(
+                Arg.Any<McpUserContext>(),
                 Arg.Any<string>(),
                 Arg.Any<string?>(),
                 Arg.Any<string?>(),
@@ -112,7 +114,7 @@ public class MetricsDefinitionsCommandTests
                 });
         }
 
-        var context = new CommandContext(_serviceProvider);
+        var context = new CommandContext(_serviceProvider, McpUserContext.Empty);
         var parseResult = _command.GetCommand().Parse(args);
 
         // Act
@@ -153,6 +155,7 @@ public class MetricsDefinitionsCommandTests
         };
 
         _service.ListMetricDefinitionsAsync(
+            Arg.Any<McpUserContext>(),
             "sub1",
             null, // resource-group may be null if not provided or not parsed from resource-id
             "Microsoft.Storage/storageAccounts",
@@ -163,7 +166,7 @@ public class MetricsDefinitionsCommandTests
             Arg.Any<RetryPolicyOptions?>())
             .Returns(expectedResults);
 
-        var context = new CommandContext(_serviceProvider);
+        var context = new CommandContext(_serviceProvider, McpUserContext.Empty);
         var parseResult = _command.GetCommand().Parse(
             "--resource test --subscription sub1 --resource-type Microsoft.Storage/storageAccounts --metric-namespace Microsoft.Storage/storageAccounts --tenant tenant1");
 
@@ -175,6 +178,7 @@ public class MetricsDefinitionsCommandTests
         Assert.NotNull(response.Results);
         Assert.Equal("All 1 metric definitions returned.", response.Message);
         await _service.Received(1).ListMetricDefinitionsAsync(
+            Arg.Any<McpUserContext>(),
             "sub1",
             null,
             "Microsoft.Storage/storageAccounts",
@@ -190,6 +194,7 @@ public class MetricsDefinitionsCommandTests
     {
         // Arrange
         _service.ListMetricDefinitionsAsync(
+            Arg.Any<McpUserContext>(),
             Arg.Any<string>(),
             Arg.Any<string?>(),
             Arg.Any<string?>(),
@@ -209,7 +214,7 @@ public class MetricsDefinitionsCommandTests
                 }
             });
 
-        var context = new CommandContext(_serviceProvider);
+        var context = new CommandContext(_serviceProvider, McpUserContext.Empty);
         var parseResult = _command.GetCommand().Parse("--resource test --subscription sub1 --search-string cpu");
 
         // Act
@@ -221,6 +226,7 @@ public class MetricsDefinitionsCommandTests
 
         // Verify the service was called with the search string
         await _service.Received(1).ListMetricDefinitionsAsync(
+            Arg.Any<McpUserContext>(),
             Arg.Any<string>(),
             Arg.Any<string?>(),
             Arg.Any<string?>(),
@@ -247,6 +253,7 @@ public class MetricsDefinitionsCommandTests
         };
 
         _service.ListMetricDefinitionsAsync(
+            Arg.Any<McpUserContext>(),
             "sub1",
             null, // resource-group may be null if not provided or not parsed from resource-id
             "Microsoft.Storage/storageAccounts",
@@ -257,7 +264,7 @@ public class MetricsDefinitionsCommandTests
             Arg.Any<RetryPolicyOptions?>())
             .Returns(expectedResults);
 
-        var context = new CommandContext(_serviceProvider);
+        var context = new CommandContext(_serviceProvider, McpUserContext.Empty);
         var parseResult = _command.GetCommand().Parse(
             "--resource test --subscription sub1 --resource-type Microsoft.Storage/storageAccounts --metric-namespace Microsoft.Storage/storageAccounts --search-string memory --tenant tenant1 --limit 20");
 
@@ -269,6 +276,7 @@ public class MetricsDefinitionsCommandTests
         Assert.NotNull(response.Results);
         Assert.Equal("All 1 metric definitions returned.", response.Message);
         await _service.Received(1).ListMetricDefinitionsAsync(
+            Arg.Any<McpUserContext>(),
             "sub1",
             null,
             "Microsoft.Storage/storageAccounts",
@@ -288,6 +296,7 @@ public class MetricsDefinitionsCommandTests
     {
         // Arrange
         _service.ListMetricDefinitionsAsync(
+            Arg.Any<McpUserContext>(),
             Arg.Any<string>(),
             Arg.Any<string?>(),
             Arg.Any<string?>(),
@@ -298,7 +307,7 @@ public class MetricsDefinitionsCommandTests
             Arg.Any<RetryPolicyOptions?>())
             .Returns(Task.FromException<List<MetricDefinition>>(new Exception("Test error")));
 
-        var context = new CommandContext(_serviceProvider);
+        var context = new CommandContext(_serviceProvider, McpUserContext.Empty);
         var parseResult = _command.GetCommand().Parse("--resource test --subscription sub1");
 
         // Act
@@ -316,6 +325,7 @@ public class MetricsDefinitionsCommandTests
         // Arrange
         var exception = new Exception("Service unavailable");
         _service.ListMetricDefinitionsAsync(
+            Arg.Any<McpUserContext>(),
             Arg.Any<string>(),
             Arg.Any<string?>(),
             Arg.Any<string?>(),
@@ -326,7 +336,7 @@ public class MetricsDefinitionsCommandTests
             Arg.Any<RetryPolicyOptions?>())
             .Returns(Task.FromException<List<MetricDefinition>>(exception));
 
-        var context = new CommandContext(_serviceProvider);
+        var context = new CommandContext(_serviceProvider, McpUserContext.Empty);
         var parseResult = _command.GetCommand().Parse("--resource test --subscription sub1 --resource-group rg1");
 
         // Act
@@ -375,6 +385,7 @@ public class MetricsDefinitionsCommandTests
         };
 
         _service.ListMetricDefinitionsAsync(
+            Arg.Any<McpUserContext>(),
             Arg.Any<string>(),
             Arg.Any<string?>(),
             Arg.Any<string?>(),
@@ -385,7 +396,7 @@ public class MetricsDefinitionsCommandTests
             Arg.Any<RetryPolicyOptions?>())
             .Returns(metricDefinitions);
 
-        var context = new CommandContext(_serviceProvider);
+        var context = new CommandContext(_serviceProvider, McpUserContext.Empty);
         var parseResult = _command.GetCommand().Parse("--resource test --subscription sub1");
 
         // Act
@@ -402,6 +413,7 @@ public class MetricsDefinitionsCommandTests
     {
         // Arrange
         _service.ListMetricDefinitionsAsync(
+            Arg.Any<McpUserContext>(),
             Arg.Any<string>(),
             Arg.Any<string?>(),
             Arg.Any<string?>(),
@@ -412,7 +424,7 @@ public class MetricsDefinitionsCommandTests
             Arg.Any<RetryPolicyOptions?>())
             .Returns(new List<MetricDefinition>());
 
-        var context = new CommandContext(_serviceProvider);
+        var context = new CommandContext(_serviceProvider, McpUserContext.Empty);
         var parseResult = _command.GetCommand().Parse("--resource test --subscription sub1");
 
         // Act
@@ -428,6 +440,7 @@ public class MetricsDefinitionsCommandTests
     {
         // Arrange
         _service.ListMetricDefinitionsAsync(
+            Arg.Any<McpUserContext>(),
             Arg.Any<string>(),
             Arg.Any<string?>(),
             Arg.Any<string?>(),
@@ -438,7 +451,7 @@ public class MetricsDefinitionsCommandTests
             Arg.Any<RetryPolicyOptions?>())
             .Returns(Task.FromResult<List<MetricDefinition>>(null!));
 
-        var context = new CommandContext(_serviceProvider);
+        var context = new CommandContext(_serviceProvider, McpUserContext.Empty);
         var parseResult = _command.GetCommand().Parse("--resource test --subscription sub1");
 
         // Act
@@ -460,6 +473,7 @@ public class MetricsDefinitionsCommandTests
         var metricDefinitions = GenerateMetricDefinitions(15); // More than default limit of 10
 
         _service.ListMetricDefinitionsAsync(
+            Arg.Any<McpUserContext>(),
             Arg.Any<string>(),
             Arg.Any<string?>(),
             Arg.Any<string?>(),
@@ -470,7 +484,7 @@ public class MetricsDefinitionsCommandTests
             Arg.Any<RetryPolicyOptions?>())
             .Returns(metricDefinitions);
 
-        var context = new CommandContext(_serviceProvider);
+        var context = new CommandContext(_serviceProvider, McpUserContext.Empty);
         var parseResult = _command.GetCommand().Parse("--resource test --subscription sub1");
 
         // Act
@@ -483,7 +497,7 @@ public class MetricsDefinitionsCommandTests
         Assert.Contains("Results truncated to 10 of 15", response.Message);
         Assert.Contains("metric definitions", response.Message);
         // Verify service receives all data but command applies limit internally
-        await _service.Received(1).ListMetricDefinitionsAsync(Arg.Any<string>(), Arg.Any<string?>(), Arg.Any<string?>(), Arg.Any<string>(), Arg.Any<string?>(), Arg.Any<string?>(), Arg.Any<string?>(), Arg.Any<RetryPolicyOptions?>());
+        await _service.Received(1).ListMetricDefinitionsAsync(Arg.Any<McpUserContext>(), Arg.Any<string>(), Arg.Any<string?>(), Arg.Any<string?>(), Arg.Any<string>(), Arg.Any<string?>(), Arg.Any<string?>(), Arg.Any<string?>(), Arg.Any<RetryPolicyOptions?>());
     }
 
     [Fact]
@@ -493,6 +507,7 @@ public class MetricsDefinitionsCommandTests
         var metricDefinitions = GenerateMetricDefinitions(20);
 
         _service.ListMetricDefinitionsAsync(
+            Arg.Any<McpUserContext>(),
             Arg.Any<string>(),
             Arg.Any<string?>(),
             Arg.Any<string?>(),
@@ -503,7 +518,7 @@ public class MetricsDefinitionsCommandTests
             Arg.Any<RetryPolicyOptions?>())
             .Returns(metricDefinitions);
 
-        var context = new CommandContext(_serviceProvider);
+        var context = new CommandContext(_serviceProvider, McpUserContext.Empty);
         var parseResult = _command.GetCommand().Parse("--resource test --subscription sub1 --limit 5");
 
         // Act
@@ -516,7 +531,7 @@ public class MetricsDefinitionsCommandTests
         Assert.Contains("Results truncated to 5 of 20", response.Message);
         Assert.Contains("metric definitions", response.Message);
         // Verify service is called correctly
-        await _service.Received(1).ListMetricDefinitionsAsync(Arg.Any<string>(), Arg.Any<string?>(), Arg.Any<string?>(), Arg.Any<string>(), Arg.Any<string?>(), Arg.Any<string?>(), Arg.Any<string?>(), Arg.Any<RetryPolicyOptions?>());
+        await _service.Received(1).ListMetricDefinitionsAsync(Arg.Any<McpUserContext>(), Arg.Any<string>(), Arg.Any<string?>(), Arg.Any<string?>(), Arg.Any<string>(), Arg.Any<string?>(), Arg.Any<string?>(), Arg.Any<string?>(), Arg.Any<RetryPolicyOptions?>());
     }
 
     [Fact]
@@ -526,6 +541,7 @@ public class MetricsDefinitionsCommandTests
         var metricDefinitions = GenerateMetricDefinitions(25);
 
         _service.ListMetricDefinitionsAsync(
+            Arg.Any<McpUserContext>(),
             Arg.Any<string>(),
             Arg.Any<string?>(),
             Arg.Any<string?>(),
@@ -536,7 +552,7 @@ public class MetricsDefinitionsCommandTests
             Arg.Any<RetryPolicyOptions?>())
             .Returns(metricDefinitions);
 
-        var context = new CommandContext(_serviceProvider);
+        var context = new CommandContext(_serviceProvider, McpUserContext.Empty);
         var parseResult = _command.GetCommand().Parse("--resource test --subscription sub1 --limit 8");
 
         // Act
@@ -549,7 +565,7 @@ public class MetricsDefinitionsCommandTests
         Assert.Contains("Results truncated to 8 of 25", response.Message);
         Assert.Contains("Use --search-string to filter results", response.Message);
         // Verify the service was called
-        await _service.Received(1).ListMetricDefinitionsAsync(Arg.Any<string>(), Arg.Any<string?>(), Arg.Any<string?>(), Arg.Any<string>(), Arg.Any<string?>(), Arg.Any<string?>(), Arg.Any<string?>(), Arg.Any<RetryPolicyOptions?>());
+        await _service.Received(1).ListMetricDefinitionsAsync(Arg.Any<McpUserContext>(), Arg.Any<string>(), Arg.Any<string?>(), Arg.Any<string?>(), Arg.Any<string>(), Arg.Any<string?>(), Arg.Any<string?>(), Arg.Any<string?>(), Arg.Any<RetryPolicyOptions?>());
     }
 
     [Fact]
@@ -559,6 +575,7 @@ public class MetricsDefinitionsCommandTests
         var metricDefinitions = GenerateMetricDefinitions(3);
 
         _service.ListMetricDefinitionsAsync(
+            Arg.Any<McpUserContext>(),
             Arg.Any<string>(),
             Arg.Any<string?>(),
             Arg.Any<string?>(),
@@ -569,7 +586,7 @@ public class MetricsDefinitionsCommandTests
             Arg.Any<RetryPolicyOptions?>())
             .Returns(metricDefinitions);
 
-        var context = new CommandContext(_serviceProvider);
+        var context = new CommandContext(_serviceProvider, McpUserContext.Empty);
         var parseResult = _command.GetCommand().Parse("--resource test --subscription sub1 --limit 10");
 
         // Act
@@ -581,7 +598,7 @@ public class MetricsDefinitionsCommandTests
         // Verify that all results are returned without truncation
         Assert.Equal("All 3 metric definitions returned.", response.Message);
         // Verify the service was called
-        await _service.Received(1).ListMetricDefinitionsAsync(Arg.Any<string>(), Arg.Any<string?>(), Arg.Any<string?>(), Arg.Any<string>(), Arg.Any<string?>(), Arg.Any<string?>(), Arg.Any<string?>(), Arg.Any<RetryPolicyOptions?>());
+        await _service.Received(1).ListMetricDefinitionsAsync(Arg.Any<McpUserContext>(), Arg.Any<string>(), Arg.Any<string?>(), Arg.Any<string?>(), Arg.Any<string>(), Arg.Any<string?>(), Arg.Any<string?>(), Arg.Any<string?>(), Arg.Any<RetryPolicyOptions?>());
     }
 
     #endregion
@@ -604,6 +621,7 @@ public class MetricsDefinitionsCommandTests
         };
 
         _service.ListMetricDefinitionsAsync(
+            Arg.Any<McpUserContext>(),
             "test-subscription",
             null, // resource-group may be null if not provided or not parsed from resource-id
             "Microsoft.Compute/virtualMachines",
@@ -614,7 +632,7 @@ public class MetricsDefinitionsCommandTests
             Arg.Any<RetryPolicyOptions?>())
             .Returns(expectedResults);
 
-        var context = new CommandContext(_serviceProvider);
+        var context = new CommandContext(_serviceProvider, McpUserContext.Empty);
         var parseResult = _command.GetCommand().Parse(
             "--subscription test-subscription --resource-type Microsoft.Compute/virtualMachines --resource test-vm --metric-namespace Microsoft.Compute/virtualMachines --search-string performance --tenant test-tenant --limit 25");
 
@@ -626,6 +644,7 @@ public class MetricsDefinitionsCommandTests
         Assert.NotNull(response.Results);
         Assert.Equal("All 1 metric definitions returned.", response.Message);
         await _service.Received(1).ListMetricDefinitionsAsync(
+            Arg.Any<McpUserContext>(),
             "test-subscription",
             null,
             "Microsoft.Compute/virtualMachines",

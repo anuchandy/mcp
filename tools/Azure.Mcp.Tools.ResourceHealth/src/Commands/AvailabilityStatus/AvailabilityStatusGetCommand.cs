@@ -59,6 +59,7 @@ public sealed class AvailabilityStatusGetCommand(ILogger<AvailabilityStatusGetCo
                 throw new InvalidOperationException("Resource Health service is not available.");
 
             var status = await resourceHealthService.GetAvailabilityStatusAsync(
+                context.UserContext,
                 options.ResourceId!,
                 options.RetryPolicy);
 

@@ -3,6 +3,7 @@
 
 using System.Text.Json;
 using Azure.Mcp.Core.Models;
+using Azure.Mcp.Core.Areas.Server.Commands.Runtime;
 using Azure.Mcp.Core.Models.Command;
 using Azure.Mcp.Core.Options;
 using Azure.Mcp.Tools.Redis.Commands.ManagedRedis;
@@ -37,12 +38,12 @@ public class ClusterListCommandTests
     public async Task ExecuteAsync_ReturnsClusters_WhenClustersExist()
     {
         var expectedClusters = new ClusterModel[] { new() { Name = "cluster1" }, new() { Name = "cluster2" } };
-        _redisService.ListClustersAsync("sub123", Arg.Any<string>(), Arg.Any<AuthMethod>(), Arg.Any<RetryPolicyOptions>())
+        _redisService.ListClustersAsync(Arg.Any<McpUserContext>(), "sub123", Arg.Any<string>(), Arg.Any<AuthMethod>(), Arg.Any<RetryPolicyOptions>())
             .Returns(expectedClusters);
 
         var command = new ClusterListCommand(_logger);
         var args = command.GetCommand().Parse(["--subscription", "sub123"]);
-        var context = new CommandContext(_serviceProvider);
+        var context = new CommandContext(_serviceProvider, McpUserContext.Empty);
         var response = await command.ExecuteAsync(context, args);
 
         Assert.NotNull(response);
@@ -66,11 +67,11 @@ public class ClusterListCommandTests
     [Fact]
     public async Task ExecuteAsync_ReturnsNull_WhenNoClusters()
     {
-        _redisService.ListClustersAsync("sub123").Returns([]);
+        _redisService.ListClustersAsync(Arg.Any<McpUserContext>(), "sub123").Returns([]);
 
         var command = new ClusterListCommand(_logger);
         var args = command.GetCommand().Parse(["--subscription", "sub123"]);
-        var context = new CommandContext(_serviceProvider);
+        var context = new CommandContext(_serviceProvider, McpUserContext.Empty);
         var response = await command.ExecuteAsync(context, args);
 
         Assert.NotNull(response);
@@ -81,12 +82,12 @@ public class ClusterListCommandTests
     public async Task ExecuteAsync_HandlesException()
     {
         var expectedError = "Test error. To mitigate this issue, please refer to the troubleshooting guidelines here at https://aka.ms/azmcp/troubleshooting.";
-        _redisService.ListClustersAsync("sub123", Arg.Any<string>(), Arg.Any<AuthMethod>(), Arg.Any<RetryPolicyOptions>())
+        _redisService.ListClustersAsync(Arg.Any<McpUserContext>(), "sub123", Arg.Any<string>(), Arg.Any<AuthMethod>(), Arg.Any<RetryPolicyOptions>())
             .ThrowsAsync(new Exception("Test error"));
 
         var command = new ClusterListCommand(_logger);
         var args = command.GetCommand().Parse(["--subscription", "sub123"]);
-        var context = new CommandContext(_serviceProvider);
+        var context = new CommandContext(_serviceProvider, McpUserContext.Empty);
 
         var response = await command.ExecuteAsync(context, args);
 
@@ -109,7 +110,7 @@ public class ClusterListCommandTests
 
         var args = command.GetCommand().Parse([.. argsList]);
 
-        var context = new CommandContext(_serviceProvider);
+        var context = new CommandContext(_serviceProvider, McpUserContext.Empty);
         var response = await command.ExecuteAsync(context, args);
 
         Assert.NotNull(response);

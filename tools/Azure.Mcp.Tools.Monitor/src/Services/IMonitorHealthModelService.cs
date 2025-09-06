@@ -3,6 +3,7 @@
 
 using System.Text.Json.Nodes;
 using Azure.Mcp.Core.Options;
+using Azure.Mcp.Core.Areas.Server.Commands.Runtime;
 
 namespace Azure.Mcp.Tools.Monitor.Services;
 
@@ -22,6 +23,7 @@ public interface IMonitorHealthModelService
     /// <exception cref="AuthenticationFailedException">When authentication fails</exception>
     /// <exception cref="RequestFailedException">When the service request fails</exception>
     Task<JsonNode> GetEntityHealth(
+        McpUserContext context,
         string entity,
         string healthModelName,
         string resourceGroup,

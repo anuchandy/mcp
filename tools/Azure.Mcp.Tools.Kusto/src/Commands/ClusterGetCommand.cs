@@ -38,6 +38,7 @@ public sealed class ClusterGetCommand(ILogger<ClusterGetCommand> logger) : BaseC
         {
             var kusto = context.GetService<IKustoService>();
             var cluster = await kusto.GetCluster(
+                context.UserContext,
                 options.Subscription!,
                 options.ClusterName!,
                 options.Tenant,

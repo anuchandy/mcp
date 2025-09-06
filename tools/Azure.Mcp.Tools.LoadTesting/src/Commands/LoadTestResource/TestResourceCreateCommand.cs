@@ -40,6 +40,7 @@ public sealed class TestResourceCreateCommand(ILogger<TestResourceCreateCommand>
 
             // Call service operation(s)
             var results = await service.CreateOrUpdateLoadTestingResourceAsync(
+                context.UserContext,
                 options.Subscription!,
                 options.ResourceGroup!,
                 options.TestResourceName!,

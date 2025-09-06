@@ -73,6 +73,7 @@ public sealed class QueueMessageSendCommand(ILogger<QueueMessageSendCommand> log
 
             // Call service operation with required parameters
             var result = await service.SendQueueMessage(
+                context.UserContext,
                 options.Account!,
                 options.Queue!,
                 options.Message!,

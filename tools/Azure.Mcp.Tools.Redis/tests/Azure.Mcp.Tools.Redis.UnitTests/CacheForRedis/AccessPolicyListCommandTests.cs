@@ -3,6 +3,7 @@
 
 using System.Text.Json;
 using Azure.Mcp.Core.Models;
+using Azure.Mcp.Core.Areas.Server.Commands.Runtime;
 using Azure.Mcp.Core.Models.Command;
 using Azure.Mcp.Tools.Redis.Commands.CacheForRedis;
 using Azure.Mcp.Tools.Redis.Models.CacheForRedis;
@@ -42,6 +43,7 @@ public class AccessPolicyListCommandTests
         };
 
         _redisService.ListAccessPolicyAssignmentsAsync(
+            Arg.Any<McpUserContext>(),
             "cache1",
             "rg1",
             "sub123",
@@ -52,7 +54,7 @@ public class AccessPolicyListCommandTests
 
         var command = new AccessPolicyListCommand(_logger);
         var args = command.GetCommand().Parse(["--subscription", "sub123", "--resource-group", "rg1", "--cache", "cache1"]);
-        var context = new CommandContext(_serviceProvider);
+        var context = new CommandContext(_serviceProvider, McpUserContext.Empty);
         var response = await command.ExecuteAsync(context, args);
 
         Assert.NotNull(response);
@@ -78,6 +80,7 @@ public class AccessPolicyListCommandTests
     public async Task ExecuteAsync_ReturnsNull_WhenNoAccessPolicyAssignments()
     {
         _redisService.ListAccessPolicyAssignmentsAsync(
+            Arg.Any<McpUserContext>(),
             "cache1",
             "rg1",
             "sub123",
@@ -88,7 +91,7 @@ public class AccessPolicyListCommandTests
 
         var command = new AccessPolicyListCommand(_logger);
         var args = command.GetCommand().Parse(["--subscription", "sub123", "--resource-group", "rg1", "--cache", "cache1"]);
-        var context = new CommandContext(_serviceProvider);
+        var context = new CommandContext(_serviceProvider, McpUserContext.Empty);
         var response = await command.ExecuteAsync(context, args);
 
         Assert.NotNull(response);
@@ -100,6 +103,7 @@ public class AccessPolicyListCommandTests
     {
         var expectedError = "Test error. To mitigate this issue, please refer to the troubleshooting guidelines here at https://aka.ms/azmcp/troubleshooting.";
         _redisService.ListAccessPolicyAssignmentsAsync(
+            Arg.Any<McpUserContext>(),
             "cache1",
             "rg1",
             "sub123",
@@ -111,7 +115,7 @@ public class AccessPolicyListCommandTests
         var command = new AccessPolicyListCommand(_logger);
 
         var args = command.GetCommand().Parse(["--subscription", "sub123", "--resource-group", "rg1", "--cache", "cache1"]);
-        var context = new CommandContext(_serviceProvider);
+        var context = new CommandContext(_serviceProvider, McpUserContext.Empty);
 
         var response = await command.ExecuteAsync(context, args);
 
@@ -138,7 +142,7 @@ public class AccessPolicyListCommandTests
 
 
         var parseResult = command.GetCommand().Parse([.. options]);
-        var context = new CommandContext(_serviceProvider);
+        var context = new CommandContext(_serviceProvider, McpUserContext.Empty);
 
         var response = await command.ExecuteAsync(context, parseResult);
 

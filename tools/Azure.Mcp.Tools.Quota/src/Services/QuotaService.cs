@@ -2,6 +2,7 @@
 // Licensed under the MIT License.
 
 using Azure.Core;
+using Azure.Mcp.Core.Areas.Server.Commands.Runtime;
 using Azure.Mcp.Core.Services.Azure;
 using Azure.Mcp.Core.Services.Http;
 using Azure.Mcp.Tools.Quota.Models;
@@ -16,11 +17,12 @@ public class QuotaService(ILoggerFactory? loggerFactory = null, IHttpClientServi
     private readonly IHttpClientService _httpClientService = httpClientService ?? throw new ArgumentNullException(nameof(httpClientService));
 
     public async Task<Dictionary<string, List<UsageInfo>>> GetAzureQuotaAsync(
+        McpUserContext userContext,
         List<string> resourceTypes,
         string subscriptionId,
         string location)
     {
-        TokenCredential credential = await GetCredential();
+        TokenCredential credential = await GetCredential(userContext);
         Dictionary<string, List<UsageInfo>> quotaByResourceTypes = await AzureQuotaService.GetAzureQuotaAsync(
             credential,
             resourceTypes,
@@ -33,13 +35,14 @@ public class QuotaService(ILoggerFactory? loggerFactory = null, IHttpClientServi
     }
 
     public async Task<List<string>> GetAvailableRegionsForResourceTypesAsync(
+        McpUserContext userContext,
         string[] resourceTypes,
         string subscriptionId,
         string? cognitiveServiceModelName = null,
         string? cognitiveServiceModelVersion = null,
         string? cognitiveServiceDeploymentSkuName = null)
     {
-        ArmClient armClient = await CreateArmClientAsync();
+        ArmClient armClient = await CreateArmClientAsync(userContext);
 
         // Create cognitive service properties if any of the parameters are provided
         CognitiveServiceProperties? cognitiveServiceProperties = null;

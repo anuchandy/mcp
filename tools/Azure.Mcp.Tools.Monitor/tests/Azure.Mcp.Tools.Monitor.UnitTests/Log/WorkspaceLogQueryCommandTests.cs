@@ -3,6 +3,7 @@
 
 using System.CommandLine;
 using System.Text.Json.Nodes;
+using Azure.Mcp.Core.Areas.Server.Commands.Runtime;
 using Azure.Mcp.Core.Models.Command;
 using Azure.Mcp.Core.Options;
 using Azure.Mcp.Tools.Monitor.Commands.Log;
@@ -43,7 +44,7 @@ public sealed class WorkspaceLogQueryCommandTests
         _serviceProvider = collection.BuildServiceProvider();
 
         _command = new(_logger);
-        _context = new(_serviceProvider);
+        _context = new CommandContext(_serviceProvider, McpUserContext.Empty);
         _commandDefinition = _command.GetCommand();
     }
 
@@ -64,6 +65,7 @@ public sealed class WorkspaceLogQueryCommandTests
                 JsonNode.Parse(@"{""TimeGenerated"": ""2023-01-01T12:01:00Z"", ""Message"": ""Another log entry""}") ?? JsonNode.Parse("{}") ?? new JsonObject()
             };
             _monitorService.QueryWorkspaceLogs(
+                Arg.Any<McpUserContext>(),
                 Arg.Any<string>(),
                 Arg.Any<string>(),
                 Arg.Any<string>(),
@@ -102,6 +104,7 @@ public sealed class WorkspaceLogQueryCommandTests
             JsonNode.Parse(@"{""TimeGenerated"": ""2023-01-01T12:02:00Z"", ""Message"": ""Error occurred"", ""Level"": ""Error""}") ?? new JsonObject()
         };
         _monitorService.QueryWorkspaceLogs(
+            Arg.Any<McpUserContext>(),
             Arg.Any<string>(),
             Arg.Any<string>(),
             Arg.Any<string>(),
@@ -123,6 +126,7 @@ public sealed class WorkspaceLogQueryCommandTests
 
         // Verify the mock was called
         await _monitorService.Received(1).QueryWorkspaceLogs(
+            Arg.Any<McpUserContext>(),
             Arg.Any<string>(),
             Arg.Any<string>(),
             Arg.Any<string>(),
@@ -139,6 +143,7 @@ public sealed class WorkspaceLogQueryCommandTests
         // Arrange
         var mockResults = new List<JsonNode> { JsonNode.Parse(@"{""result"": ""data""}") ?? new JsonObject() };
         _monitorService.QueryWorkspaceLogs(
+            Arg.Any<McpUserContext>(),
             _knownSubscription,
             _knownWorkspace,
             _knownQuery,
@@ -157,6 +162,7 @@ public sealed class WorkspaceLogQueryCommandTests
         // Assert
         Assert.Equal(200, response.Status);
         await _monitorService.Received(1).QueryWorkspaceLogs(
+            Arg.Any<McpUserContext>(),
             _knownSubscription,
             _knownWorkspace,
             _knownQuery,
@@ -173,6 +179,7 @@ public sealed class WorkspaceLogQueryCommandTests
         // Arrange
         var mockResults = new List<JsonNode> { JsonNode.Parse(@"{""result"": ""data""}") ?? new JsonObject() };
         _monitorService.QueryWorkspaceLogs(
+            Arg.Any<McpUserContext>(),
             Arg.Any<string>(),
             Arg.Any<string>(),
             Arg.Any<string>(),
@@ -191,6 +198,7 @@ public sealed class WorkspaceLogQueryCommandTests
         // Assert
         Assert.Equal(200, response.Status);
         await _monitorService.Received(1).QueryWorkspaceLogs(
+            Arg.Any<McpUserContext>(),
             _knownSubscription,
             _knownWorkspace,
             _knownQuery,
@@ -206,6 +214,7 @@ public sealed class WorkspaceLogQueryCommandTests
     {
         // Arrange
         _monitorService.QueryWorkspaceLogs(
+            Arg.Any<McpUserContext>(),
             Arg.Any<string>(),
             Arg.Any<string>(),
             Arg.Any<string>(),

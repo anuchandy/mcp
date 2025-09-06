@@ -45,6 +45,7 @@ public sealed class RegistryListCommand(ILogger<RegistryListCommand> logger) : B
         {
             var acrService = context.GetService<IAcrService>();
             var registries = await acrService.ListRegistries(
+                context.UserContext,
                 options.Subscription!,
                 options.ResourceGroup,
                 options.Tenant,

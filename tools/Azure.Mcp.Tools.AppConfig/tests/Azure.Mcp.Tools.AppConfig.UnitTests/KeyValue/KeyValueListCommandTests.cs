@@ -3,6 +3,7 @@
 
 using System.CommandLine;
 using System.Text.Json;
+using Azure.Mcp.Core.Areas.Server.Commands.Runtime;
 using Azure.Mcp.Core.Models.Command;
 using Azure.Mcp.Core.Options;
 using Azure.Mcp.Tools.AppConfig.Commands.KeyValue;
@@ -37,7 +38,7 @@ public class KeyValueListCommandTests
         _serviceProvider = new ServiceCollection()
             .AddSingleton(_appConfigService)
             .BuildServiceProvider();
-        _context = new(_serviceProvider);
+        _context = new CommandContext(_serviceProvider, McpUserContext.Empty);
     }
 
     [Fact]
@@ -50,6 +51,7 @@ public class KeyValueListCommandTests
             new() { Key = "key2", Value = "value2", Label = "dev" }
         };
         _appConfigService.ListKeyValues(
+          Arg.Any<McpUserContext>(),
           Arg.Any<string>(),
           Arg.Any<string>(),
           Arg.Any<string>(),
@@ -88,6 +90,7 @@ public class KeyValueListCommandTests
             new() { Key = "key1", Value = "value1", Label = "prod" }
         };
         _appConfigService.ListKeyValues(
+          Arg.Any<McpUserContext>(),
           Arg.Any<string>(),
           Arg.Any<string>(),
           Arg.Any<string>(),
@@ -127,6 +130,7 @@ public class KeyValueListCommandTests
             new() { Key = "key1", Value = "value1", Label = "prod" }
         };
         _appConfigService.ListKeyValues(
+          Arg.Any<McpUserContext>(),
           Arg.Any<string>(),
           Arg.Any<string>(),
           Arg.Any<string>(),
@@ -161,7 +165,8 @@ public class KeyValueListCommandTests
     public async Task ExecuteAsync_Returns500_WhenServiceThrowsException()
     {
         // Arrange
-        _appConfigService.ListKeyValues(Arg.Any<string>(),
+        _appConfigService.ListKeyValues(Arg.Any<McpUserContext>(),
+            Arg.Any<string>(),
             Arg.Any<string>(),
             Arg.Any<string>(),
             Arg.Any<string>(),

@@ -73,6 +73,7 @@ public sealed class AvailabilityListCommand(ILogger<AvailabilityListCommand> log
 
             var quotaService = context.GetService<IQuotaService>();
             List<string> toolResult = await quotaService.GetAvailableRegionsForResourceTypesAsync(
+                context.UserContext,
                 resourceTypes,
                 options.Subscription!,
                 options.CognitiveServiceModelName,

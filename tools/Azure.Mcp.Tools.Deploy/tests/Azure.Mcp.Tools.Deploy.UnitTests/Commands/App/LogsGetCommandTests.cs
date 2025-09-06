@@ -2,6 +2,7 @@
 // Licensed under the MIT License.
 
 using System.CommandLine;
+using Azure.Mcp.Core.Areas.Server.Commands.Runtime;
 using Azure.Mcp.Core.Models.Command;
 using Azure.Mcp.Tools.Deploy.Commands.App;
 using Azure.Mcp.Tools.Deploy.Services;
@@ -31,7 +32,7 @@ public class LogsGetCommandTests
         var collection = new ServiceCollection();
         collection.AddSingleton(_deployService);
         _serviceProvider = collection.BuildServiceProvider();
-        _context = new(_serviceProvider);
+        _context = new CommandContext(_serviceProvider, McpUserContext.Empty);
         _command = new(_logger);
         _commandDefinition = _command.GetCommand();
     }
@@ -42,6 +43,7 @@ public class LogsGetCommandTests
         // arrange
         var expectedLogs = "App logs retrieved:\n[2024-01-01 10:00:00] Application started\n[2024-01-01 10:01:00] Processing request";
         _deployService.GetAzdResourceLogsAsync(
+            Arg.Any<McpUserContext>(),
             Arg.Any<string>(),
             Arg.Any<string>(),
             Arg.Any<string>(),
@@ -73,6 +75,7 @@ public class LogsGetCommandTests
         // arrange
         var expectedLogs = "App logs retrieved:\nSample log entry";
         _deployService.GetAzdResourceLogsAsync(
+            Arg.Any<McpUserContext>(),
             Arg.Any<string>(),
             Arg.Any<string>(),
             Arg.Any<string>(),
@@ -101,6 +104,7 @@ public class LogsGetCommandTests
     {
         // arrange
         _deployService.GetAzdResourceLogsAsync(
+            Arg.Any<McpUserContext>(),
             Arg.Any<string>(),
             Arg.Any<string>(),
             Arg.Any<string>(),
@@ -129,6 +133,7 @@ public class LogsGetCommandTests
         // arrange
         var errorMessage = "Error during retrieval of app logs of azd project:\nNo resource group with tag {\"azd-env-name\": test-env} found.";
         _deployService.GetAzdResourceLogsAsync(
+            Arg.Any<McpUserContext>(),
             Arg.Any<string>(),
             Arg.Any<string>(),
             Arg.Any<string>(),
@@ -157,6 +162,7 @@ public class LogsGetCommandTests
     {
         // arrange
         _deployService.GetAzdResourceLogsAsync(
+            Arg.Any<McpUserContext>(),
             Arg.Any<string>(),
             Arg.Any<string>(),
             Arg.Any<string>(),

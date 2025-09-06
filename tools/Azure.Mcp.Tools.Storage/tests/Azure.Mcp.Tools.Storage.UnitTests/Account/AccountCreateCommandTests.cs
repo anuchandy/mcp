@@ -4,6 +4,7 @@
 using System.CommandLine;
 using System.Text.Json;
 using System.Text.Json.Serialization;
+using Azure.Mcp.Core.Areas.Server.Commands.Runtime;
 using Azure.Mcp.Core.Models.Command;
 using Azure.Mcp.Core.Options;
 using Azure.Mcp.Tools.Storage.Commands.Account;
@@ -35,7 +36,7 @@ public class AccountCreateCommandTests
 
         _serviceProvider = collection.BuildServiceProvider();
         _command = new(_logger);
-        _context = new(_serviceProvider);
+        _context = new CommandContext(_serviceProvider, McpUserContext.Empty);
         _commandDefinition = _command.GetCommand();
     }
 
@@ -72,6 +73,7 @@ public class AccountCreateCommandTests
                 true);
 
             _storageService.CreateStorageAccount(
+                Arg.Any<McpUserContext>(),
                 Arg.Any<string>(),
                 Arg.Any<string>(),
                 Arg.Any<string>(),
@@ -115,6 +117,7 @@ public class AccountCreateCommandTests
         var conflictException = new RequestFailedException(409, "Storage account name already exists");
 
         _storageService.CreateStorageAccount(
+            Arg.Any<McpUserContext>(),
             Arg.Any<string>(),
             Arg.Any<string>(),
             Arg.Any<string>(),
@@ -143,6 +146,7 @@ public class AccountCreateCommandTests
         var notFoundException = new RequestFailedException(404, "Resource group not found");
 
         _storageService.CreateStorageAccount(
+            Arg.Any<McpUserContext>(),
             Arg.Any<string>(),
             Arg.Any<string>(),
             Arg.Any<string>(),
@@ -171,6 +175,7 @@ public class AccountCreateCommandTests
         var authException = new RequestFailedException(403, "Authorization failed");
 
         _storageService.CreateStorageAccount(
+            Arg.Any<McpUserContext>(),
             Arg.Any<string>(),
             Arg.Any<string>(),
             Arg.Any<string>(),
@@ -197,6 +202,7 @@ public class AccountCreateCommandTests
     {
         // Arrange
         _storageService.CreateStorageAccount(
+            Arg.Any<McpUserContext>(),
             Arg.Any<string>(),
             Arg.Any<string>(),
             Arg.Any<string>(),
@@ -234,6 +240,7 @@ public class AccountCreateCommandTests
             true);
 
         _storageService.CreateStorageAccount(
+            Arg.Any<McpUserContext>(),
             "testaccount",
             "testrg",
             "eastus",
@@ -261,6 +268,7 @@ public class AccountCreateCommandTests
         // Assert
         Assert.Equal(200, response.Status);
         await _storageService.Received(1).CreateStorageAccount(
+            Arg.Any<McpUserContext>(),
             "testaccount",
             "testrg",
             "eastus",

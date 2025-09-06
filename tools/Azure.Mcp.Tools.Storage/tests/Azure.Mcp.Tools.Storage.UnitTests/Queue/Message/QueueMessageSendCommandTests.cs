@@ -2,6 +2,7 @@
 // Licensed under the MIT License.
 
 using System.CommandLine;
+using Azure.Mcp.Core.Areas.Server.Commands.Runtime;
 using Azure.Mcp.Core.Models.Command;
 using Azure.Mcp.Tools.Storage.Commands.Queue.Message;
 using Azure.Mcp.Tools.Storage.Models;
@@ -31,7 +32,7 @@ public class QueueMessageSendCommandTests
         var collection = new ServiceCollection().AddSingleton(_service);
         _serviceProvider = collection.BuildServiceProvider();
         _command = new(_logger);
-        _context = new(_serviceProvider);
+        _context = new CommandContext(_serviceProvider, McpUserContext.Empty);
         _commandDefinition = _command.GetCommand();
     }
 
@@ -67,6 +68,7 @@ public class QueueMessageSendCommandTests
                 Message: "test message");
 
             _service.SendQueueMessage(
+                Arg.Any<McpUserContext>(),
                 Arg.Any<string>(),
                 Arg.Any<string>(),
                 Arg.Any<string>(),
@@ -101,6 +103,7 @@ public class QueueMessageSendCommandTests
     {
         // Arrange
         _service.SendQueueMessage(
+            Arg.Any<McpUserContext>(),
             Arg.Any<string>(),
             Arg.Any<string>(),
             Arg.Any<string>(),
@@ -129,6 +132,7 @@ public class QueueMessageSendCommandTests
         var requestFailedException = new RequestFailedException(404, "Not found");
 
         _service.SendQueueMessage(
+            Arg.Any<McpUserContext>(),
             Arg.Any<string>(),
             Arg.Any<string>(),
             Arg.Any<string>(),
@@ -156,6 +160,7 @@ public class QueueMessageSendCommandTests
         var requestFailedException = new RequestFailedException(403, "Access denied");
 
         _service.SendQueueMessage(
+            Arg.Any<McpUserContext>(),
             Arg.Any<string>(),
             Arg.Any<string>(),
             Arg.Any<string>(),

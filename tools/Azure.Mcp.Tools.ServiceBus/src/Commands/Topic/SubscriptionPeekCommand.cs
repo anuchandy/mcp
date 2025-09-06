@@ -73,6 +73,7 @@ public sealed class SubscriptionPeekCommand(ILogger<SubscriptionPeekCommand> log
 
             var service = context.GetService<IServiceBusService>();
             var messages = await service.PeekSubscriptionMessages(
+                context.UserContext,
                 options.Namespace!,
                 options.TopicName!,
                 options.SubscriptionName!,

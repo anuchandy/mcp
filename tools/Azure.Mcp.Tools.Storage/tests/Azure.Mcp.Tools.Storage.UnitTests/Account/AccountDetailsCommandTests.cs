@@ -4,6 +4,7 @@
 using System.CommandLine;
 using System.Text.Json;
 using System.Text.Json.Serialization;
+using Azure.Mcp.Core.Areas.Server.Commands.Runtime;
 using Azure.Mcp.Core.Models.Command;
 using Azure.Mcp.Core.Options;
 using Azure.Mcp.Tools.Storage.Commands.Account;
@@ -34,7 +35,7 @@ public class AccountDetailsCommandTests
 
         _serviceProvider = collection.BuildServiceProvider();
         _command = new(_logger);
-        _context = new(_serviceProvider);
+        _context = new CommandContext(_serviceProvider, McpUserContext.Empty);
         _commandDefinition = _command.GetCommand();
     }
 
@@ -72,6 +73,7 @@ public class AccountDetailsCommandTests
                     "mystorageaccount", "eastus", "StorageV2", "Standard_LRS", "Standard", true, true, true);
 
                 _storageService.GetStorageAccountDetails(
+                    Arg.Any<McpUserContext>(),
                     Arg.Any<string>(), Arg.Any<string>(), Arg.Any<string>(), Arg.Any<RetryPolicyOptions>())
                     .Returns(Task.FromResult(expectedAccount));
             }
@@ -110,6 +112,7 @@ public class AccountDetailsCommandTests
             account, "eastus", "StorageV2", "Standard_LRS", "Standard", true, true, true);
 
         _storageService.GetStorageAccountDetails(
+            Arg.Any<McpUserContext>(),
             Arg.Is(account), Arg.Is(subscription), Arg.Any<string>(), Arg.Any<RetryPolicyOptions>())
             .Returns(Task.FromResult(expectedAccount));
 
@@ -141,6 +144,7 @@ public class AccountDetailsCommandTests
         var subscription = "sub123";
 
         _storageService.GetStorageAccountDetails(
+            Arg.Any<McpUserContext>(),
             Arg.Is(account), Arg.Is(subscription), Arg.Any<string>(), Arg.Any<RetryPolicyOptions>())
             .ThrowsAsync(new Exception("Test error"));
 
@@ -163,6 +167,7 @@ public class AccountDetailsCommandTests
         var subscription = "sub123";
 
         _storageService.GetStorageAccountDetails(
+            Arg.Any<McpUserContext>(),
             Arg.Is(account), Arg.Is(subscription), Arg.Any<string>(), Arg.Any<RetryPolicyOptions>())
             .ThrowsAsync(new RequestFailedException(404, "Storage account not found"));
 
@@ -184,6 +189,7 @@ public class AccountDetailsCommandTests
         var subscription = "sub123";
 
         _storageService.GetStorageAccountDetails(
+            Arg.Any<McpUserContext>(),
             Arg.Is(account), Arg.Is(subscription), Arg.Any<string>(), Arg.Any<RetryPolicyOptions>())
             .ThrowsAsync(new RequestFailedException(403, "Authorization failed"));
 

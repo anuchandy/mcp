@@ -3,6 +3,7 @@
 
 using System.Text.Json.Nodes;
 using Azure.Core;
+using Azure.Mcp.Core.Areas.Server.Commands.Runtime;
 using Azure.Mcp.Core.Options;
 using Azure.Mcp.Core.Services.Azure;
 using Azure.Mcp.Core.Services.Azure.ResourceGroup;
@@ -28,6 +29,7 @@ public class MonitorService : BaseAzureService, IMonitorService
     }
 
     public async Task<List<JsonNode>> QueryResourceLogs(
+        McpUserContext userContext,
         string subscription,
         string resourceId,
         string query,
@@ -40,7 +42,7 @@ public class MonitorService : BaseAzureService, IMonitorService
         ValidateRequiredParameters(subscription, resourceId, table);
         query = BuildQuery(query, table, limit);
 
-        var credential = await GetCredential(tenant);
+        var credential = await GetCredential(userContext, tenant);
         var options = AddDefaultPolicies(new LogsQueryClientOptions());
 
         if (retryPolicy != null)
@@ -90,6 +92,7 @@ public class MonitorService : BaseAzureService, IMonitorService
     };
 
     public async Task<List<JsonNode>> QueryWorkspace(
+        McpUserContext userContext,
         string subscription,
         string workspace,
         string query,
@@ -99,7 +102,7 @@ public class MonitorService : BaseAzureService, IMonitorService
     {
         ValidateRequiredParameters(subscription, workspace, query);
 
-        var credential = await GetCredential(tenant);
+        var credential = await GetCredential(userContext, tenant);
         var options = AddDefaultPolicies(new LogsQueryClientOptions());
 
         if (retryPolicy != null)
@@ -114,7 +117,7 @@ public class MonitorService : BaseAzureService, IMonitorService
 
         try
         {
-            var (workspaceId, _) = await GetWorkspaceInfo(workspace, subscription, tenant, retryPolicy);
+            var (workspaceId, _) = await GetWorkspaceInfo(userContext, workspace, subscription, tenant, retryPolicy);
 
             var response = await client.QueryWorkspaceAsync(
                 workspaceId,
@@ -150,6 +153,7 @@ public class MonitorService : BaseAzureService, IMonitorService
     }
 
     public async Task<List<string>> ListTables(
+        McpUserContext userContext,
         string subscription,
         string resourceGroup,
         string workspace,
@@ -161,9 +165,9 @@ public class MonitorService : BaseAzureService, IMonitorService
 
         try
         {
-            var (_, resolvedWorkspaceName) = await GetWorkspaceInfo(workspace, subscription, tenant, retryPolicy);
+            var (_, resolvedWorkspaceName) = await GetWorkspaceInfo(userContext, workspace, subscription, tenant, retryPolicy);
 
-            var resourceGroupResource = await _resourceGroupService.GetResourceGroupResource(subscription, resourceGroup, tenant, retryPolicy) ??
+            var resourceGroupResource = await _resourceGroupService.GetResourceGroupResource(userContext, subscription, resourceGroup, tenant, retryPolicy) ??
                 throw new Exception($"Resource group {resourceGroup} not found in subscription {subscription}");
             var workspaceResponse = await resourceGroupResource.GetOperationalInsightsWorkspaceAsync(resolvedWorkspaceName)
                 .ConfigureAwait(false);
@@ -192,6 +196,7 @@ public class MonitorService : BaseAzureService, IMonitorService
     }
 
     public async Task<List<WorkspaceInfo>> ListWorkspaces(
+        McpUserContext userContext,
         string subscription,
         string? tenant = null,
         RetryPolicyOptions? retryPolicy = null)
@@ -200,7 +205,7 @@ public class MonitorService : BaseAzureService, IMonitorService
 
         try
         {
-            var subscriptionResource = await _subscriptionService.GetSubscription(subscription, tenant, retryPolicy);
+            var subscriptionResource = await _subscriptionService.GetSubscription(userContext,subscription, tenant, retryPolicy);
 
             var workspaces = await subscriptionResource
                 .GetOperationalInsightsWorkspacesAsync()
@@ -220,6 +225,7 @@ public class MonitorService : BaseAzureService, IMonitorService
         }
     }
     public async Task<List<JsonNode>> QueryWorkspaceLogs(
+        McpUserContext userContext,
         string subscription,
         string workspace,
         string query,
@@ -231,13 +237,13 @@ public class MonitorService : BaseAzureService, IMonitorService
     {
         ValidateRequiredParameters(subscription, workspace, table);
 
-        var (workspaceId, _) = await GetWorkspaceInfo(workspace, subscription, tenant, retryPolicy);
+        var (workspaceId, _) = await GetWorkspaceInfo(userContext, workspace, subscription, tenant, retryPolicy);
         query = BuildQuery(query, table, limit);
         ValidateRequiredParameters(query);
 
         try
         {
-            var credential = await GetCredential(tenant);
+            var credential = await GetCredential(userContext, tenant);
             var options = AddDefaultPolicies(new LogsQueryClientOptions());
 
             if (retryPolicy != null)
@@ -313,6 +319,7 @@ public class MonitorService : BaseAzureService, IMonitorService
     }
 
     public async Task<List<string>> ListTableTypes(
+        McpUserContext userContext,
         string subscription,
         string resourceGroup,
         string workspace,
@@ -322,9 +329,9 @@ public class MonitorService : BaseAzureService, IMonitorService
         ValidateRequiredParameters(subscription, resourceGroup, workspace);
         try
         {
-            var (_, resolvedWorkspaceName) = await GetWorkspaceInfo(workspace, subscription, tenant, retryPolicy);
+            var (_, resolvedWorkspaceName) = await GetWorkspaceInfo(userContext, workspace, subscription, tenant, retryPolicy);
 
-            var resourceGroupResource = await _resourceGroupService.GetResourceGroupResource(subscription, resourceGroup, tenant, retryPolicy)
+            var resourceGroupResource = await _resourceGroupService.GetResourceGroupResource(userContext, subscription, resourceGroup, tenant, retryPolicy)
                 ?? throw new Exception($"Resource group {resourceGroup} not found in subscription {subscription}");
             var workspaceResponse = await resourceGroupResource.GetOperationalInsightsWorkspaceAsync(resolvedWorkspaceName)
                 .ConfigureAwait(false);
@@ -360,6 +367,7 @@ public class MonitorService : BaseAzureService, IMonitorService
     }
 
     private async Task<(string id, string name)> GetWorkspaceInfo(
+        McpUserContext userContext,
         string workspace,
         string subscription,
         string? tenant = null,
@@ -367,7 +375,7 @@ public class MonitorService : BaseAzureService, IMonitorService
     {
         // If we're given an ID and need an ID, or given a name and need a name, return as is
         bool isId = IsWorkspaceId(workspace);
-        var workspaces = await ListWorkspaces(subscription, tenant, retryPolicy);
+        var workspaces = await ListWorkspaces(userContext, subscription, tenant, retryPolicy);
 
         // Find the workspace
         var matchingWorkspace = workspaces.FirstOrDefault(w =>

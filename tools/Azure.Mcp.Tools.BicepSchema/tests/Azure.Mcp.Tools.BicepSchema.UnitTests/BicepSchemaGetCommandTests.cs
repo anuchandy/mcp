@@ -4,6 +4,7 @@
 using System.CommandLine;
 using System.Text.Json;
 using System.Text.Json.Serialization;
+using Azure.Mcp.Core.Areas.Server.Commands.Runtime;
 using Azure.Mcp.Core.Models.Command;
 using Azure.Mcp.Tools.BicepSchema.Commands;
 using Azure.Mcp.Tools.BicepSchema.Services;
@@ -32,7 +33,7 @@ public class BicepSchemaGetCommandTests
         collection.AddSingleton(_bicepSchemaService);
 
         _serviceProvider = collection.BuildServiceProvider();
-        _context = new(_serviceProvider);
+        _context = new CommandContext(_serviceProvider, McpUserContext.Empty);
         _command = new(_logger);
         _commandDefinition = _command.GetCommand();
     }

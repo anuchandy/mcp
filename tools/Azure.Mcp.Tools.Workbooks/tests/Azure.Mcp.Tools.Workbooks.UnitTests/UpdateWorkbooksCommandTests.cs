@@ -2,6 +2,7 @@
 // Licensed under the MIT License.
 
 using System.Text.Json;
+using Azure.Mcp.Core.Areas.Server.Commands.Runtime;
 using Azure.Mcp.Core.Models.Command;
 using Azure.Mcp.Core.Options;
 using Azure.Mcp.Tools.Workbooks.Commands.Workbooks;
@@ -88,6 +89,7 @@ public class UpdateWorkbooksCommandTests
         );
 
         _service.UpdateWorkbook(
+            Arg.Any<McpUserContext>(),
             Arg.Is(workbookId),
             Arg.Is("Updated Test Workbook"),
             Arg.Is("{\"version\":\"Notebook/1.0\",\"updated\":true}"),
@@ -100,7 +102,7 @@ public class UpdateWorkbooksCommandTests
             "--serialized-content", "{\"version\":\"Notebook/1.0\",\"updated\":true}"
         ]);
 
-        var context = new CommandContext(_serviceProvider);
+        var context = new CommandContext(_serviceProvider, McpUserContext.Empty);
 
         // Act
         var response = await _command.ExecuteAsync(context, args);
@@ -140,6 +142,7 @@ public class UpdateWorkbooksCommandTests
         );
 
         _service.UpdateWorkbook(
+            Arg.Any<McpUserContext>(),
             Arg.Is(workbookId),
             Arg.Is("New Display Name Only"),
             Arg.Is((string?)null),
@@ -151,7 +154,7 @@ public class UpdateWorkbooksCommandTests
             "--display-name", "New Display Name Only"
         ]);
 
-        var context = new CommandContext(_serviceProvider);
+        var context = new CommandContext(_serviceProvider, McpUserContext.Empty);
 
         // Act
         var response = await _command.ExecuteAsync(context, args);
@@ -190,6 +193,7 @@ public class UpdateWorkbooksCommandTests
         );
 
         _service.UpdateWorkbook(
+            Arg.Any<McpUserContext>(),
             Arg.Is(workbookId),
             Arg.Is((string?)null),
             Arg.Is(newSerializedContent),
@@ -201,7 +205,7 @@ public class UpdateWorkbooksCommandTests
             "--serialized-content", newSerializedContent
         ]);
 
-        var context = new CommandContext(_serviceProvider);
+        var context = new CommandContext(_serviceProvider, McpUserContext.Empty);
 
         // Act
         var response = await _command.ExecuteAsync(context, args);
@@ -243,6 +247,7 @@ public class UpdateWorkbooksCommandTests
         );
 
         _service.UpdateWorkbook(
+            Arg.Any<McpUserContext>(),
             Arg.Any<string>(),
             Arg.Any<string?>(),
             Arg.Any<string?>(),
@@ -256,13 +261,14 @@ public class UpdateWorkbooksCommandTests
             "--serialized-content", serializedContent
         ]);
 
-        var context = new CommandContext(_serviceProvider);
+        var context = new CommandContext(_serviceProvider, McpUserContext.Empty);
 
         // Act
         await _command.ExecuteAsync(context, args);
 
         // Assert
         await _service.Received(1).UpdateWorkbook(
+            Arg.Any<McpUserContext>(),
             Arg.Is(workbookId),
             Arg.Is(displayName),
             Arg.Is(serializedContent),
@@ -277,6 +283,7 @@ public class UpdateWorkbooksCommandTests
         var workbookId = "/subscriptions/sub1/resourceGroups/rg1/providers/microsoft.insights/workbooks/workbook1";
 
         _service.UpdateWorkbook(
+            Arg.Any<McpUserContext>(),
             Arg.Any<string>(),
             Arg.Any<string?>(),
             Arg.Any<string?>(),
@@ -289,7 +296,7 @@ public class UpdateWorkbooksCommandTests
             "--display-name", "Test Name"
         ]);
 
-        var context = new CommandContext(_serviceProvider);
+        var context = new CommandContext(_serviceProvider, McpUserContext.Empty);
 
         // Act
         var response = await _command.ExecuteAsync(context, args);
@@ -306,6 +313,7 @@ public class UpdateWorkbooksCommandTests
         var workbookId = "/subscriptions/sub1/resourceGroups/rg1/providers/microsoft.insights/workbooks/workbook1";
 
         _service.UpdateWorkbook(
+            Arg.Any<McpUserContext>(),
             Arg.Any<string>(),
             Arg.Any<string?>(),
             Arg.Any<string?>(),
@@ -318,7 +326,7 @@ public class UpdateWorkbooksCommandTests
             "--display-name", "Test Name"
         ]);
 
-        var context = new CommandContext(_serviceProvider);
+        var context = new CommandContext(_serviceProvider, McpUserContext.Empty);
 
         // Act
         var response = await _command.ExecuteAsync(context, args);
@@ -343,7 +351,7 @@ public class UpdateWorkbooksCommandTests
                 "--display-name", "Test Name"
             ]);
 
-        var context = new CommandContext(_serviceProvider);
+        var context = new CommandContext(_serviceProvider, McpUserContext.Empty);
 
         // Act
         var response = await _command.ExecuteAsync(context, args);
@@ -397,6 +405,7 @@ public class UpdateWorkbooksCommandTests
         );
 
         _service.UpdateWorkbook(
+            Arg.Any<McpUserContext>(),
             Arg.Is(workbookId),
             Arg.Is("Updated Complex Workbook"),
             Arg.Is(complexSerializedData),
@@ -410,7 +419,7 @@ public class UpdateWorkbooksCommandTests
             "--serialized-content", complexSerializedData
         ]);
 
-        var context = new CommandContext(_serviceProvider);
+        var context = new CommandContext(_serviceProvider, McpUserContext.Empty);
 
         // Act
         var response = await _command.ExecuteAsync(context, args);
@@ -454,6 +463,7 @@ public class UpdateWorkbooksCommandTests
         );
 
         _service.UpdateWorkbook(
+            Arg.Any<McpUserContext>(),
             Arg.Any<string>(),
             Arg.Any<string?>(),
             Arg.Any<string?>(),
@@ -467,13 +477,14 @@ public class UpdateWorkbooksCommandTests
             "--tenant", tenantId
         ]);
 
-        var context = new CommandContext(_serviceProvider);
+        var context = new CommandContext(_serviceProvider, McpUserContext.Empty);
 
         // Act
         await _command.ExecuteAsync(context, args);
 
         // Assert
         await _service.Received(1).UpdateWorkbook(
+            Arg.Any<McpUserContext>(),
             Arg.Is(workbookId),
             Arg.Is("Test Workbook"),
             Arg.Is((string?)null),
@@ -503,6 +514,7 @@ public class UpdateWorkbooksCommandTests
         );
 
         _service.UpdateWorkbook(
+            Arg.Any<McpUserContext>(),
             Arg.Any<string>(),
             Arg.Any<string?>(),
             Arg.Any<string?>(),
@@ -516,13 +528,14 @@ public class UpdateWorkbooksCommandTests
             "--auth-method", "1"
         ]);
 
-        var context = new CommandContext(_serviceProvider);
+        var context = new CommandContext(_serviceProvider, McpUserContext.Empty);
 
         // Act
         await _command.ExecuteAsync(context, args);
 
         // Assert
         await _service.Received(1).UpdateWorkbook(
+            Arg.Any<McpUserContext>(),
             Arg.Is(workbookId),
             Arg.Is("Test Workbook"),
             Arg.Is((string?)null),
@@ -552,6 +565,7 @@ public class UpdateWorkbooksCommandTests
         );
 
         _service.UpdateWorkbook(
+            Arg.Any<McpUserContext>(),
             Arg.Any<string>(),
             Arg.Any<string?>(),
             Arg.Any<string?>(),
@@ -566,13 +580,14 @@ public class UpdateWorkbooksCommandTests
             "--retry-delay", "2.5"
         ]);
 
-        var context = new CommandContext(_serviceProvider);
+        var context = new CommandContext(_serviceProvider, McpUserContext.Empty);
 
         // Act
         await _command.ExecuteAsync(context, args);
 
         // Assert
         await _service.Received(1).UpdateWorkbook(
+            Arg.Any<McpUserContext>(),
             Arg.Is(workbookId),
             Arg.Is("Test Workbook"),
             Arg.Is((string?)null),
@@ -588,6 +603,7 @@ public class UpdateWorkbooksCommandTests
         var exception = new Exception("Test exception");
 
         _service.UpdateWorkbook(
+            Arg.Any<McpUserContext>(),
             Arg.Any<string>(),
             Arg.Any<string?>(),
             Arg.Any<string?>(),
@@ -600,7 +616,7 @@ public class UpdateWorkbooksCommandTests
             "--display-name", "Test Name"
         ]);
 
-        var context = new CommandContext(_serviceProvider);
+        var context = new CommandContext(_serviceProvider, McpUserContext.Empty);
 
         // Act
         var response = await _command.ExecuteAsync(context, args);

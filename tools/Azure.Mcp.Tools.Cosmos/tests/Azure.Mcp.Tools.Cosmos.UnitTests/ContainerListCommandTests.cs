@@ -4,6 +4,7 @@
 using System.CommandLine;
 using System.Text.Json;
 using Azure.Mcp.Core.Models;
+using Azure.Mcp.Core.Areas.Server.Commands.Runtime;
 using Azure.Mcp.Core.Models.Command;
 using Azure.Mcp.Core.Options;
 using Azure.Mcp.Tools.Cosmos.Commands;
@@ -35,7 +36,7 @@ public class ContainerListCommandTests
         _serviceProvider = new ServiceCollection()
             .AddSingleton(_cosmosService)
             .BuildServiceProvider();
-        _context = new(_serviceProvider);
+        _context = new CommandContext(_serviceProvider, McpUserContext.Empty);
     }
 
     [Fact]
@@ -44,6 +45,7 @@ public class ContainerListCommandTests
         // Arrange
         var expectedContainers = new List<string> { "container1", "container2" };
         _cosmosService.ListContainers(
+            Arg.Any<McpUserContext>(),
             Arg.Is("account123"),
             Arg.Is("database123"),
             Arg.Is("sub123"),
@@ -79,6 +81,7 @@ public class ContainerListCommandTests
     {
         // Arrange
         _cosmosService.ListContainers(
+            Arg.Any<McpUserContext>(),
             Arg.Is("account123"),
             Arg.Is("database123"),
             Arg.Is("sub123"),
@@ -108,6 +111,7 @@ public class ContainerListCommandTests
         var expectedError = "Test error";
 
         _cosmosService.ListContainers(
+            Arg.Any<McpUserContext>(),
             Arg.Is("account123"),
             Arg.Is("database123"),
             Arg.Is("sub123"),

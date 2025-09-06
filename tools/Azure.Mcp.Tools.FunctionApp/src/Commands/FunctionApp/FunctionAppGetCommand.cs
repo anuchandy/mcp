@@ -55,6 +55,7 @@ public sealed class FunctionAppGetCommand(ILogger<FunctionAppGetCommand> logger)
         {
             var service = context.GetService<IFunctionAppService>();
             var functionApp = await service.GetFunctionApp(
+                context.UserContext,
                 options.Subscription!,
                 options.FunctionAppName!,
                 options.ResourceGroup!,

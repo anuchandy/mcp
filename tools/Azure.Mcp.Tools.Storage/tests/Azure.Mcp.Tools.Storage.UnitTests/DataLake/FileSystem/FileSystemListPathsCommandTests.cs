@@ -4,6 +4,7 @@
 using System.CommandLine;
 using System.Text.Json;
 using System.Text.Json.Serialization;
+using Azure.Mcp.Core.Areas.Server.Commands.Runtime;
 using Azure.Mcp.Core.Models.Command;
 using Azure.Mcp.Core.Options;
 using Azure.Mcp.Tools.Storage.Commands.DataLake.FileSystem;
@@ -38,7 +39,7 @@ public class FileSystemListPathsCommandTests
 
         _serviceProvider = collection.BuildServiceProvider();
         _command = new(_logger);
-        _context = new(_serviceProvider);
+        _context = new CommandContext(_serviceProvider, McpUserContext.Empty);
         _commandDefinition = _command.GetCommand();
     }
 
@@ -52,7 +53,7 @@ public class FileSystemListPathsCommandTests
             new("directory1", "directory", null, DateTimeOffset.Now, "\"etag2\"")
         };
 
-        _storageService.ListDataLakePaths(Arg.Is(_knownAccount), Arg.Is(_knownFileSystem), false, Arg.Is(_knownSubscription),
+        _storageService.ListDataLakePaths(Arg.Any<McpUserContext>(), Arg.Is(_knownAccount), Arg.Is(_knownFileSystem), false, Arg.Is(_knownSubscription),
             null, Arg.Any<string>(), Arg.Any<RetryPolicyOptions>()).Returns(expectedPaths);
 
         var args = _commandDefinition.Parse([
@@ -81,7 +82,7 @@ public class FileSystemListPathsCommandTests
     public async Task ExecuteAsync_ReturnsEmptyArray_WhenNoPaths()
     {
         // Arrange
-        _storageService.ListDataLakePaths(Arg.Is(_knownAccount), Arg.Is(_knownFileSystem), false, Arg.Is(_knownSubscription),
+        _storageService.ListDataLakePaths(Arg.Any<McpUserContext>(),Arg.Is(_knownAccount), Arg.Is(_knownFileSystem), false, Arg.Is(_knownSubscription),
             null, Arg.Any<string>(), Arg.Any<RetryPolicyOptions>()).Returns([]);
 
         var args = _commandDefinition.Parse([
@@ -110,7 +111,7 @@ public class FileSystemListPathsCommandTests
         // Arrange
         var expectedError = "Test error";
 
-        _storageService.ListDataLakePaths(Arg.Is(_knownAccount), Arg.Is(_knownFileSystem), false, Arg.Is(_knownSubscription),
+        _storageService.ListDataLakePaths(Arg.Any<McpUserContext>(), Arg.Is(_knownAccount), Arg.Is(_knownFileSystem), false, Arg.Is(_knownSubscription),
             null, null, Arg.Any<RetryPolicyOptions>()).ThrowsAsync(new Exception(expectedError));
 
         var args = _commandDefinition.Parse([
@@ -139,7 +140,7 @@ public class FileSystemListPathsCommandTests
             new("folder1/subfolder", "directory", null, DateTimeOffset.Now, "\"etag2\"")
         };
 
-        _storageService.ListDataLakePaths(Arg.Is(_knownAccount), Arg.Is(_knownFileSystem), false,
+        _storageService.ListDataLakePaths(Arg.Any<McpUserContext>(), Arg.Is(_knownAccount), Arg.Is(_knownFileSystem), false,
             Arg.Is(_knownSubscription), Arg.Is(filterPath), Arg.Any<string>(), Arg.Any<RetryPolicyOptions>())
             .Returns(expectedPaths);
 
@@ -178,7 +179,7 @@ public class FileSystemListPathsCommandTests
             new("folder1/subfolder/file3.txt", "file", 512, DateTimeOffset.Now, "\"etag5\"")
         };
 
-        _storageService.ListDataLakePaths(Arg.Is(_knownAccount), Arg.Is(_knownFileSystem), true,
+        _storageService.ListDataLakePaths(Arg.Any<McpUserContext>(), Arg.Is(_knownAccount), Arg.Is(_knownFileSystem), true,
             Arg.Is(_knownSubscription), null, Arg.Any<string>(), Arg.Any<RetryPolicyOptions>())
             .Returns(expectedPaths);
 
@@ -217,7 +218,7 @@ public class FileSystemListPathsCommandTests
             new("folder1", "directory", null, DateTimeOffset.Now, "\"etag2\"")
         };
 
-        _storageService.ListDataLakePaths(Arg.Is(_knownAccount), Arg.Is(_knownFileSystem), false,
+        _storageService.ListDataLakePaths(Arg.Any<McpUserContext>(), Arg.Is(_knownAccount), Arg.Is(_knownFileSystem), false,
             Arg.Is(_knownSubscription), null, Arg.Any<string>(), Arg.Any<RetryPolicyOptions>())
             .Returns(expectedPaths);
 
@@ -255,7 +256,7 @@ public class FileSystemListPathsCommandTests
             new("documents/archive/old.pdf", "file", 2048, DateTimeOffset.Now, "\"etag3\"")
         };
 
-        _storageService.ListDataLakePaths(Arg.Is(_knownAccount), Arg.Is(_knownFileSystem), true,
+        _storageService.ListDataLakePaths(Arg.Any<McpUserContext>(), Arg.Is(_knownAccount), Arg.Is(_knownFileSystem), true,
             Arg.Is(_knownSubscription), Arg.Is(filterPath), Arg.Any<string>(), Arg.Any<RetryPolicyOptions>())
             .Returns(expectedPaths);
 
@@ -295,7 +296,7 @@ public class FileSystemListPathsCommandTests
             new("folder1", "directory", null, DateTimeOffset.Now, "\"etag2\"")
         };
 
-        _storageService.ListDataLakePaths(Arg.Is(_knownAccount), Arg.Is(_knownFileSystem), false,
+        _storageService.ListDataLakePaths(Arg.Any<McpUserContext>(), Arg.Is(_knownAccount), Arg.Is(_knownFileSystem), false,
             Arg.Is(_knownSubscription), Arg.Is(""), Arg.Any<string>(), Arg.Any<RetryPolicyOptions>())
             .Returns(expectedPaths);
 
@@ -330,7 +331,7 @@ public class FileSystemListPathsCommandTests
         // Arrange
         if (shouldSucceed)
         {
-            _storageService.ListDataLakePaths(Arg.Any<string>(), Arg.Any<string>(), false, Arg.Any<string>(),
+            _storageService.ListDataLakePaths(Arg.Any<McpUserContext>(),Arg.Any<string>(), Arg.Any<string>(), false, Arg.Any<string>(),
                 null, Arg.Any<string>(), Arg.Any<RetryPolicyOptions>()).Returns([]);
         }
 

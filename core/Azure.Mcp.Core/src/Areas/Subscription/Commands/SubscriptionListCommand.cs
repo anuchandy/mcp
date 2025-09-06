@@ -39,7 +39,7 @@ public sealed class SubscriptionListCommand(ILogger<SubscriptionListCommand> log
         try
         {
             var subscriptionService = context.GetService<ISubscriptionService>();
-            var subscriptions = await subscriptionService.GetSubscriptions(options.Tenant, options.RetryPolicy);
+            var subscriptions = await subscriptionService.GetSubscriptions(context.UserContext, options.Tenant, options.RetryPolicy);
 
             context.Response.Results = subscriptions?.Count > 0
                 ? ResponseResult.Create(

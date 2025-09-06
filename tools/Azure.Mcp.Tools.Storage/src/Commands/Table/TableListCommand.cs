@@ -39,6 +39,7 @@ public sealed class TableListCommand(ILogger<TableListCommand> logger) : BaseSto
         {
             var storageService = context.GetService<IStorageService>();
             var tables = await storageService.ListTables(
+                context.UserContext,
                 options.Account!,
                 options.Subscription!,
                 options.AuthMethod ?? AuthMethod.Credential,

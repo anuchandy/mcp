@@ -57,6 +57,7 @@ public sealed class CertificateGetCommand(ILogger<CertificateGetCommand> logger)
         {
             var keyVaultService = context.GetService<IKeyVaultService>();
             var certificate = await keyVaultService.GetCertificate(
+                context.UserContext,
                 options.VaultName!,
                 options.CertificateName!,
                 options.Subscription!,

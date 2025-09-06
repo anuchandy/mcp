@@ -3,6 +3,7 @@
 
 using System.CommandLine;
 using System.Text.Json;
+using Azure.Mcp.Core.Areas.Server.Commands.Runtime;
 using Azure.Mcp.Core.Models.Command;
 using Azure.Mcp.Core.Options;
 using Azure.Mcp.Tools.ServiceBus.Commands.Topic;
@@ -41,7 +42,7 @@ public class TopicDetailsCommandTests
 
         _serviceProvider = collection.BuildServiceProvider();
         _command = new(_logger);
-        _context = new(_serviceProvider);
+        _context = new CommandContext(_serviceProvider, McpUserContext.Empty);
         _commandDefinition = _command.GetCommand();
     }
 
@@ -63,6 +64,7 @@ public class TopicDetailsCommandTests
         };
 
         _serviceBusService.GetTopicDetails(
+            Arg.Any<McpUserContext>(),
             Arg.Is(NamespaceName),
             Arg.Is(TopicName),
             Arg.Any<string>(),
@@ -98,6 +100,7 @@ public class TopicDetailsCommandTests
         var serviceBusException = new ServiceBusException("Topic not found", ServiceBusFailureReason.MessagingEntityNotFound);
 
         _serviceBusService.GetTopicDetails(
+            Arg.Any<McpUserContext>(),
             Arg.Is(NamespaceName),
             Arg.Is(TopicName),
             Arg.Any<string>(),
@@ -121,6 +124,7 @@ public class TopicDetailsCommandTests
         var expectedError = "Test error";
 
         _serviceBusService.GetTopicDetails(
+            Arg.Any<McpUserContext>(),
             Arg.Is(NamespaceName),
             Arg.Is(TopicName),
             Arg.Any<string>(),
@@ -157,6 +161,7 @@ public class TopicDetailsCommandTests
             };
 
             _serviceBusService.GetTopicDetails(
+                Arg.Any<McpUserContext>(),
                 Arg.Any<string>(),
                 Arg.Any<string>(),
                 Arg.Any<string>(),

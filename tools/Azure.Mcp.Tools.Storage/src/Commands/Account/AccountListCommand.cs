@@ -40,6 +40,7 @@ public sealed class AccountListCommand(ILogger<AccountListCommand> logger) : Sub
         {
             var storageService = context.GetService<IStorageService>();
             var accounts = await storageService.GetStorageAccounts(
+                context.UserContext,
                 options.Subscription!,
                 options.Tenant,
                 options.RetryPolicy);

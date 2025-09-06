@@ -65,6 +65,7 @@ public sealed class WorkspaceLogQueryCommand(ILogger<WorkspaceLogQueryCommand> l
         {
             var monitorService = context.GetService<IMonitorService>();
             var results = await monitorService.QueryWorkspaceLogs(
+                context.UserContext,
                 options.Subscription!,
                 options.Workspace!,
                 options.Query!,

@@ -2,6 +2,7 @@
 // Licensed under the MIT License.
 
 using Azure.Data.Tables;
+using Azure.Mcp.Core.Areas.Server.Commands.Runtime;
 using Azure.Mcp.Core.Options;
 using Azure.Mcp.Core.Services.Azure;
 using Azure.Mcp.Core.Services.Azure.Subscription;
@@ -30,13 +31,14 @@ public class StorageService(ISubscriptionService subscriptionService, ITenantSer
     private static readonly TimeSpan s_cacheDuration = TimeSpan.FromHours(1);
 
     public async Task<List<StorageAccountInfo>> GetStorageAccounts(
+        McpUserContext userContext,
         string subscription,
         string? tenant = null,
         RetryPolicyOptions? retryPolicy = null)
     {
         ValidateRequiredParameters(subscription);
 
-        var subscriptionResource = await _subscriptionService.GetSubscription(subscription, tenant, retryPolicy);
+        var subscriptionResource = await _subscriptionService.GetSubscription(userContext, subscription, tenant, retryPolicy);
 
         // Create cache key using the resolved subscription ID for consistency
         var cacheKey = string.IsNullOrEmpty(tenant)
@@ -82,6 +84,7 @@ public class StorageService(ISubscriptionService subscriptionService, ITenantSer
     }
 
     public async Task<StorageAccountInfo> GetStorageAccountDetails(
+        McpUserContext userContext,
         string account,
         string subscription,
         string? tenant = null,
@@ -89,7 +92,7 @@ public class StorageService(ISubscriptionService subscriptionService, ITenantSer
     {
         ValidateRequiredParameters(account, subscription);
 
-        var subscriptionResource = await _subscriptionService.GetSubscription(subscription, tenant, retryPolicy);
+        var subscriptionResource = await _subscriptionService.GetSubscription(userContext, subscription, tenant, retryPolicy);
 
         try
         {
@@ -117,6 +120,7 @@ public class StorageService(ISubscriptionService subscriptionService, ITenantSer
     }
 
     public async Task<StorageAccountInfo> CreateStorageAccount(
+        McpUserContext userContext,
         string account,
         string resourceGroup,
         string location,
@@ -129,7 +133,7 @@ public class StorageService(ISubscriptionService subscriptionService, ITenantSer
     {
         ValidateRequiredParameters(account, resourceGroup, location, subscription);
 
-        var subscriptionResource = await _subscriptionService.GetSubscription(subscription, tenant, retryPolicy);
+        var subscriptionResource = await _subscriptionService.GetSubscription(userContext, subscription, tenant, retryPolicy);
 
         try
         {
@@ -179,6 +183,7 @@ public class StorageService(ISubscriptionService subscriptionService, ITenantSer
     }
 
     public async Task<List<string>> ListContainers(
+        McpUserContext userContext,
         string account,
         string subscription,
         string? tenant = null,
@@ -186,7 +191,7 @@ public class StorageService(ISubscriptionService subscriptionService, ITenantSer
     {
         ValidateRequiredParameters(account, subscription);
 
-        var blobServiceClient = await CreateBlobServiceClient(account, tenant, retryPolicy);
+        var blobServiceClient = await CreateBlobServiceClient(userContext, account, tenant, retryPolicy);
         var containers = new List<string>();
 
         try
@@ -205,6 +210,7 @@ public class StorageService(ISubscriptionService subscriptionService, ITenantSer
     }
 
     public async Task<List<string>> ListTables(
+        McpUserContext userContext,
         string account,
         string subscription,
         AuthMethod authMethod = AuthMethod.Credential,
@@ -220,6 +226,7 @@ public class StorageService(ISubscriptionService subscriptionService, ITenantSer
         {
             // First attempt with requested auth method
             var tableServiceClient = await CreateTableServiceClientWithAuth(
+                userContext,
                 account,
                 subscription,
                 authMethod,
@@ -242,7 +249,7 @@ public class StorageService(ISubscriptionService subscriptionService, ITenantSer
             {
                 // If credential auth fails with 403/401, try key auth
                 var keyClient = await CreateTableServiceClientWithAuth(
-                    account, subscription, AuthMethod.Key, connectionString, tenant, retryPolicy);
+                    userContext, account, subscription, AuthMethod.Key, connectionString, tenant, retryPolicy);
 
                 tables.Clear(); // Reset the list for reuse
                 await foreach (var table in keyClient.QueryAsync())
@@ -255,7 +262,7 @@ public class StorageService(ISubscriptionService subscriptionService, ITenantSer
             {
                 // If key auth fails with 403, try connection string
                 var connStringClient = await CreateTableServiceClientWithAuth(
-                    account, subscription, AuthMethod.ConnectionString, connectionString, tenant, retryPolicy);
+                    userContext, account, subscription, AuthMethod.ConnectionString, connectionString, tenant, retryPolicy);
 
                 tables.Clear(); // Reset the list for reuse
                 await foreach (var table in connStringClient.QueryAsync())
@@ -277,7 +284,7 @@ public class StorageService(ISubscriptionService subscriptionService, ITenantSer
             {
                 // If key auth fails with 403, try connection string
                 var connStringClient = await CreateTableServiceClientWithAuth(
-                    account, subscription, AuthMethod.ConnectionString, connectionString, tenant, retryPolicy);
+                    userContext, account, subscription, AuthMethod.ConnectionString, connectionString, tenant, retryPolicy);
 
                 tables.Clear(); // Reset the list for reuse
                 await foreach (var table in connStringClient.QueryAsync())
@@ -298,6 +305,7 @@ public class StorageService(ISubscriptionService subscriptionService, ITenantSer
     }
 
     public async Task<List<string>> ListBlobs(
+        McpUserContext userContext,
         string account,
         string container,
         string subscription,
@@ -306,7 +314,7 @@ public class StorageService(ISubscriptionService subscriptionService, ITenantSer
     {
         ValidateRequiredParameters(account, container, subscription);
 
-        var blobServiceClient = await CreateBlobServiceClient(account, tenant, retryPolicy);
+        var blobServiceClient = await CreateBlobServiceClient(userContext, account, tenant, retryPolicy);
         var containerClient = blobServiceClient.GetBlobContainerClient(container);
         var blobs = new List<string>();
 
@@ -326,6 +334,7 @@ public class StorageService(ISubscriptionService subscriptionService, ITenantSer
     }
 
     public async Task<BlobProperties> GetBlobDetails(
+        McpUserContext userContext,
         string account,
         string container,
         string blob,
@@ -335,7 +344,7 @@ public class StorageService(ISubscriptionService subscriptionService, ITenantSer
     {
         ValidateRequiredParameters(account, container, blob, subscription);
 
-        var blobServiceClient = await CreateBlobServiceClient(account, tenant, retryPolicy);
+        var blobServiceClient = await CreateBlobServiceClient(userContext, account, tenant, retryPolicy);
         var containerClient = blobServiceClient.GetBlobContainerClient(container);
         var blobClient = containerClient.GetBlobClient(blob);
 
@@ -351,6 +360,7 @@ public class StorageService(ISubscriptionService subscriptionService, ITenantSer
     }
 
     public async Task<BlobContainerProperties> GetContainerDetails(
+        McpUserContext userContext,
         string account,
         string container,
         string subscription,
@@ -359,7 +369,7 @@ public class StorageService(ISubscriptionService subscriptionService, ITenantSer
     {
         ValidateRequiredParameters(account, container, subscription);
 
-        var blobServiceClient = await CreateBlobServiceClient(account, tenant, retryPolicy);
+        var blobServiceClient = await CreateBlobServiceClient(userContext, account, tenant, retryPolicy);
         var containerClient = blobServiceClient.GetBlobContainerClient(container);
 
         try
@@ -374,6 +384,7 @@ public class StorageService(ISubscriptionService subscriptionService, ITenantSer
     }
 
     public async Task<BlobContainerProperties> CreateContainer(
+        McpUserContext userContext,
         string account,
         string container,
         string subscription,
@@ -382,7 +393,7 @@ public class StorageService(ISubscriptionService subscriptionService, ITenantSer
     {
         ValidateRequiredParameters(account, container, subscription);
 
-        var blobServiceClient = await CreateBlobServiceClient(account, tenant, retryPolicy);
+        var blobServiceClient = await CreateBlobServiceClient(userContext, account, tenant, retryPolicy);
         var containerClient = blobServiceClient.GetBlobContainerClient(container);
 
         try
@@ -398,11 +409,12 @@ public class StorageService(ISubscriptionService subscriptionService, ITenantSer
     }
 
     private async Task<string> GetStorageAccountKey(
+        McpUserContext userContext,
         string account,
         string subscription,
         string? tenant = null)
     {
-        var subscriptionResource = await _subscriptionService.GetSubscription(subscription, tenant);
+        var subscriptionResource = await _subscriptionService.GetSubscription(userContext, subscription, tenant);
         var storageAccount = await GetStorageAccount(subscriptionResource, account) ??
             throw new Exception($"Storage account '{account}' not found in subscription '{subscription}'");
 
@@ -417,11 +429,12 @@ public class StorageService(ISubscriptionService subscriptionService, ITenantSer
     }
 
     private async Task<string> GetStorageAccountConnectionString(
+        McpUserContext userContext,
         string account,
         string subscription,
         string? tenant = null)
     {
-        var subscriptionResource = await _subscriptionService.GetSubscription(subscription, tenant);
+        var subscriptionResource = await _subscriptionService.GetSubscription(userContext, subscription, tenant);
         var storageAccount = await GetStorageAccount(subscriptionResource, account) ??
             throw new Exception($"Storage account '{account}' not found in subscription '{subscription}'");
 
@@ -449,6 +462,7 @@ public class StorageService(ISubscriptionService subscriptionService, ITenantSer
     }
 
     protected async Task<TableServiceClient> CreateTableServiceClientWithAuth(
+        McpUserContext userContext,
         string account,
         string subscription,
         AuthMethod authMethod,
@@ -461,42 +475,45 @@ public class StorageService(ISubscriptionService subscriptionService, ITenantSer
         switch (authMethod)
         {
             case AuthMethod.Key:
-                var key = await GetStorageAccountKey(account, subscription, tenant);
+                var key = await GetStorageAccountKey(userContext, account, subscription, tenant);
                 var uri = $"https://{account}.table.core.windows.net";
                 return new TableServiceClient(new Uri(uri), new TableSharedKeyCredential(account, key), options);
 
             case AuthMethod.ConnectionString:
-                var connString = await GetStorageAccountConnectionString(account, subscription, tenant);
+                var connString = await GetStorageAccountConnectionString(userContext, account, subscription, tenant);
                 return new TableServiceClient(connString, options);
 
             case AuthMethod.Credential:
             default:
                 var defaultUri = $"https://{account}.table.core.windows.net";
-                return new TableServiceClient(new Uri(defaultUri), await GetCredential(tenant), options);
+                return new TableServiceClient(new Uri(defaultUri), await GetCredential(userContext,tenant), options);
         }
     }
 
     private async Task<BlobServiceClient> CreateBlobServiceClient(
+        McpUserContext userContext,
         string account,
         string? tenant = null,
         RetryPolicyOptions? retryPolicy = null)
     {
         var uri = $"https://{account}.blob.core.windows.net";
         var options = ConfigureRetryPolicy(AddDefaultPolicies(new BlobClientOptions()), retryPolicy);
-        return new BlobServiceClient(new Uri(uri), await GetCredential(tenant), options);
+        return new BlobServiceClient(new Uri(uri), await GetCredential(userContext, tenant), options);
     }
 
     private async Task<DataLakeServiceClient> CreateDataLakeServiceClient(
+        McpUserContext userContext,
         string account,
         string? tenant = null,
         RetryPolicyOptions? retryPolicy = null)
     {
         var uri = $"https://{account}.dfs.core.windows.net";
         var options = ConfigureRetryPolicy(AddDefaultPolicies(new DataLakeClientOptions()), retryPolicy);
-        return new DataLakeServiceClient(new Uri(uri), await GetCredential(tenant), options);
+        return new DataLakeServiceClient(new Uri(uri), await GetCredential(userContext, tenant), options);
     }
 
     private async Task<ShareServiceClient> CreateShareServiceClient(
+        McpUserContext userContext,
         string account,
         string? tenant = null,
         RetryPolicyOptions? retryPolicy = null)
@@ -504,20 +521,22 @@ public class StorageService(ISubscriptionService subscriptionService, ITenantSer
         var uri = $"https://{account}.file.core.windows.net";
         var options = ConfigureRetryPolicy(AddDefaultPolicies(new ShareClientOptions()), retryPolicy);
         options.ShareTokenIntent = ShareTokenIntent.Backup; // Set the intent for file backup, needed for Manged Identity
-        return new ShareServiceClient(new Uri(uri), await GetCredential(tenant), options);
+        return new ShareServiceClient(new Uri(uri), await GetCredential(userContext, tenant), options);
     }
 
     private async Task<QueueServiceClient> CreateQueueServiceClient(
+        McpUserContext userContext,
         string account,
         string? tenant = null,
         RetryPolicyOptions? retryPolicy = null)
     {
         var uri = $"https://{account}.queue.core.windows.net";
         var options = ConfigureRetryPolicy(AddDefaultPolicies(new QueueClientOptions()), retryPolicy);
-        return new QueueServiceClient(new Uri(uri), await GetCredential(tenant), options);
+        return new QueueServiceClient(new Uri(uri), await GetCredential(userContext, tenant), options);
     }
 
     public async Task<List<DataLakePathInfo>> ListDataLakePaths(
+        McpUserContext userContext,
         string account,
         string fileSystem,
         bool recursive,
@@ -528,7 +547,7 @@ public class StorageService(ISubscriptionService subscriptionService, ITenantSer
     {
         ValidateRequiredParameters(account, fileSystem, subscription);
 
-        var dataLakeServiceClient = await CreateDataLakeServiceClient(account, tenant, retryPolicy);
+        var dataLakeServiceClient = await CreateDataLakeServiceClient(userContext, account, tenant, retryPolicy);
         var fileSystemClient = dataLakeServiceClient.GetFileSystemClient(fileSystem);
         var paths = new List<DataLakePathInfo>();
 
@@ -555,6 +574,7 @@ public class StorageService(ISubscriptionService subscriptionService, ITenantSer
     }
 
     public async Task<DataLakePathInfo> CreateDirectory(
+        McpUserContext userContext,
         string account,
         string directoryPath,
         string subscription,
@@ -563,7 +583,7 @@ public class StorageService(ISubscriptionService subscriptionService, ITenantSer
     {
         ValidateRequiredParameters(account, directoryPath, subscription);
 
-        var dataLakeServiceClient = await CreateDataLakeServiceClient(account, tenant, retryPolicy);
+        var dataLakeServiceClient = await CreateDataLakeServiceClient(userContext, account, tenant, retryPolicy);
 
         try
         {
@@ -610,6 +630,7 @@ public class StorageService(ISubscriptionService subscriptionService, ITenantSer
     }
 
     public async Task<(List<string> SuccessfulBlobs, List<string> FailedBlobs)> SetBlobTierBatch(
+        McpUserContext userContext,
         string account,
         string container,
         string tier,
@@ -625,7 +646,7 @@ public class StorageService(ISubscriptionService subscriptionService, ITenantSer
             throw new ArgumentException("At least one blob name must be provided.", nameof(blobs));
         }
 
-        var blobServiceClient = await CreateBlobServiceClient(account, tenant, retryPolicy);
+        var blobServiceClient = await CreateBlobServiceClient(userContext, account, tenant, retryPolicy);
         var containerClient = blobServiceClient.GetBlobContainerClient(container);
         var batchClient = blobServiceClient.GetBlobBatchClient();
         var accessTier = new AccessTier(tier);
@@ -681,6 +702,7 @@ public class StorageService(ISubscriptionService subscriptionService, ITenantSer
     }
 
     public async Task<List<FileShareItemInfo>> ListFilesAndDirectories(
+        McpUserContext userContext,
         string account,
         string share,
         string directoryPath,
@@ -691,7 +713,7 @@ public class StorageService(ISubscriptionService subscriptionService, ITenantSer
     {
         ValidateRequiredParameters(account, share, directoryPath, subscription);
 
-        var shareServiceClient = await CreateShareServiceClient(account, tenant, retryPolicy);
+        var shareServiceClient = await CreateShareServiceClient(userContext, account, tenant, retryPolicy);
 
         try
         {
@@ -719,6 +741,7 @@ public class StorageService(ISubscriptionService subscriptionService, ITenantSer
     }
 
     public async Task<QueueMessageSendResult> SendQueueMessage(
+        McpUserContext userContext,
         string account,
         string queue,
         string message,
@@ -731,7 +754,7 @@ public class StorageService(ISubscriptionService subscriptionService, ITenantSer
         ValidateRequiredParameters(account, queue, message, subscription);
 
         // Create queue service client
-        var queueServiceClient = await CreateQueueServiceClient(account, tenant, retryPolicy);
+        var queueServiceClient = await CreateQueueServiceClient(userContext, account, tenant, retryPolicy);
         var queueClient = queueServiceClient.GetQueueClient(queue);
 
         try
@@ -799,6 +822,7 @@ public class StorageService(ISubscriptionService subscriptionService, ITenantSer
     }
 
     public async Task<BlobUploadResult> UploadBlob(
+        McpUserContext userContext,
         string account,
         string container,
         string blob,
@@ -814,7 +838,7 @@ public class StorageService(ISubscriptionService subscriptionService, ITenantSer
             throw new FileNotFoundException($"Local file not found: {localFilePath}");
         }
 
-        var blobServiceClient = await CreateBlobServiceClient(account, tenant, retryPolicy);
+        var blobServiceClient = await CreateBlobServiceClient(userContext, account, tenant, retryPolicy);
         var blobContainerClient = blobServiceClient.GetBlobContainerClient(container);
         var blobClient = blobContainerClient.GetBlobClient(blob);
 

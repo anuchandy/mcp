@@ -1,6 +1,7 @@
 // Copyright (c) Microsoft Corporation.
 // Licensed under the MIT License.
 
+using Azure.Mcp.Core.Areas.Server.Commands.Runtime;
 using Azure.Mcp.Core.Models.Command;
 using Azure.Mcp.Core.Options;
 using Azure.Mcp.Tools.LoadTesting.Commands.LoadTestRun;
@@ -46,6 +47,7 @@ public class TestRunUpdateCommandTests
     {
         var expected = new TestRun { TestId = "testId1", TestRunId = "testRunId1", DisplayName = "displayName" };
         _service.CreateOrUpdateLoadTestRunAsync(
+            Arg.Any<McpUserContext>(),
             Arg.Is("sub123"), Arg.Is("testResourceName"), Arg.Is("testId1"), Arg.Is("run1"), Arg.Is((string?)null), Arg.Is("resourceGroup123"), Arg.Is("tenant123"), Arg.Is("displayName"), Arg.Is((string?)null), Arg.Is(false), Arg.Any<RetryPolicyOptions>())
             .Returns(expected);
 
@@ -59,7 +61,7 @@ public class TestRunUpdateCommandTests
             "--test-id", "testId1",
             "--display-name", "displayName"
         ]);
-        var context = new CommandContext(_serviceProvider);
+        var context = new CommandContext(_serviceProvider, McpUserContext.Empty);
         var response = await command.ExecuteAsync(context, args);
         Assert.NotNull(response);
         Assert.Equal(200, response.Status);
@@ -70,6 +72,7 @@ public class TestRunUpdateCommandTests
     {
         var expected = new TestRun();
         _service.CreateOrUpdateLoadTestRunAsync(
+            Arg.Any<McpUserContext>(),
             Arg.Is("sub123"), Arg.Is("testResourceName"), Arg.Is("testId1"), Arg.Is("run1"), Arg.Is((string?)null), Arg.Is("resourceGroup123"), Arg.Is("tenant123"), Arg.Is((string?)null), Arg.Is((string?)null), Arg.Is(false), Arg.Any<RetryPolicyOptions>())
             .Returns(expected);
 
@@ -81,7 +84,7 @@ public class TestRunUpdateCommandTests
             "--tenant", "tenant123",
             "--testrun-id", "run1"
         ]);
-        var context = new CommandContext(_serviceProvider);
+        var context = new CommandContext(_serviceProvider, McpUserContext.Empty);
         var response = await command.ExecuteAsync(context, args);
         Assert.Equal(400, response.Status);
     }

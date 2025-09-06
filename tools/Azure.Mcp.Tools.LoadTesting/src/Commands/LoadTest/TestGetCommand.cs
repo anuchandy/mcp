@@ -56,6 +56,7 @@ public sealed class TestGetCommand(ILogger<TestGetCommand> logger)
 
             // Call service operation(s)
             var results = await service.GetTestAsync(
+                context.UserContext,
                 options.Subscription!,
                 options.TestResourceName!,
                 options.TestId!,

@@ -1,6 +1,7 @@
 // Copyright (c) Microsoft Corporation.
 // Licensed under the MIT License.
 
+using Azure.Mcp.Core.Areas.Server.Commands.Runtime;
 using Azure.Mcp.Core.Options;
 using Azure.Mcp.Tools.Marketplace.Models;
 
@@ -9,6 +10,7 @@ namespace Azure.Mcp.Tools.Marketplace.Services;
 public interface IMarketplaceService
 {
     Task<ProductDetails> GetProduct(
+        McpUserContext userContext,
         string productId,
         string subscription,
         bool? includeStopSoldPlans = null,

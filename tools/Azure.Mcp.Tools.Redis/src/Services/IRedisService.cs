@@ -1,6 +1,7 @@
 // Copyright (c) Microsoft Corporation.
 // Licensed under the MIT License.
 
+using Azure.Mcp.Core.Areas.Server.Commands.Runtime;
 using Azure.Mcp.Core.Options;
 using Azure.Mcp.Tools.Redis.Models.CacheForRedis;
 using Azure.Mcp.Tools.Redis.Models.ManagedRedis;
@@ -12,6 +13,7 @@ public interface IRedisService
     /// <summary>
     /// Lists Azure Cache for Redis caches (Basic, Standard, and Premium tier caches) in the specified subscription.
     /// </summary>
+    /// <param name="userContext">The user context for the request</param>
     /// <param name="subscription">The subscription ID or name</param>
     /// <param name="tenant">Optional tenant ID for cross-tenant operations</param>
     /// <param name="authMethod">Authentication method to use</param>
@@ -19,6 +21,7 @@ public interface IRedisService
     /// <returns>List of Redis Cache details</returns>
     /// <exception cref="Exception">When the service request fails</exception>
     Task<IEnumerable<Cache>> ListCachesAsync(
+        McpUserContext userContext,
         string subscription,
         string? tenant = null,
         AuthMethod? authMethod = null,
@@ -28,6 +31,7 @@ public interface IRedisService
     /// <summary>
     /// Lists Azure Managed Redis and Azure Redis Enterprise clusters (`Balanced`, `MemoryOptimized`, `FlashOptimized`, `ComputeOptimized`, `Enterprise`, `EnterpriseFlash` tier clusters) in the specified subscription.
     /// </summary>
+    /// <param name="userContext">The user context for the request</param>
     /// <param name="subscription">The subscription ID or name</param>
     /// <param name="tenant">Optional tenant ID for cross-tenant operations</param>
     /// <param name="authMethod">Authentication method to use</param>
@@ -35,6 +39,7 @@ public interface IRedisService
     /// <returns>List of Redis Cluster details</returns>
     /// <exception cref="Exception">When the service request fails</exception>
     Task<IEnumerable<Cluster>> ListClustersAsync(
+        McpUserContext userContext,
         string subscription,
         string? tenant = null,
         AuthMethod? authMethod = null,
@@ -43,6 +48,7 @@ public interface IRedisService
     /// <summary>
     /// Lists the databases in the specified Redis cluster.
     /// </summary>
+    /// <param name="userContext">The user context for the request</param>
     /// <param name="clusterName">Name of the Redis cluster</param>
     /// <param name="resourceGroupName">Name of the resource group containing the Redis cluster</param>
     /// <param name="subscription">The subscription ID or name</param>
@@ -52,6 +58,7 @@ public interface IRedisService
     /// <returns>List of database details</returns>
     /// <exception cref="Exception">When the service request fails</exception>
     Task<IEnumerable<Database>> ListDatabasesAsync(
+        McpUserContext userContext,
         string clusterName,
         string resourceGroupName,
         string subscription,
@@ -62,6 +69,7 @@ public interface IRedisService
     /// <summary>
     /// Lists the access policy assignments in the specified Redis cache.
     /// </summary>
+    /// <param name="userContext">The user context for the request</param>
     /// <param name="cacheName">Name of the Redis cache</param>
     /// <param name="resourceGroupName">Name of the resource group containing the Redis cache</param>
     /// <param name="subscription">The subscription ID or name</param>
@@ -71,6 +79,7 @@ public interface IRedisService
     /// <returns>List of access policy assignments</returns>
     /// <exception cref="Exception">When the service request fails</exception>
     Task<IEnumerable<AccessPolicyAssignment>> ListAccessPolicyAssignmentsAsync(
+        McpUserContext userContext,
         string cacheName,
         string resourceGroupName,
         string subscription,

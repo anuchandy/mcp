@@ -1,6 +1,7 @@
 ﻿using System.CommandLine;
 using System.Text.Json;
 using Azure.Mcp.Core.Models;
+using Azure.Mcp.Core.Areas.Server.Commands.Runtime;
 using Azure.Mcp.Core.Models.Command;
 using Azure.Mcp.Core.Options;
 using Azure.Mcp.Tools.Cosmos.Commands;
@@ -32,7 +33,7 @@ public class ItemQueryCommandTests
         _serviceProvider = new ServiceCollection()
             .AddSingleton(_cosmosService)
             .BuildServiceProvider();
-        _context = new(_serviceProvider);
+        _context = new CommandContext(_serviceProvider, McpUserContext.Empty);
     }
 
     [Fact]
@@ -47,6 +48,7 @@ public class ItemQueryCommandTests
         };
 
         _cosmosService.QueryItems(
+            Arg.Any<McpUserContext>(),
             Arg.Is("account123"),
             Arg.Is("database123"),
             Arg.Is("container123"),
@@ -90,6 +92,7 @@ public class ItemQueryCommandTests
         };
 
         _cosmosService.QueryItems(
+            Arg.Any<McpUserContext>(),
             Arg.Is("account123"),
             Arg.Is("database123"),
             Arg.Is("container123"),
@@ -127,6 +130,7 @@ public class ItemQueryCommandTests
     {
         // Arrange
         _cosmosService.QueryItems(
+            Arg.Any<McpUserContext>(),
             Arg.Is<string>(s => s == "account123"),
             Arg.Is<string>(d => d == "database123"),
             Arg.Is<string>(c => c == "container123"),
@@ -160,6 +164,7 @@ public class ItemQueryCommandTests
         var query = "SELECT * FROM c";
 
         _cosmosService.QueryItems(
+            Arg.Any<McpUserContext>(),
             Arg.Is("account123"),
             Arg.Is("database123"),
             Arg.Is("container123"),

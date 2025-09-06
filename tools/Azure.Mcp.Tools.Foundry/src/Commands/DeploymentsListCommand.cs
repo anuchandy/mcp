@@ -62,6 +62,7 @@ public sealed class DeploymentsListCommand : GlobalCommand<DeploymentsListOption
 
             var service = context.GetService<IFoundryService>();
             var deployments = await service.ListDeployments(
+                context.UserContext,
                 options.Endpoint!,
                 options.Tenant,
                 options.RetryPolicy);

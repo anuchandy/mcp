@@ -4,6 +4,7 @@
 using System.CommandLine;
 using System.Text.Json.Nodes;
 using Azure.Mcp.Core.Models;
+using Azure.Mcp.Core.Areas.Server.Commands.Runtime;
 using Azure.Mcp.Core.Models.Command;
 using Azure.Mcp.Core.Options;
 using Azure.Mcp.Tools.Monitor.Commands.HealthModels.Entity;
@@ -46,7 +47,7 @@ public class EntityGetHealthCommandTests
         _serviceProvider = collection.BuildServiceProvider();
         _logger = Substitute.For<ILogger<EntityGetHealthCommand>>();
         _command = new EntityGetHealthCommand(_logger);
-        _context = new CommandContext(_serviceProvider);
+        _context = new CommandContext(_serviceProvider, McpUserContext.Empty);
         _commandDefinition = _command.GetCommand();
     }
 
@@ -58,6 +59,7 @@ public class EntityGetHealthCommandTests
 
         _monitorHealthService
             .GetEntityHealth(
+                Arg.Any<McpUserContext>(),
                 TestEntity,
                 TestHealthModel,
                 TestResourceGroup,
@@ -78,6 +80,7 @@ public class EntityGetHealthCommandTests
         Assert.NotNull(result.Results);
 
         await _monitorHealthService.Received(1).GetEntityHealth(
+            Arg.Any<McpUserContext>(),
             TestEntity,
             TestHealthModel,
             TestResourceGroup,
@@ -102,6 +105,7 @@ public class EntityGetHealthCommandTests
 
         // Verify service was not called
         await _monitorHealthService.DidNotReceive().GetEntityHealth(
+            Arg.Any<McpUserContext>(),
             Arg.Any<string>(),
             Arg.Any<string>(),
             Arg.Any<string>(),
@@ -117,6 +121,7 @@ public class EntityGetHealthCommandTests
         // Arrange
         _monitorHealthService
             .GetEntityHealth(
+                Arg.Any<McpUserContext>(),
                 TestEntity,
                 TestHealthModel,
                 TestResourceGroup,
@@ -137,6 +142,7 @@ public class EntityGetHealthCommandTests
         Assert.Contains("not found", result.Message, StringComparison.OrdinalIgnoreCase);
 
         await _monitorHealthService.Received(1).GetEntityHealth(
+            Arg.Any<McpUserContext>(),
             TestEntity,
             TestHealthModel,
             TestResourceGroup,
@@ -152,6 +158,7 @@ public class EntityGetHealthCommandTests
         // Arrange
         _monitorHealthService
             .GetEntityHealth(
+                Arg.Any<McpUserContext>(),
                 TestEntity,
                 TestHealthModel,
                 TestResourceGroup,
@@ -172,6 +179,7 @@ public class EntityGetHealthCommandTests
         Assert.Contains("Invalid argument", result.Message);
 
         await _monitorHealthService.Received(1).GetEntityHealth(
+            Arg.Any<McpUserContext>(),
             TestEntity,
             TestHealthModel,
             TestResourceGroup,
@@ -188,6 +196,7 @@ public class EntityGetHealthCommandTests
         var expectedError = "Unexpected error occurred";
         _monitorHealthService
             .GetEntityHealth(
+                Arg.Any<McpUserContext>(),
                 TestEntity,
                 TestHealthModel,
                 TestResourceGroup,
@@ -208,6 +217,7 @@ public class EntityGetHealthCommandTests
         Assert.Contains(expectedError, result.Message);
 
         await _monitorHealthService.Received(1).GetEntityHealth(
+            Arg.Any<McpUserContext>(),
             TestEntity,
             TestHealthModel,
             TestResourceGroup,
@@ -226,6 +236,7 @@ public class EntityGetHealthCommandTests
 
         _monitorHealthService
             .GetEntityHealth(
+                Arg.Any<McpUserContext>(),
                 TestEntity,
                 TestHealthModel,
                 TestResourceGroup,
@@ -245,6 +256,7 @@ public class EntityGetHealthCommandTests
         Assert.Equal(200, result.Status);
 
         await _monitorHealthService.Received(1).GetEntityHealth(
+            Arg.Any<McpUserContext>(),
             TestEntity,
             TestHealthModel,
             TestResourceGroup,
@@ -264,6 +276,7 @@ public class EntityGetHealthCommandTests
 
         _monitorHealthService
             .GetEntityHealth(
+                Arg.Any<McpUserContext>(),
                 TestEntity,
                 TestHealthModel,
                 TestResourceGroup,
@@ -283,6 +296,7 @@ public class EntityGetHealthCommandTests
         Assert.Equal(200, result.Status);
 
         await _monitorHealthService.Received(1).GetEntityHealth(
+            Arg.Any<McpUserContext>(),
             TestEntity,
             TestHealthModel,
             TestResourceGroup,

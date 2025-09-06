@@ -40,6 +40,7 @@ public sealed class AccountListCommand(ILogger<AccountListCommand> logger) : Sub
         {
             var appConfigService = context.GetService<IAppConfigService>();
             var accounts = await appConfigService.GetAppConfigAccounts(
+                context.UserContext,
                 options.Subscription!,
                 options.Tenant,
                 options.RetryPolicy);

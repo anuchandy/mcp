@@ -57,6 +57,7 @@ public sealed class IndexListCommand(ILogger<IndexListCommand> logger) : GlobalC
             var searchService = context.GetService<ISearchService>();
 
             var indexes = await searchService.ListIndexes(
+                context.UserContext,
                 options.Service!,
                 options.RetryPolicy);
 

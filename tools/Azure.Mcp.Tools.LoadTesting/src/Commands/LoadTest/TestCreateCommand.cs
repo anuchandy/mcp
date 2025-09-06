@@ -73,6 +73,7 @@ public sealed class TestCreateCommand(ILogger<TestCreateCommand> logger)
 
             // Call service operation(s)
             var results = await service.CreateTestAsync(
+                context.UserContext,
                 options.Subscription!,
                 options.TestResourceName!,
                 options.TestId!,

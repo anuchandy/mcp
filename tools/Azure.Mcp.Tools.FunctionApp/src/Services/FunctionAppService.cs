@@ -1,6 +1,7 @@
 // Copyright (c) Microsoft Corporation.
 // Licensed under the MIT License.
 
+using Azure.Mcp.Core.Areas.Server.Commands.Runtime;
 using Azure.Mcp.Core.Services.Azure;
 using Azure.Mcp.Core.Services.Azure.ResourceGroup;
 using Azure.Mcp.Core.Services.Azure.Subscription;
@@ -14,17 +15,18 @@ namespace Azure.Mcp.Tools.FunctionApp.Services;
 public sealed class FunctionAppService(
     ISubscriptionService subscriptionService,
     ITenantService tenantService,
-    ICacheService cacheService,
+    ICacheService2 cacheService,
     IResourceGroupService resourceGroupService) : BaseAzureService(tenantService), IFunctionAppService
 {
     private readonly ISubscriptionService _subscriptionService = subscriptionService ?? throw new ArgumentNullException(nameof(subscriptionService));
-    private readonly ICacheService _cacheService = cacheService ?? throw new ArgumentNullException(nameof(cacheService));
+    private readonly ICacheService2 _cacheService = cacheService ?? throw new ArgumentNullException(nameof(cacheService));
     private readonly IResourceGroupService _resourceGroupService = resourceGroupService ?? throw new ArgumentNullException(nameof(resourceGroupService));
 
     private const string CacheGroup = "functionapp";
     private static readonly TimeSpan s_cacheDuration = TimeSpan.FromHours(1);
 
     public async Task<List<FunctionAppInfo>?> ListFunctionApps(
+        McpUserContext userContext,
         string subscription,
         string? tenant = null,
         RetryPolicyOptions? retryPolicy = null)
@@ -35,13 +37,26 @@ public sealed class FunctionAppService(
             ? subscription
             : $"{subscription}_{tenant}";
 
-        var cachedResults = await _cacheService.GetAsync<List<FunctionAppInfo>>(CacheGroup, cacheKey, s_cacheDuration);
-        if (cachedResults != null)
-        {
-            return cachedResults;
-        }
+        var userGroup = userContext.GroupKey();
+        var serviceGroup = "functionapp";
 
-        var subscriptionResource = await _subscriptionService.GetSubscription(subscription, tenant, retryPolicy);
+        var cachedResults = _cacheService.GetOrCreate<List<FunctionAppInfo>>(userGroup, serviceGroup, cacheKey, entry =>
+        {
+            entry.AbsoluteExpirationRelativeToNow = s_cacheDuration;
+            
+            return GetFunctionAppsFromAzureAsync(userContext, subscription, tenant, retryPolicy).GetAwaiter().GetResult();
+        });
+
+        return await Task.FromResult(cachedResults);
+    }
+
+    private async Task<List<FunctionAppInfo>> GetFunctionAppsFromAzureAsync(
+        McpUserContext userContext,
+        string subscription,
+        string? tenant,
+        RetryPolicyOptions? retryPolicy)
+    {
+        var subscriptionResource = await _subscriptionService.GetSubscription(userContext, subscription, tenant, retryPolicy);
         var functionApps = new List<FunctionAppInfo>();
 
         try
@@ -53,8 +68,6 @@ public sealed class FunctionAppService(
                     functionApps.Add(ConvertToFunctionAppModel(site));
                 }
             }
-
-            await _cacheService.SetAsync(CacheGroup, cacheKey, functionApps, s_cacheDuration);
         }
         catch (Exception ex)
         {
@@ -65,6 +78,7 @@ public sealed class FunctionAppService(
     }
 
     public async Task<FunctionAppInfo?> GetFunctionApp(
+        McpUserContext userContext,
         string subscription,
         string functionAppName,
         string resourceGroup,
@@ -77,15 +91,30 @@ public sealed class FunctionAppService(
             ? $"{subscription}_{resourceGroup}_{functionAppName}"
             : $"{subscription}_{tenant}_{resourceGroup}_{functionAppName}";
 
-        var cachedResults = await _cacheService.GetAsync<FunctionAppInfo>(CacheGroup, cacheKey, s_cacheDuration);
-        if (cachedResults != null)
-        {
-            return cachedResults;
-        }
+        var userGroup = userContext.GroupKey();
+        var serviceGroup = "functionapp";
 
+        var cachedResults = _cacheService.GetOrCreate<FunctionAppInfo?>(userGroup, serviceGroup, cacheKey, entry =>
+        {
+            entry.AbsoluteExpirationRelativeToNow = s_cacheDuration;
+            
+            return GetFunctionAppFromAzureAsync(userContext, subscription, functionAppName, resourceGroup, tenant, retryPolicy).GetAwaiter().GetResult();
+        });
+
+        return await Task.FromResult(cachedResults);
+    }
+
+    private async Task<FunctionAppInfo?> GetFunctionAppFromAzureAsync(
+        McpUserContext userContext,
+        string subscription,
+        string functionAppName,
+        string resourceGroup,
+        string? tenant,
+        RetryPolicyOptions? retryPolicy)
+    {
         try
         {
-            var rg = await _resourceGroupService.GetResourceGroupResource(subscription, resourceGroup, tenant, retryPolicy);
+            var rg = await _resourceGroupService.GetResourceGroupResource(userContext, subscription, resourceGroup, tenant, retryPolicy);
             if (rg is null)
             {
                 return null;
@@ -97,9 +126,7 @@ public sealed class FunctionAppService(
                 return null;
             }
 
-            var info = ConvertToFunctionAppModel(site.Value);
-            await _cacheService.SetAsync(CacheGroup, cacheKey, info, s_cacheDuration);
-            return info;
+            return ConvertToFunctionAppModel(site.Value);
         }
         catch (Exception ex)
         {

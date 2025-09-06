@@ -3,6 +3,7 @@
 
 using System.CommandLine;
 using System.Text.Json;
+using Azure.Mcp.Core.Areas.Server.Commands.Runtime;
 using Azure.Mcp.Core.Models.Command;
 using Azure.Mcp.Core.Options;
 using Azure.Mcp.Tools.Cosmos.Commands;
@@ -36,7 +37,7 @@ public class AccountListCommandTests
         _serviceProvider = new ServiceCollection()
             .AddSingleton(_cosmosService)
             .BuildServiceProvider();
-        _context = new(_serviceProvider);
+        _context = new CommandContext(_serviceProvider, McpUserContext.Empty);
     }
 
     [Fact]
@@ -44,7 +45,7 @@ public class AccountListCommandTests
     {
         // Arrange
         var expectedAccounts = new List<string> { "account1", "account2" };
-        _cosmosService.GetCosmosAccounts(Arg.Is("sub123"), Arg.Any<string>(), Arg.Any<RetryPolicyOptions>())
+        _cosmosService.GetCosmosAccounts(Arg.Any<McpUserContext>(), Arg.Is("sub123"), Arg.Any<string>(), Arg.Any<RetryPolicyOptions>())
             .Returns(expectedAccounts);
 
         var args = _commandDefinition.Parse(["--subscription", "sub123"]);
@@ -70,11 +71,11 @@ public class AccountListCommandTests
     public async Task ExecuteAsync_ReturnsNull_WhenNoAccountsExist()
     {
         // Arrange
-        _cosmosService.GetCosmosAccounts("sub123", null, null)
+        _cosmosService.GetCosmosAccounts(Arg.Any<McpUserContext>(), "sub123", null, null)
             .Returns([]);
 
         var args = _commandDefinition.Parse(["--subscription", "sub123"]);
-        var context = new CommandContext(_serviceProvider);
+        var context = new CommandContext(_serviceProvider, McpUserContext.Empty);
 
         // Act
         var response = await _command.ExecuteAsync(_context, args);
@@ -102,7 +103,7 @@ public class AccountListCommandTests
         var expectedError = "Test error";
         var subscriptionId = "sub123";
 
-        _cosmosService.GetCosmosAccounts(subscriptionId, null, Arg.Any<RetryPolicyOptions>())
+        _cosmosService.GetCosmosAccounts(Arg.Any<McpUserContext>(), subscriptionId, null, Arg.Any<RetryPolicyOptions>())
             .ThrowsAsync(new Exception(expectedError));
 
         var args = _commandDefinition.Parse(["--subscription", subscriptionId]);
@@ -121,7 +122,7 @@ public class AccountListCommandTests
     {
         // Arrange
         var subscriptionId = "sub123";
-        _cosmosService.GetCosmosAccounts(subscriptionId, null, Arg.Any<RetryPolicyOptions>())
+        _cosmosService.GetCosmosAccounts(Arg.Any<McpUserContext>(), subscriptionId, null, Arg.Any<RetryPolicyOptions>())
             .ThrowsAsync(new HttpRequestException("Service Unavailable", null, System.Net.HttpStatusCode.ServiceUnavailable));
 
         var args = _commandDefinition.Parse(["--subscription", subscriptionId]);

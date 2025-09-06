@@ -40,6 +40,7 @@ public sealed class ContainerCreateCommand(ILogger<ContainerCreateCommand> logge
         {
             var storageService = context.GetService<IStorageService>();
             var containerProperties = await storageService.CreateContainer(
+                context.UserContext,
                 options.Account!,
                 options.Container!,
                 options.Subscription!,

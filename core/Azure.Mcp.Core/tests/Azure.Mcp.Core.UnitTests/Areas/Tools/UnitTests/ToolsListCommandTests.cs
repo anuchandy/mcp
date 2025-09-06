@@ -4,6 +4,7 @@
 using System.CommandLine;
 using System.Text.Json;
 using Azure.Mcp.Core.Areas;
+using Azure.Mcp.Core.Areas.Server.Commands.Runtime;
 using Azure.Mcp.Core.Areas.Tools.Commands;
 using Azure.Mcp.Core.Commands;
 using Azure.Mcp.Core.Models.Command;
@@ -37,7 +38,7 @@ public class ToolsListCommandTests
         collection.AddSingleton(commandFactory);
 
         _serviceProvider = collection.BuildServiceProvider();
-        _context = new(_serviceProvider);
+        _context = new(_serviceProvider, McpUserContext.Empty);
         _logger = Substitute.For<ILogger<ToolsListCommand>>();
         _command = new(_logger);
         _commandDefinition = _command.GetCommand();
@@ -187,7 +188,7 @@ public class ToolsListCommandTests
     public async Task ExecuteAsync_WithNullServiceProvider_HandlesGracefully()
     {
         // Arrange
-        var faultyContext = new CommandContext(null!);
+        var faultyContext = new CommandContext(null!, McpUserContext.Empty);
         var args = _commandDefinition.Parse([]);
 
         // Act
@@ -211,7 +212,7 @@ public class ToolsListCommandTests
         faultyServiceProvider.GetService(typeof(CommandFactory))
             .Returns(x => throw new InvalidOperationException("Corrupted command factory"));
 
-        var faultyContext = new CommandContext(faultyServiceProvider);
+        var faultyContext = new CommandContext(faultyServiceProvider, McpUserContext.Empty);
         var args = _commandDefinition.Parse([]);
 
         // Act
@@ -337,7 +338,7 @@ public class ToolsListCommandTests
         finalCollection.AddSingleton(emptyCommandFactory);
 
         var emptyServiceProvider = finalCollection.BuildServiceProvider();
-        var emptyContext = new CommandContext(emptyServiceProvider);
+        var emptyContext = new CommandContext(emptyServiceProvider, McpUserContext.Empty);
         var args = _commandDefinition.Parse([]);
 
         // Act

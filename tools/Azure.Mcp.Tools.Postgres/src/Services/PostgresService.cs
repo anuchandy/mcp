@@ -2,6 +2,7 @@
 // Licensed under the MIT License.
 
 using Azure.Core;
+using Azure.Mcp.Core.Areas.Server.Commands.Runtime;
 using Azure.Mcp.Core.Services.Azure;
 using Azure.Mcp.Core.Services.Azure.ResourceGroup;
 using Azure.ResourceManager.PostgreSql.FlexibleServers;
@@ -20,7 +21,7 @@ public class PostgresService : BaseAzureService, IPostgresService
         _resourceGroupService = resourceGroupService ?? throw new ArgumentNullException(nameof(resourceGroupService));
     }
 
-    private async Task<string> GetEntraIdAccessTokenAsync()
+    private async Task<string> GetEntraIdAccessTokenAsync(McpUserContext userContext)
     {
         if (_cachedEntraIdAccessToken != null && DateTime.UtcNow < _tokenExpiryTime)
         {
@@ -28,7 +29,7 @@ public class PostgresService : BaseAzureService, IPostgresService
         }
 
         var tokenRequestContext = new TokenRequestContext(new[] { "https://ossrdbms-aad.database.windows.net/.default" });
-        var tokenCredential = await GetCredential();
+        var tokenCredential = await GetCredential(userContext);
         var accessToken = await tokenCredential
             .GetTokenAsync(tokenRequestContext, CancellationToken.None)
             .ConfigureAwait(false);
@@ -47,9 +48,9 @@ public class PostgresService : BaseAzureService, IPostgresService
         return server;
     }
 
-    public async Task<List<string>> ListDatabasesAsync(string subscriptionId, string resourceGroup, string user, string server)
+    public async Task<List<string>> ListDatabasesAsync(McpUserContext userContext, string subscriptionId, string resourceGroup, string user, string server)
     {
-        var entraIdAccessToken = await GetEntraIdAccessTokenAsync();
+        var entraIdAccessToken = await GetEntraIdAccessTokenAsync(userContext);
         var host = NormalizeServerName(server);
         var connectionString = $"Host={host};Database=postgres;Username={user};Password={entraIdAccessToken}";
 
@@ -65,9 +66,9 @@ public class PostgresService : BaseAzureService, IPostgresService
         return dbs;
     }
 
-    public async Task<List<string>> ExecuteQueryAsync(string subscriptionId, string resourceGroup, string user, string server, string database, string query)
+    public async Task<List<string>> ExecuteQueryAsync(McpUserContext userContext, string subscriptionId, string resourceGroup, string user, string server, string database, string query)
     {
-        var entraIdAccessToken = await GetEntraIdAccessTokenAsync();
+        var entraIdAccessToken = await GetEntraIdAccessTokenAsync(userContext);
         var host = NormalizeServerName(server);
         var connectionString = $"Host={host};Database={database};Username={user};Password={entraIdAccessToken}";
 
@@ -93,9 +94,9 @@ public class PostgresService : BaseAzureService, IPostgresService
         return rows;
     }
 
-    public async Task<List<string>> ListTablesAsync(string subscriptionId, string resourceGroup, string user, string server, string database)
+    public async Task<List<string>> ListTablesAsync(McpUserContext userContext, string subscriptionId, string resourceGroup, string user, string server, string database)
     {
-        var entraIdAccessToken = await GetEntraIdAccessTokenAsync();
+        var entraIdAccessToken = await GetEntraIdAccessTokenAsync(userContext);
         var host = NormalizeServerName(server);
         var connectionString = $"Host={host};Database={database};Username={user};Password={entraIdAccessToken}";
 
@@ -111,9 +112,9 @@ public class PostgresService : BaseAzureService, IPostgresService
         return tables;
     }
 
-    public async Task<List<string>> GetTableSchemaAsync(string subscriptionId, string resourceGroup, string user, string server, string database, string table)
+    public async Task<List<string>> GetTableSchemaAsync(McpUserContext userContext, string subscriptionId, string resourceGroup, string user, string server, string database, string table)
     {
-        var entraIdAccessToken = await GetEntraIdAccessTokenAsync();
+        var entraIdAccessToken = await GetEntraIdAccessTokenAsync(userContext);
         var host = NormalizeServerName(server);
         var connectionString = $"Host={host};Database={database};Username={user};Password={entraIdAccessToken}";
 
@@ -129,9 +130,9 @@ public class PostgresService : BaseAzureService, IPostgresService
         return schema;
     }
 
-    public async Task<List<string>> ListServersAsync(string subscriptionId, string resourceGroup, string user)
+    public async Task<List<string>> ListServersAsync(McpUserContext userContext, string subscriptionId, string resourceGroup, string user)
     {
-        var rg = await _resourceGroupService.GetResourceGroupResource(subscriptionId, resourceGroup);
+        var rg = await _resourceGroupService.GetResourceGroupResource(userContext, subscriptionId, resourceGroup);
         if (rg == null)
         {
             throw new Exception($"Resource group '{resourceGroup}' not found.");
@@ -144,9 +145,9 @@ public class PostgresService : BaseAzureService, IPostgresService
         return serverList;
     }
 
-    public async Task<string> GetServerConfigAsync(string subscriptionId, string resourceGroup, string user, string server)
+    public async Task<string> GetServerConfigAsync(McpUserContext userContext, string subscriptionId, string resourceGroup, string user, string server)
     {
-        var rg = await _resourceGroupService.GetResourceGroupResource(subscriptionId, resourceGroup);
+        var rg = await _resourceGroupService.GetResourceGroupResource(userContext, subscriptionId, resourceGroup);
         if (rg == null)
         {
             throw new Exception($"Resource group '{resourceGroup}' not found.");
@@ -163,9 +164,9 @@ public class PostgresService : BaseAzureService, IPostgresService
         return result;
     }
 
-    public async Task<string> GetServerParameterAsync(string subscriptionId, string resourceGroup, string user, string server, string param)
+    public async Task<string> GetServerParameterAsync(McpUserContext userContext, string subscriptionId, string resourceGroup, string user, string server, string param)
     {
-        var rg = await _resourceGroupService.GetResourceGroupResource(subscriptionId, resourceGroup);
+        var rg = await _resourceGroupService.GetResourceGroupResource(userContext, subscriptionId, resourceGroup);
         if (rg == null)
         {
             throw new Exception($"Resource group '{resourceGroup}' not found.");
@@ -180,9 +181,9 @@ public class PostgresService : BaseAzureService, IPostgresService
         return configResponse.Value.Data.Value;
     }
 
-    public async Task<string> SetServerParameterAsync(string subscriptionId, string resourceGroup, string user, string server, string param, string value)
+    public async Task<string> SetServerParameterAsync(McpUserContext userContext, string subscriptionId, string resourceGroup, string user, string server, string param, string value)
     {
-        var rg = await _resourceGroupService.GetResourceGroupResource(subscriptionId, resourceGroup);
+        var rg = await _resourceGroupService.GetResourceGroupResource(userContext, subscriptionId, resourceGroup);
         if (rg == null)
         {
             throw new Exception($"Resource group '{resourceGroup}' not found.");

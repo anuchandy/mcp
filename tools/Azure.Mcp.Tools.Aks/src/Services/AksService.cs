@@ -1,6 +1,7 @@
 // Copyright (c) Microsoft Corporation.
 // Licensed under the MIT License.
 
+using Azure.Mcp.Core.Areas.Server.Commands.Runtime;
 using Azure.Mcp.Core.Options;
 using Azure.Mcp.Core.Services.Azure;
 using Azure.Mcp.Core.Services.Azure.Subscription;
@@ -14,16 +15,17 @@ namespace Azure.Mcp.Tools.Aks.Services;
 public sealed class AksService(
     ISubscriptionService subscriptionService,
     ITenantService tenantService,
-    ICacheService cacheService) : BaseAzureService(tenantService), IAksService
+    ICacheService2 cacheService) : BaseAzureService(tenantService), IAksService
 {
     private readonly ISubscriptionService _subscriptionService = subscriptionService ?? throw new ArgumentNullException(nameof(subscriptionService));
-    private readonly ICacheService _cacheService = cacheService ?? throw new ArgumentNullException(nameof(cacheService));
+    private readonly ICacheService2 _cacheService = cacheService ?? throw new ArgumentNullException(nameof(cacheService));
 
     private const string CacheGroup = "aks";
     private const string AksClustersCacheKey = "clusters";
     private static readonly TimeSpan s_cacheDuration = TimeSpan.FromHours(1);
 
     public async Task<List<Cluster>> ListClusters(
+        McpUserContext userContext,
         string subscription,
         string? tenant = null,
         RetryPolicyOptions? retryPolicy = null)
@@ -35,14 +37,26 @@ public sealed class AksService(
             ? $"{AksClustersCacheKey}_{subscription}"
             : $"{AksClustersCacheKey}_{subscription}_{tenant}";
 
-        // Try to get from cache first
-        var cachedClusters = await _cacheService.GetAsync<List<Cluster>>(CacheGroup, cacheKey, s_cacheDuration);
-        if (cachedClusters != null)
-        {
-            return cachedClusters;
-        }
+        var userGroup = userContext.GroupKey();
+        var serviceGroup = "aks";
 
-        var subscriptionResource = await _subscriptionService.GetSubscription(subscription, tenant, retryPolicy);
+        var cachedClusters = _cacheService.GetOrCreate<List<Cluster>>(userGroup, serviceGroup, cacheKey, entry =>
+        {
+            entry.AbsoluteExpirationRelativeToNow = s_cacheDuration;
+            
+            return GetClustersFromAzureAsync(userContext, subscription, tenant, retryPolicy).GetAwaiter().GetResult();
+        });
+
+        return await Task.FromResult(cachedClusters);
+    }
+
+    private async Task<List<Cluster>> GetClustersFromAzureAsync(
+        McpUserContext userContext,
+        string subscription,
+        string? tenant,
+        RetryPolicyOptions? retryPolicy)
+    {
+        var subscriptionResource = await _subscriptionService.GetSubscription(userContext, subscription, tenant, retryPolicy);
         var clusters = new List<Cluster>();
 
         try
@@ -54,9 +68,6 @@ public sealed class AksService(
                     clusters.Add(ConvertToClusterModel(cluster));
                 }
             }
-
-            // Cache the results
-            await _cacheService.SetAsync(CacheGroup, cacheKey, clusters, s_cacheDuration);
         }
         catch (Exception ex)
         {
@@ -67,6 +78,7 @@ public sealed class AksService(
     }
 
     public async Task<Cluster?> GetCluster(
+        McpUserContext userContext,
         string subscription,
         string clusterName,
         string resourceGroup,
@@ -80,14 +92,28 @@ public sealed class AksService(
             ? $"cluster_{subscription}_{resourceGroup}_{clusterName}"
             : $"cluster_{subscription}_{resourceGroup}_{clusterName}_{tenant}";
 
-        // Try to get from cache first
-        var cachedCluster = await _cacheService.GetAsync<Cluster>(CacheGroup, cacheKey, s_cacheDuration);
-        if (cachedCluster != null)
-        {
-            return cachedCluster;
-        }
+        var userGroup = userContext.GroupKey();
+        var serviceGroup = "aks";
 
-        var subscriptionResource = await _subscriptionService.GetSubscription(subscription, tenant, retryPolicy);
+        var cachedCluster = _cacheService.GetOrCreate<Cluster?>(userGroup, serviceGroup, cacheKey, entry =>
+        {
+            entry.AbsoluteExpirationRelativeToNow = s_cacheDuration;
+            
+            return GetClusterFromAzureAsync(userContext, subscription, clusterName, resourceGroup, tenant, retryPolicy).GetAwaiter().GetResult();
+        });
+
+        return await Task.FromResult(cachedCluster);
+    }
+
+    private async Task<Cluster?> GetClusterFromAzureAsync(
+        McpUserContext userContext,
+        string subscription,
+        string clusterName,
+        string resourceGroup,
+        string? tenant,
+        RetryPolicyOptions? retryPolicy)
+    {
+        var subscriptionResource = await _subscriptionService.GetSubscription(userContext, subscription, tenant, retryPolicy);
 
         try
         {
@@ -108,12 +134,7 @@ public sealed class AksService(
                 return null;
             }
 
-            var cluster = ConvertToClusterModel(clusterResource.Value);
-
-            // Cache the result
-            await _cacheService.SetAsync(CacheGroup, cacheKey, cluster, s_cacheDuration);
-
-            return cluster;
+            return ConvertToClusterModel(clusterResource.Value);
         }
         catch (Exception ex)
         {

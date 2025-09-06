@@ -3,6 +3,7 @@
 
 using System.Text.Json.Serialization;
 using Azure.Mcp.Core.Models;
+using Azure.Mcp.Core.Areas.Server.Commands.Runtime;
 using Azure.Mcp.Core.Models.Command;
 using Azure.Mcp.Core.Options;
 using Azure.Mcp.Tools.Kusto.Commands;
@@ -45,6 +46,7 @@ public sealed class TableSchemaCommandTests
         if (useClusterUri)
         {
             _kusto.GetTableSchema(
+                Arg.Any<McpUserContext>(),
                 "https://mycluster.kusto.windows.net",
                 "db1",
                 "table1",
@@ -54,6 +56,7 @@ public sealed class TableSchemaCommandTests
         else
         {
             _kusto.GetTableSchema(
+                Arg.Any<McpUserContext>(),
                 "sub1", "mycluster", "db1", "table1",
                 Arg.Any<string>(), Arg.Any<AuthMethod?>(), Arg.Any<RetryPolicyOptions>())
                 .Returns(expectedSchema);
@@ -61,7 +64,7 @@ public sealed class TableSchemaCommandTests
         var command = new TableSchemaCommand(_logger);
 
         var args = command.GetCommand().Parse(cliArgs);
-        var context = new CommandContext(_serviceProvider);
+        var context = new CommandContext(_serviceProvider, McpUserContext.Empty);
 
         var response = await command.ExecuteAsync(context, args);
         Assert.NotNull(response);
@@ -84,6 +87,7 @@ public sealed class TableSchemaCommandTests
         if (useClusterUri)
         {
             _kusto.GetTableSchema(
+                Arg.Any<McpUserContext>(),
                 "https://mycluster.kusto.windows.net",
                 "db1",
                 "table1",
@@ -93,6 +97,7 @@ public sealed class TableSchemaCommandTests
         else
         {
             _kusto.GetTableSchema(
+                Arg.Any<McpUserContext>(),
                 "sub1", "mycluster", "db1", "table1",
                 Arg.Any<string>(), Arg.Any<AuthMethod?>(), Arg.Any<RetryPolicyOptions>())
                 .ThrowsAsync(new Exception("Test error"));
@@ -100,7 +105,7 @@ public sealed class TableSchemaCommandTests
         var command = new TableSchemaCommand(_logger);
 
         var args = command.GetCommand().Parse(cliArgs);
-        var context = new CommandContext(_serviceProvider);
+        var context = new CommandContext(_serviceProvider, McpUserContext.Empty);
 
         var response = await command.ExecuteAsync(context, args);
 
@@ -118,6 +123,7 @@ public sealed class TableSchemaCommandTests
         if (useClusterUri)
         {
             _kusto.GetTableSchema(
+                Arg.Any<McpUserContext>(),
                 "https://mycluster.kusto.windows.net",
                 "db1",
                 "table1",
@@ -127,6 +133,7 @@ public sealed class TableSchemaCommandTests
         else
         {
             _kusto.GetTableSchema(
+                Arg.Any<McpUserContext>(),
                 "sub1", "mycluster", "db1", "table1",
                 Arg.Any<string>(), Arg.Any<AuthMethod?>(), Arg.Any<RetryPolicyOptions>())
                 .Returns(Task.FromException<string>(new Exception("Test error")));
@@ -134,7 +141,7 @@ public sealed class TableSchemaCommandTests
         var command = new TableSchemaCommand(_logger);
 
         var args = command.GetCommand().Parse(cliArgs);
-        var context = new CommandContext(_serviceProvider);
+        var context = new CommandContext(_serviceProvider, McpUserContext.Empty);
 
         var response = await command.ExecuteAsync(context, args);
         Assert.NotNull(response);
@@ -148,7 +155,7 @@ public sealed class TableSchemaCommandTests
         var command = new TableSchemaCommand(_logger);
 
         var args = command.GetCommand().Parse("");
-        var context = new CommandContext(_serviceProvider);
+        var context = new CommandContext(_serviceProvider, McpUserContext.Empty);
 
         var response = await command.ExecuteAsync(context, args);
         Assert.NotNull(response);

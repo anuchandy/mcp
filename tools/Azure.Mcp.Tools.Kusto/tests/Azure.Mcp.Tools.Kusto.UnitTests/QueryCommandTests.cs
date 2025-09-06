@@ -4,6 +4,7 @@
 using System.Text.Json;
 using System.Text.Json.Serialization;
 using Azure.Mcp.Core.Models;
+using Azure.Mcp.Core.Areas.Server.Commands.Runtime;
 using Azure.Mcp.Core.Models.Command;
 using Azure.Mcp.Core.Options;
 using Azure.Mcp.Tools.Kusto.Commands;
@@ -45,6 +46,7 @@ public sealed class QueryCommandTests
         if (useClusterUri)
         {
             _kusto.QueryItems(
+                Arg.Any<McpUserContext>(),
                 "https://mycluster.kusto.windows.net",
                 "db1",
                 "StormEvents | take 1",
@@ -54,6 +56,7 @@ public sealed class QueryCommandTests
         else
         {
             _kusto.QueryItems(
+                Arg.Any<McpUserContext>(),
                 "sub1", "mycluster", "db1", "StormEvents | take 1",
                 Arg.Any<string>(), Arg.Any<AuthMethod?>(), Arg.Any<RetryPolicyOptions>())
                 .Returns(expectedJson);
@@ -61,7 +64,7 @@ public sealed class QueryCommandTests
         var command = new QueryCommand(_logger);
 
         var args = command.GetCommand().Parse(cliArgs);
-        var context = new CommandContext(_serviceProvider);
+        var context = new CommandContext(_serviceProvider, McpUserContext.Empty);
 
         // Act
         var response = await command.ExecuteAsync(context, args);
@@ -86,6 +89,7 @@ public sealed class QueryCommandTests
         if (useClusterUri)
         {
             _kusto.QueryItems(
+                Arg.Any<McpUserContext>(),
                 "https://mycluster.kusto.windows.net",
                 "db1",
                 "StormEvents | take 1",
@@ -95,6 +99,7 @@ public sealed class QueryCommandTests
         else
         {
             _kusto.QueryItems(
+                Arg.Any<McpUserContext>(),
                 "sub1", "mycluster", "db1", "StormEvents | take 1",
                 Arg.Any<string>(), Arg.Any<AuthMethod?>(), Arg.Any<RetryPolicyOptions>())
                 .Returns(new List<JsonElement>());
@@ -102,7 +107,7 @@ public sealed class QueryCommandTests
         var command = new QueryCommand(_logger);
 
         var args = command.GetCommand().Parse(cliArgs);
-        var context = new CommandContext(_serviceProvider);
+        var context = new CommandContext(_serviceProvider, McpUserContext.Empty);
 
         var response = await command.ExecuteAsync(context, args);
 
@@ -118,6 +123,7 @@ public sealed class QueryCommandTests
         if (useClusterUri)
         {
             _kusto.QueryItems(
+                Arg.Any<McpUserContext>(),
                 "https://mycluster.kusto.windows.net",
                 "db1",
                 "StormEvents | take 1",
@@ -127,6 +133,7 @@ public sealed class QueryCommandTests
         else
         {
             _kusto.QueryItems(
+                Arg.Any<McpUserContext>(),
                 "sub1", "mycluster", "db1", "StormEvents | take 1",
                 Arg.Any<string>(), Arg.Any<AuthMethod?>(), Arg.Any<RetryPolicyOptions>())
                 .Returns(Task.FromException<List<JsonElement>>(new Exception("Test error")));
@@ -134,7 +141,7 @@ public sealed class QueryCommandTests
         var command = new QueryCommand(_logger);
 
         var args = command.GetCommand().Parse(cliArgs);
-        var context = new CommandContext(_serviceProvider);
+        var context = new CommandContext(_serviceProvider, McpUserContext.Empty);
 
         var response = await command.ExecuteAsync(context, args);
 
@@ -149,7 +156,7 @@ public sealed class QueryCommandTests
         var command = new QueryCommand(_logger);
 
         var args = command.GetCommand().Parse(""); // No arguments
-        var context = new CommandContext(_serviceProvider);
+        var context = new CommandContext(_serviceProvider, McpUserContext.Empty);
 
         var response = await command.ExecuteAsync(context, args);
 

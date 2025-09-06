@@ -2,6 +2,7 @@
 // Licensed under the MIT License.
 
 using System.Text.Json;
+using Azure.Mcp.Core.Areas.Server.Commands.Runtime;
 using Azure.Mcp.Core.Models.Command;
 using Azure.Mcp.Core.Options;
 using Azure.Mcp.Tools.Search.Commands.Index;
@@ -57,6 +58,7 @@ public class IndexQueryCommandTests
 
         _searchService
             .QueryIndex(
+                Arg.Any<McpUserContext>(),
                 Arg.Is<string>(s => s == serviceName),
                 Arg.Is<string>(i => i == indexName),
                 Arg.Is<string>(q => q == queryText),
@@ -66,7 +68,7 @@ public class IndexQueryCommandTests
         var command = new IndexQueryCommand(_logger);
 
         var args = command.GetCommand().Parse($"--service {serviceName} --index {indexName} --query \"{queryText}\"");
-        var context = new CommandContext(_serviceProvider);
+        var context = new CommandContext(_serviceProvider, McpUserContext.Empty);
 
         // Act
         var response = await command.ExecuteAsync(context, args);
@@ -92,6 +94,7 @@ public class IndexQueryCommandTests
 
         _searchService
             .QueryIndex(
+                Arg.Any<McpUserContext>(),
                 Arg.Is<string>(s => s == serviceName),
                 Arg.Is<string>(i => i == indexName),
                 Arg.Is<string>(q => q == queryText),
@@ -101,7 +104,7 @@ public class IndexQueryCommandTests
         var command = new IndexQueryCommand(_logger);
 
         var args = command.GetCommand().Parse($"--service {serviceName} --index {indexName} --query \"{queryText}\"");
-        var context = new CommandContext(_serviceProvider);
+        var context = new CommandContext(_serviceProvider, McpUserContext.Empty);
 
         // Act
         var response = await command.ExecuteAsync(context, args);
@@ -119,7 +122,7 @@ public class IndexQueryCommandTests
         var command = new IndexQueryCommand(_logger);
 
         var args = command.GetCommand().Parse(""); // Missing required options
-        var context = new CommandContext(_serviceProvider);
+        var context = new CommandContext(_serviceProvider, McpUserContext.Empty);
 
         // Act
         var response = await command.ExecuteAsync(context, args);

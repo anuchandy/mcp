@@ -3,6 +3,7 @@
 
 using System.CommandLine;
 using System.Text.Json;
+using Azure.Mcp.Core.Areas.Server.Commands.Runtime;
 using Azure.Mcp.Core.Models.Command;
 using Azure.Mcp.Core.Options;
 using Azure.Mcp.Tools.AppConfig.Commands.KeyValue;
@@ -36,7 +37,7 @@ public class KeyValueDeleteCommandTests
         _serviceProvider = new ServiceCollection()
             .AddSingleton(_appConfigService)
             .BuildServiceProvider();
-        _context = new(_serviceProvider);
+        _context = new CommandContext(_serviceProvider, McpUserContext.Empty);
     }
 
     [Fact]
@@ -55,6 +56,7 @@ public class KeyValueDeleteCommandTests
         // Assert
         Assert.Equal(200, response.Status);
         await _appConfigService.Received(1).DeleteKeyValue(
+            Arg.Any<McpUserContext>(),
             "account1",
             "my-key",
             "sub123",
@@ -89,6 +91,7 @@ public class KeyValueDeleteCommandTests
         // Assert
         Assert.Equal(200, response.Status);
         await _appConfigService.Received(1).DeleteKeyValue(
+            Arg.Any<McpUserContext>(),
             "account1",
             "my-key",
             "sub123", null,
@@ -111,6 +114,7 @@ public class KeyValueDeleteCommandTests
     {
         // Arrange
         _appConfigService.DeleteKeyValue(
+            Arg.Any<McpUserContext>(),
             Arg.Any<string>(),
             Arg.Any<string>(),
             Arg.Any<string>(),

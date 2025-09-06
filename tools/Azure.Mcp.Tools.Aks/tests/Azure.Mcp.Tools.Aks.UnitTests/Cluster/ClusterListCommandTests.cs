@@ -2,6 +2,7 @@
 // Licensed under the MIT License.
 
 using System.Text.Json;
+using Azure.Mcp.Core.Areas.Server.Commands.Runtime;
 using Azure.Mcp.Core.Models.Command;
 using Azure.Mcp.Core.Options;
 using Azure.Mcp.Tools.Aks.Commands;
@@ -56,11 +57,11 @@ public sealed class ClusterListCommandTests
                 new() { Name = "cluster1", Location = "eastus" },
                 new() { Name = "cluster2", Location = "westus" }
             };
-            _aksService.ListClusters(Arg.Any<string>(), Arg.Any<string>(), Arg.Any<RetryPolicyOptions>())
+            _aksService.ListClusters(Arg.Any<McpUserContext>(), Arg.Any<string>(), Arg.Any<string>(), Arg.Any<RetryPolicyOptions>())
                 .Returns(testClusters);
         }
 
-        var context = new CommandContext(_serviceProvider);
+        var context = new CommandContext(_serviceProvider, McpUserContext.Empty);
         var parseResult = _command.GetCommand().Parse(args);
 
         // Act
@@ -89,10 +90,10 @@ public sealed class ClusterListCommandTests
             new() { Name = "cluster2", Location = "westus", KubernetesVersion = "1.29.0" },
             new() { Name = "cluster3", Location = "centralus", KubernetesVersion = "1.28.5" }
         };
-        _aksService.ListClusters(Arg.Any<string>(), Arg.Any<string>(), Arg.Any<RetryPolicyOptions>())
+        _aksService.ListClusters(Arg.Any<McpUserContext>(), Arg.Any<string>(), Arg.Any<string>(), Arg.Any<RetryPolicyOptions>())
             .Returns(expectedClusters);
 
-        var context = new CommandContext(_serviceProvider);
+        var context = new CommandContext(_serviceProvider, McpUserContext.Empty);
         var parseResult = _command.GetCommand().Parse("--subscription sub123");        // Act
         var response = await _command.ExecuteAsync(context, parseResult);
 
@@ -101,7 +102,7 @@ public sealed class ClusterListCommandTests
         Assert.NotNull(response.Results);
 
         // Verify the mock was called
-        await _aksService.Received(1).ListClusters(Arg.Any<string>(), Arg.Any<string>(), Arg.Any<RetryPolicyOptions>());
+        await _aksService.Received(1).ListClusters(Arg.Any<McpUserContext>(), Arg.Any<string>(), Arg.Any<string>(), Arg.Any<RetryPolicyOptions>());
 
         var json = JsonSerializer.Serialize(response.Results);
         // Debug: Output the actual JSON to understand the structure
@@ -120,10 +121,10 @@ public sealed class ClusterListCommandTests
     public async Task ExecuteAsync_ReturnsNullWhenNoClusters()
     {
         // Arrange
-        _aksService.ListClusters(Arg.Any<string>(), Arg.Any<string>(), Arg.Any<RetryPolicyOptions>())
+        _aksService.ListClusters(Arg.Any<McpUserContext>(), Arg.Any<string>(), Arg.Any<string>(), Arg.Any<RetryPolicyOptions>())
             .Returns(new List<Models.Cluster>());
 
-        var context = new CommandContext(_serviceProvider);
+        var context = new CommandContext(_serviceProvider, McpUserContext.Empty);
         var parseResult = _command.GetCommand().Parse("--subscription sub123");
 
         // Act
@@ -138,10 +139,10 @@ public sealed class ClusterListCommandTests
     public async Task ExecuteAsync_HandlesServiceErrors()
     {
         // Arrange
-        _aksService.ListClusters(Arg.Any<string>(), Arg.Any<string>(), Arg.Any<RetryPolicyOptions>())
+        _aksService.ListClusters(Arg.Any<McpUserContext>(), Arg.Any<string>(), Arg.Any<string>(), Arg.Any<RetryPolicyOptions>())
             .Returns(Task.FromException<List<Models.Cluster>>(new Exception("Test error")));
 
-        var context = new CommandContext(_serviceProvider);
+        var context = new CommandContext(_serviceProvider, McpUserContext.Empty);
         var parseResult = _command.GetCommand().Parse("--subscription sub123");
 
         // Act

@@ -4,6 +4,7 @@
 using System.CommandLine;
 using System.Text.Json;
 using System.Text.Json.Serialization;
+using Azure.Mcp.Core.Areas.Server.Commands.Runtime;
 using Azure.Mcp.Core.Models.Command;
 using Azure.Mcp.Core.Options;
 using Azure.Mcp.Tools.Storage.Commands.Account;
@@ -34,7 +35,7 @@ public class AccountListCommandTests
 
         _serviceProvider = collection.BuildServiceProvider();
         _command = new(_logger);
-        _context = new(_serviceProvider);
+        _context = new CommandContext(_serviceProvider, McpUserContext.Empty);
         _commandDefinition = _command.GetCommand();
     }
 
@@ -49,7 +50,7 @@ public class AccountListCommandTests
             new("account2", "westus", "StorageV2", "Standard_GRS", "Standard", false, false, true)
         };
 
-        _storageService.GetStorageAccounts(Arg.Is(subscription), Arg.Any<string>(), Arg.Any<RetryPolicyOptions>())
+        _storageService.GetStorageAccounts(Arg.Any<McpUserContext>(), Arg.Is(subscription), Arg.Any<string>(), Arg.Any<RetryPolicyOptions>())
             .Returns(Task.FromResult(expectedAccounts));
 
         var args = _commandDefinition.Parse(["--subscription", subscription]);
@@ -76,7 +77,7 @@ public class AccountListCommandTests
         // Arrange
         var subscription = "sub123";
 
-        _storageService.GetStorageAccounts(Arg.Is(subscription), Arg.Any<string>(), Arg.Any<RetryPolicyOptions>())
+        _storageService.GetStorageAccounts(Arg.Any<McpUserContext>(), Arg.Is(subscription), Arg.Any<string>(), Arg.Any<RetryPolicyOptions>())
             .Returns(Task.FromResult(new List<Models.StorageAccountInfo>()));
 
         var args = _commandDefinition.Parse(["--subscription", subscription]);
@@ -96,7 +97,7 @@ public class AccountListCommandTests
         var expectedError = "Test error";
         var subscription = "sub123";
 
-        _storageService.GetStorageAccounts(Arg.Is(subscription), null, Arg.Any<RetryPolicyOptions>())
+        _storageService.GetStorageAccounts(Arg.Any<McpUserContext>(), Arg.Is(subscription), null, Arg.Any<RetryPolicyOptions>())
             .ThrowsAsync(new Exception(expectedError));
 
         var args = _commandDefinition.Parse(["--subscription", subscription]);

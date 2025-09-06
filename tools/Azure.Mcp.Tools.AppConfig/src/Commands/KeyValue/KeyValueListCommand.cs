@@ -60,6 +60,7 @@ public sealed class KeyValueListCommand(ILogger<KeyValueListCommand> logger) : B
         {
             var appConfigService = context.GetService<IAppConfigService>();
             var settings = await appConfigService.ListKeyValues(
+                context.UserContext,
                 options.Account!,
                 options.Subscription!,
                 options.Key,

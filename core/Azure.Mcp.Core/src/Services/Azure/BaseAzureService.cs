@@ -9,21 +9,25 @@ using Azure.Mcp.Core.Services.Azure.Authentication;
 using Azure.Mcp.Core.Services.Azure.Tenant;
 using Azure.ResourceManager;
 using Microsoft.Extensions.Logging;
+using Microsoft.Extensions.DependencyInjection;
+using Azure.Mcp.Core.Areas.Server.Commands.Runtime;
 
 namespace Azure.Mcp.Core.Services.Azure;
 
-public abstract class BaseAzureService(ITenantService? tenantService = null, ILoggerFactory? loggerFactory = null)
+public abstract class BaseAzureService(ITenantService? tenantService = null, ILoggerFactory? loggerFactory = null, IServiceProvider? serviceProvider = null)
 {
     private static readonly UserAgentPolicy s_sharedUserAgentPolicy;
     public static readonly string DefaultUserAgent;
 
-    private CustomChainedCredential? _credential;
+    private TokenCredential? _credential;
     private string? _lastTenantId;
     private ArmClient? _armClient;
     private string? _lastArmClientTenantId;
     private RetryPolicyOptions? _lastRetryPolicy;
     private readonly ITenantService? _tenantService = tenantService;
     private readonly ILoggerFactory? _loggerFactory = loggerFactory;
+    private readonly IServiceProvider? _serviceProvider = serviceProvider;
+    private readonly IOboTokenCredentialFactory? _oboFactory = serviceProvider?.GetService<IOboTokenCredentialFactory>();
 
     protected ILoggerFactory LoggerFactory => _loggerFactory ?? Microsoft.Extensions.Logging.Abstractions.NullLoggerFactory.Instance;
 
@@ -64,18 +68,53 @@ public abstract class BaseAzureService(ITenantService? tenantService = null, ILo
         return await _tenantService.GetTenantId(tenant);
     }
 
+    // This method is now used only from TenantService (to fix), otherwise all credential request goes threw OBO aware GetCredential(McpUserContext userContext, string? tenant = null)
     protected async Task<TokenCredential> GetCredential(string? tenant = null)
     {
+        // Fallback to existing credential chain for backward compatibility when no user context
         var tenantId = string.IsNullOrEmpty(tenant) ? null : await ResolveTenantIdAsync(tenant);
-
-        // Return cached credential if it exists and tenant ID hasn't changed
-        if (_credential != null && _lastTenantId == tenantId)
-        {
-            return _credential;
-        }
-
         try
         {
+            // Return cached credential if it exists and tenant ID hasn't changed
+            if (_credential != null && _lastTenantId == tenantId)
+            {
+                return _credential;
+            }
+
+            // Fallback to default credential chain
+            ILogger<CustomChainedCredential>? logger = _loggerFactory?.CreateLogger<CustomChainedCredential>();
+            _credential = new CustomChainedCredential(tenantId, logger);
+            _lastTenantId = tenantId;
+            return _credential;
+        }
+        catch (Exception ex)
+        {
+            throw new Exception($"Failed to get credential: {ex.Message}", ex);
+        }
+    }
+
+    protected async Task<TokenCredential> GetCredential(McpUserContext userContext, string? tenant = null)
+    {
+        if (_oboFactory != null)
+        {
+            // If we have an OBO factory, handle OBO authentication scenarios
+            if (userContext.IsAuthenticated == false)
+            {
+                // If user context is not authenticated, throw authentication error
+                throw new UnauthorizedAccessException("User context is provided but user is not authenticated. OBO authentication requires an authenticated user.");
+            }
+            return _oboFactory.Get(userContext);
+        }
+        
+        var tenantId = string.IsNullOrEmpty(tenant) ? null : await ResolveTenantIdAsync(tenant);
+        try
+        {
+            // Return cached credential if it exists and tenant ID hasn't changed
+            if (_credential != null && _lastTenantId == tenantId)
+            {
+                return _credential;
+            }
+
             ILogger<CustomChainedCredential>? logger = _loggerFactory?.CreateLogger<CustomChainedCredential>();
             _credential = new CustomChainedCredential(tenantId, logger);
             _lastTenantId = tenantId;
@@ -135,8 +174,15 @@ public abstract class BaseAzureService(ITenantService? tenantService = null, ILo
     /// </summary>
     /// <param name="tenant">Optional Azure tenant ID or name</param>
     /// <param name="retryPolicy">Optional retry policy configuration</param>
-    protected async Task<ArmClient> CreateArmClientAsync(string? tenant = null, RetryPolicyOptions? retryPolicy = null)
+    protected async Task<ArmClient> CreateArmClientAsync(McpUserContext userContext, string? tenant = null, RetryPolicyOptions? retryPolicy = null)
     {
+        if (userContext.Role == AzRuntimeMode.OboParent || userContext.Role == AzRuntimeMode.OboChild)
+        {
+            var credential = await GetCredential(userContext, tenant);
+            var options = ConfigureRetryPolicy(AddDefaultPolicies(new ArmClientOptions()), retryPolicy);
+            return new ArmClient(credential, default, options);
+        }
+
         var tenantId = await ResolveTenantIdAsync(tenant);
 
         // Return cached client if parameters match
@@ -149,7 +195,7 @@ public abstract class BaseAzureService(ITenantService? tenantService = null, ILo
 
         try
         {
-            var credential = await GetCredential(tenantId);
+            var credential = await GetCredential(userContext, tenantId);
             var options = ConfigureRetryPolicy(AddDefaultPolicies(new ArmClientOptions()), retryPolicy);
 
             _armClient = new ArmClient(credential, default, options);

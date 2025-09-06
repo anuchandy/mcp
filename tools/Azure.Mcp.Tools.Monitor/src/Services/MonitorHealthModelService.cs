@@ -3,6 +3,7 @@
 
 using System.Text.Json.Nodes;
 using Azure.Core;
+using Azure.Mcp.Core.Areas.Server.Commands.Runtime;
 using Azure.Mcp.Core.Options;
 using Azure.Mcp.Core.Services.Azure;
 using Azure.Mcp.Core.Services.Azure.Tenant;
@@ -27,6 +28,7 @@ public class MonitorHealthModelService(ITenantService tenantService, IHttpClient
     /// <summary>
     /// Retrieves the health information for a specific entity in a health model.
     /// </summary>
+    /// <param name="context">User context for authentication and authorization</param>
     /// <param name="entity">The identifier of the entity whose health is being queried.</param>
     /// <param name="healthModelName">The name of the health model to query.</param>
     /// <param name="resourceGroupName">The name of the resource group containing the health model.</param>
@@ -38,6 +40,7 @@ public class MonitorHealthModelService(ITenantService tenantService, IHttpClient
     /// <exception cref="ArgumentException">Thrown when required parameters are missing or invalid.</exception>
     /// <exception cref="Exception">Thrown when parsing the health response fails.</exception>
     public async Task<JsonNode> GetEntityHealth(
+        McpUserContext context,
         string entity,
         string healthModelName,
         string resourceGroupName,
@@ -48,16 +51,16 @@ public class MonitorHealthModelService(ITenantService tenantService, IHttpClient
     {
         ValidateRequiredParameters(entity, healthModelName, resourceGroupName, subscription);
 
-        string dataplaneEndpoint = await GetDataplaneEndpointAsync(subscription, resourceGroupName, healthModelName);
+        string dataplaneEndpoint = await GetDataplaneEndpointAsync(context, subscription, resourceGroupName, healthModelName);
         string entityHealthUrl = $"{dataplaneEndpoint}api/entities/{entity}/history";
 
-        string healthResponseString = await GetDataplaneResponseAsync(entityHealthUrl);
+        string healthResponseString = await GetDataplaneResponseAsync(context, entityHealthUrl);
         return JsonNode.Parse(healthResponseString) ?? throw new Exception("Failed to parse health response to JSON.");
     }
 
-    private async Task<string> GetDataplaneResponseAsync(string url)
+    private async Task<string> GetDataplaneResponseAsync(McpUserContext context, string url)
     {
-        string dataplaneToken = await GetDataplaneTokenAsync();
+        string dataplaneToken = await GetDataplaneTokenAsync(context);
         using var request = new HttpRequestMessage(HttpMethod.Get, url);
         request.Headers.Authorization = new System.Net.Http.Headers.AuthenticationHeaderValue("Bearer", dataplaneToken);
 
@@ -68,9 +71,9 @@ public class MonitorHealthModelService(ITenantService tenantService, IHttpClient
         return healthResponseString;
     }
 
-    private async Task<string> GetDataplaneEndpointAsync(string subscriptionId, string resourceGroupName, string healthModelName)
+    private async Task<string> GetDataplaneEndpointAsync(McpUserContext context, string subscriptionId, string resourceGroupName, string healthModelName)
     {
-        string token = await GetControlPlaneTokenAsync();
+        string token = await GetControlPlaneTokenAsync(context);
         string healthModelUrl = $"{ManagementApiBaseUrl}/subscriptions/{subscriptionId}/resourceGroups/{resourceGroupName}/providers/Microsoft.CloudHealth/healthmodels/{healthModelName}?api-version={ApiVersion}";
 
         using var request = new HttpRequestMessage(HttpMethod.Get, healthModelUrl);
@@ -104,9 +107,10 @@ public class MonitorHealthModelService(ITenantService tenantService, IHttpClient
         }
     }
 
-    private async Task<string> GetControlPlaneTokenAsync()
+    private async Task<string> GetControlPlaneTokenAsync(McpUserContext context)
     {
         return await GetCachedTokenAsync(
+            context,
             ManagementApiBaseUrl,
             () => _cachedControlPlaneAccessToken,
             (token) => _cachedControlPlaneAccessToken = token,
@@ -114,9 +118,10 @@ public class MonitorHealthModelService(ITenantService tenantService, IHttpClient
             (expiry) => _controlPlaneTokenExpiryTime = expiry);
     }
 
-    private async Task<string> GetDataplaneTokenAsync()
+    private async Task<string> GetDataplaneTokenAsync(McpUserContext context)
     {
         return await GetCachedTokenAsync(
+            context,
             HealthModelsDataApiScope,
             () => _cachedDataplaneAccessToken,
             (token) => _cachedDataplaneAccessToken = token,
@@ -125,6 +130,7 @@ public class MonitorHealthModelService(ITenantService tenantService, IHttpClient
     }
 
     private async Task<string> GetCachedTokenAsync(
+        McpUserContext context,
         string resource,
         Func<string?> getCachedToken,
         Action<string> setCachedToken,
@@ -137,17 +143,17 @@ public class MonitorHealthModelService(ITenantService tenantService, IHttpClient
             return cachedToken;
         }
 
-        AccessToken accessToken = await GetEntraIdAccessTokenAsync(resource);
+        AccessToken accessToken = await GetEntraIdAccessTokenAsync(context, resource);
         setCachedToken(accessToken.Token);
         setExpiryTime(accessToken.ExpiresOn.AddSeconds(-TokenExpirationBuffer));
 
         return getCachedToken()!;
     }
 
-    private async Task<AccessToken> GetEntraIdAccessTokenAsync(string resource)
+    private async Task<AccessToken> GetEntraIdAccessTokenAsync(McpUserContext context, string resource)
     {
         var tokenRequestContext = new TokenRequestContext(new[] { $"{resource}/.default" });
-        var tokenCredential = await GetCredential();
+        var tokenCredential = await GetCredential(context);
         return await tokenCredential
             .GetTokenAsync(tokenRequestContext, CancellationToken.None)
             .ConfigureAwait(false);

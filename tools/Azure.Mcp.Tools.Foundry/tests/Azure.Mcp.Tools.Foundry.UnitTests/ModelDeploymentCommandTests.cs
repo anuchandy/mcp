@@ -1,6 +1,7 @@
 // Copyright (c) Microsoft Corporation.
 // Licensed under the MIT License.
 
+using Azure.Mcp.Core.Areas.Server.Commands.Runtime;
 using Azure.Mcp.Core.Models.Command;
 using Azure.Mcp.Core.Options;
 using Azure.Mcp.Tools.Foundry.Commands;
@@ -44,6 +45,7 @@ public class ModelDeploymentCommandTests
         };
 
         _foundryService.DeployModel(
+            Arg.Any<McpUserContext>(),
                 Arg.Is<string>(s => s == deploymentName),
                 Arg.Is<string>(s => s == modelName),
                 Arg.Is<string>(s => s == modelFormat),
@@ -61,7 +63,7 @@ public class ModelDeploymentCommandTests
 
         var command = new ModelDeploymentCommand();
         var args = command.GetCommand().Parse(["--deployment", deploymentName, "--model-name", modelName, "--model-format", modelFormat, "--azure-ai-services", aiServicesName, "--resource-group", resourceGroup, "--subscription", subscriptionId]);
-        var context = new CommandContext(_serviceProvider);
+        var context = new CommandContext(_serviceProvider, McpUserContext.Empty);
         var response = await command.ExecuteAsync(context, args);
 
         Assert.NotNull(response);
@@ -90,6 +92,7 @@ public class ModelDeploymentCommandTests
         };
 
         _foundryService.DeployModel(
+            Arg.Any<McpUserContext>(),
                 Arg.Is<string>(s => s == deploymentName),
                 Arg.Is<string>(s => s == modelName),
                 Arg.Is<string>(s => s == modelFormat),
@@ -107,7 +110,7 @@ public class ModelDeploymentCommandTests
 
         var command = new ModelDeploymentCommand();
         var args = command.GetCommand().Parse(["--deployment", deploymentName, "--model-name", modelName, "--model-format", modelFormat, "--azure-ai-services", aiServicesName, "--resource-group", resourceGroup, "--subscription", subscriptionId, "--model-version", modelVersion, "--model-source", modelSource, "--sku", skuName, "--sku-capacity", skuCapacity.ToString(), "--scale-type", scaleType, "--scale-capacity", scaleCapacity.ToString()]);
-        var context = new CommandContext(_serviceProvider);
+        var context = new CommandContext(_serviceProvider, McpUserContext.Empty);
         var response = await command.ExecuteAsync(context, args);
 
         Assert.NotNull(response);
@@ -126,6 +129,7 @@ public class ModelDeploymentCommandTests
         var expectedError = "Test error";
 
         _foundryService.DeployModel(
+            Arg.Any<McpUserContext>(),
                 Arg.Any<string>(),
                 Arg.Any<string>(),
                 Arg.Any<string>(),
@@ -143,7 +147,7 @@ public class ModelDeploymentCommandTests
 
         var command = new ModelDeploymentCommand();
         var args = command.GetCommand().Parse(["--deployment", deploymentName, "--model-name", modelName, "--model-format", modelFormat, "--azure-ai-services", aiServicesName, "--resource-group", resourceGroup, "--subscription", subscriptionId]);
-        var context = new CommandContext(_serviceProvider);
+        var context = new CommandContext(_serviceProvider, McpUserContext.Empty);
         var response = await command.ExecuteAsync(context, args);
 
         Assert.NotNull(response);

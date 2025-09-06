@@ -2,6 +2,7 @@
 // Licensed under the MIT License.
 
 using System.Text.Json;
+using Azure.Mcp.Core.Areas.Server.Commands.Runtime;
 using Azure.Mcp.Core.Models.Command;
 using Azure.Mcp.Core.Options;
 using Azure.Mcp.Tools.Workbooks.Commands.Workbooks;
@@ -88,6 +89,7 @@ public class ShowWorkbooksCommandTests
         );
 
         _service.GetWorkbook(
+            Arg.Any<McpUserContext>(),
             Arg.Is(workbookId),
             Arg.Any<RetryPolicyOptions>(),
             Arg.Any<string?>())
@@ -97,7 +99,7 @@ public class ShowWorkbooksCommandTests
             "--workbook-id", workbookId
         ]);
 
-        var context = new CommandContext(_serviceProvider);
+        var context = new CommandContext(_serviceProvider, McpUserContext.Empty);
 
         // Act
         var response = await _command.ExecuteAsync(context, args);
@@ -125,6 +127,7 @@ public class ShowWorkbooksCommandTests
         var workbookId = "/subscriptions/sub1/resourceGroups/rg1/providers/microsoft.insights/workbooks/nonexistent";
 
         _service.GetWorkbook(
+            Arg.Any<McpUserContext>(),
             Arg.Is(workbookId),
             Arg.Any<RetryPolicyOptions>(),
             Arg.Any<string?>())
@@ -134,7 +137,7 @@ public class ShowWorkbooksCommandTests
             "--workbook-id", workbookId
         ]);
 
-        var context = new CommandContext(_serviceProvider);
+        var context = new CommandContext(_serviceProvider, McpUserContext.Empty);
 
         // Act
         var response = await _command.ExecuteAsync(context, args);
@@ -152,6 +155,7 @@ public class ShowWorkbooksCommandTests
         var workbookId = "/subscriptions/sub1/resourceGroups/rg1/providers/microsoft.insights/workbooks/workbook1";
 
         _service.GetWorkbook(
+            Arg.Any<McpUserContext>(),
             Arg.Is(workbookId),
             Arg.Any<RetryPolicyOptions>(),
             Arg.Any<string?>())
@@ -161,7 +165,7 @@ public class ShowWorkbooksCommandTests
             "--workbook-id", workbookId
         ]);
 
-        var context = new CommandContext(_serviceProvider);
+        var context = new CommandContext(_serviceProvider, McpUserContext.Empty);
 
         // Act
         var response = await _command.ExecuteAsync(context, args);
@@ -193,6 +197,7 @@ public class ShowWorkbooksCommandTests
         );
 
         _service.GetWorkbook(
+            Arg.Any<McpUserContext>(),
             Arg.Any<string>(),
             Arg.Any<RetryPolicyOptions>(),
             Arg.Any<string?>())
@@ -203,13 +208,14 @@ public class ShowWorkbooksCommandTests
             "--tenant", "test-tenant"
         ]);
 
-        var context = new CommandContext(_serviceProvider);
+        var context = new CommandContext(_serviceProvider, McpUserContext.Empty);
 
         // Act
         await _command.ExecuteAsync(context, args);
 
         // Assert
         await _service.Received(1).GetWorkbook(
+            Arg.Any<McpUserContext>(),
             Arg.Is(workbookId),
             Arg.Any<RetryPolicyOptions>(),
             Arg.Is("test-tenant"));
@@ -236,6 +242,7 @@ public class ShowWorkbooksCommandTests
         );
 
         _service.GetWorkbook(
+            Arg.Any<McpUserContext>(),
             Arg.Any<string>(),
             Arg.Any<RetryPolicyOptions>(),
             Arg.Any<string?>())
@@ -245,13 +252,14 @@ public class ShowWorkbooksCommandTests
             "--workbook-id", workbookId
         ]);
 
-        var context = new CommandContext(_serviceProvider);
+        var context = new CommandContext(_serviceProvider, McpUserContext.Empty);
 
         // Act
         await _command.ExecuteAsync(context, args);
 
         // Assert
         await _service.Received(1).GetWorkbook(
+            Arg.Any<McpUserContext>(),
             Arg.Is(workbookId),
             Arg.Any<RetryPolicyOptions>(),
             Arg.Is((string?)null));
@@ -278,6 +286,7 @@ public class ShowWorkbooksCommandTests
         );
 
         _service.GetWorkbook(
+            Arg.Any<McpUserContext>(),
             Arg.Any<string>(),
             Arg.Any<RetryPolicyOptions>(),
             Arg.Any<string?>())
@@ -288,13 +297,14 @@ public class ShowWorkbooksCommandTests
             "--auth-method", "1"
         ]);
 
-        var context = new CommandContext(_serviceProvider);
+        var context = new CommandContext(_serviceProvider, McpUserContext.Empty);
 
         // Act
         await _command.ExecuteAsync(context, args);
 
         // Assert
         await _service.Received(1).GetWorkbook(
+            Arg.Any<McpUserContext>(),
             Arg.Is(workbookId),
             Arg.Any<RetryPolicyOptions>(),
             Arg.Any<string?>());
@@ -310,7 +320,7 @@ public class ShowWorkbooksCommandTests
             "--workbook-id", invalidWorkbookId
         ]);
 
-        var context = new CommandContext(_serviceProvider);
+        var context = new CommandContext(_serviceProvider, McpUserContext.Empty);
 
         // Act
         var response = await _command.ExecuteAsync(context, args);
@@ -329,7 +339,7 @@ public class ShowWorkbooksCommandTests
             "--workbook-id", invalidWorkbookId
         ]);
 
-        var context = new CommandContext(_serviceProvider);
+        var context = new CommandContext(_serviceProvider, McpUserContext.Empty);
 
         // Act
         var response = await _command.ExecuteAsync(context, args);
@@ -396,6 +406,7 @@ public class ShowWorkbooksCommandTests
         );
 
         _service.GetWorkbook(
+            Arg.Any<McpUserContext>(),
             Arg.Is(workbookId),
             Arg.Any<RetryPolicyOptions>(),
             Arg.Any<string?>())
@@ -405,7 +416,7 @@ public class ShowWorkbooksCommandTests
             "--workbook-id", workbookId
         ]);
 
-        var context = new CommandContext(_serviceProvider);
+        var context = new CommandContext(_serviceProvider, McpUserContext.Empty);
 
         // Act
         var response = await _command.ExecuteAsync(context, args);

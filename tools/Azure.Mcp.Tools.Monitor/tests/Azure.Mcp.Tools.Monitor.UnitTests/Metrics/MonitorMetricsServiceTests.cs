@@ -2,6 +2,7 @@
 // Licensed under the MIT License.
 
 using Azure.Core;
+using Azure.Mcp.Core.Areas.Server.Commands.Runtime;
 using Azure.Mcp.Core.Options;
 using Azure.Mcp.Tools.Monitor.Services;
 using Azure.Monitor.Query;
@@ -44,6 +45,7 @@ public class MonitorMetricsServiceTests
             .Returns(new ResourceIdentifier(TestResourceId));
 
         _metricsQueryClientService.CreateClientAsync(
+                Arg.Any<McpUserContext>(),
                 Arg.Any<string?>(),
                 Arg.Any<RetryPolicyOptions?>())
             .Returns(_metricsQueryClient);
@@ -92,6 +94,7 @@ public class MonitorMetricsServiceTests
         // Act & Assert
         var exception = await Assert.ThrowsAsync<ArgumentException>(() =>
             _service.QueryMetricsAsync(
+                McpUserContext.Empty,
                 TestSubscription,
                 TestResourceGroup,
                 TestResourceType,
@@ -116,6 +119,7 @@ public class MonitorMetricsServiceTests
         // Act & Assert
         var exception = await Assert.ThrowsAsync<ArgumentException>(() =>
             _service.QueryMetricsAsync(
+                McpUserContext.Empty,
                 TestSubscription,
                 TestResourceGroup,
                 TestResourceType,
@@ -140,6 +144,7 @@ public class MonitorMetricsServiceTests
         // Act & Assert
         var exception = await Assert.ThrowsAsync<ArgumentException>(() =>
             _service.QueryMetricsAsync(
+                McpUserContext.Empty,
                 TestSubscription,
                 TestResourceGroup,
                 TestResourceType,
@@ -165,6 +170,7 @@ public class MonitorMetricsServiceTests
         {
             await Assert.ThrowsAsync<ArgumentNullException>(() =>
                 _service.QueryMetricsAsync(
+                    McpUserContext.Empty,
                     subscription!,
                     TestResourceGroup,
                     TestResourceType,
@@ -176,6 +182,7 @@ public class MonitorMetricsServiceTests
         {
             await Assert.ThrowsAsync<ArgumentException>(() =>
                 _service.QueryMetricsAsync(
+                    McpUserContext.Empty,
                     subscription,
                     TestResourceGroup,
                     TestResourceType,
@@ -199,6 +206,7 @@ public class MonitorMetricsServiceTests
         {
             await Assert.ThrowsAsync<ArgumentNullException>(() =>
                 _service.QueryMetricsAsync(
+                    McpUserContext.Empty,
                     TestSubscription,
                     TestResourceGroup,
                     TestResourceType,
@@ -210,6 +218,7 @@ public class MonitorMetricsServiceTests
         {
             await Assert.ThrowsAsync<ArgumentException>(() =>
                 _service.QueryMetricsAsync(
+                    McpUserContext.Empty,
                     TestSubscription,
                     TestResourceGroup,
                     TestResourceType,
@@ -225,6 +234,7 @@ public class MonitorMetricsServiceTests
         // Act & Assert
         await Assert.ThrowsAsync<ArgumentNullException>(() =>
             _service.QueryMetricsAsync(
+                McpUserContext.Empty,
                 TestSubscription,
                 TestResourceGroup,
                 TestResourceType,
@@ -239,6 +249,7 @@ public class MonitorMetricsServiceTests
         // Act & Assert
         await Assert.ThrowsAsync<ArgumentNullException>(() =>
             _service.QueryMetricsAsync(
+                McpUserContext.Empty,
                 TestSubscription,
                 TestResourceGroup,
                 TestResourceType,
@@ -265,6 +276,7 @@ public class MonitorMetricsServiceTests
         // Act & Assert
         var exception = await Assert.ThrowsAsync<Exception>(() =>
             _service.QueryMetricsAsync(
+                McpUserContext.Empty,
                 TestSubscription,
                 TestResourceGroup,
                 TestResourceType,
@@ -282,6 +294,7 @@ public class MonitorMetricsServiceTests
         var metricNames = new[] { "Transactions" };
         var metricNamespace = "Microsoft.Storage/storageAccounts";
         _metricsQueryClientService.CreateClientAsync(
+                Arg.Any<McpUserContext>(),
                 Arg.Any<string?>(),
                 Arg.Any<RetryPolicyOptions?>())
             .ThrowsAsync(new Exception("Authentication failed"));
@@ -289,6 +302,7 @@ public class MonitorMetricsServiceTests
         // Act & Assert
         var exception = await Assert.ThrowsAsync<Exception>(() =>
             _service.QueryMetricsAsync(
+                McpUserContext.Empty,
                 TestSubscription,
                 TestResourceGroup,
                 TestResourceType,
@@ -313,6 +327,7 @@ public class MonitorMetricsServiceTests
         {
             await Assert.ThrowsAsync<ArgumentNullException>(() =>
                 _service.ListMetricDefinitionsAsync(
+                    McpUserContext.Empty,
                     subscription!,
                     TestResourceGroup,
                     TestResourceType,
@@ -322,6 +337,7 @@ public class MonitorMetricsServiceTests
         {
             await Assert.ThrowsAsync<ArgumentException>(() =>
                 _service.ListMetricDefinitionsAsync(
+                    McpUserContext.Empty,
                     subscription,
                     TestResourceGroup,
                     TestResourceType,
@@ -339,6 +355,7 @@ public class MonitorMetricsServiceTests
         {
             await Assert.ThrowsAsync<ArgumentNullException>(() =>
                 _service.ListMetricDefinitionsAsync(
+                    McpUserContext.Empty,
                     TestSubscription,
                     TestResourceGroup,
                     TestResourceType,
@@ -348,6 +365,7 @@ public class MonitorMetricsServiceTests
         {
             await Assert.ThrowsAsync<ArgumentException>(() =>
                 _service.ListMetricDefinitionsAsync(
+                    McpUserContext.Empty,
                     TestSubscription,
                     TestResourceGroup,
                     TestResourceType,
@@ -369,6 +387,7 @@ public class MonitorMetricsServiceTests
         {
             await Assert.ThrowsAsync<ArgumentNullException>(() =>
                 _service.ListMetricNamespacesAsync(
+                    McpUserContext.Empty,
                     subscription!,
                     TestResourceGroup,
                     TestResourceType,
@@ -378,6 +397,7 @@ public class MonitorMetricsServiceTests
         {
             await Assert.ThrowsAsync<ArgumentException>(() =>
                 _service.ListMetricNamespacesAsync(
+                    McpUserContext.Empty,
                     subscription,
                     TestResourceGroup,
                     TestResourceType,
@@ -395,6 +415,7 @@ public class MonitorMetricsServiceTests
         {
             await Assert.ThrowsAsync<ArgumentNullException>(() =>
                 _service.ListMetricNamespacesAsync(
+                    McpUserContext.Empty,
                     TestSubscription,
                     TestResourceGroup,
                     TestResourceType,
@@ -404,6 +425,7 @@ public class MonitorMetricsServiceTests
         {
             await Assert.ThrowsAsync<ArgumentException>(() =>
                 _service.ListMetricNamespacesAsync(
+                    McpUserContext.Empty,
                     TestSubscription,
                     TestResourceGroup,
                     TestResourceType,
@@ -430,6 +452,7 @@ public class MonitorMetricsServiceTests
 
         // Act
         var result = await _service.QueryMetricsAsync(
+            McpUserContext.Empty,
             TestSubscription,
             TestResourceGroup,
             TestResourceType,
@@ -466,6 +489,7 @@ public class MonitorMetricsServiceTests
 
         // Act
         await _service.QueryMetricsAsync(
+            McpUserContext.Empty,
             TestSubscription,
             TestResourceGroup,
             TestResourceType,
@@ -501,6 +525,7 @@ public class MonitorMetricsServiceTests
 
         // Act
         await _service.QueryMetricsAsync(
+            McpUserContext.Empty,
             TestSubscription,
             TestResourceGroup,
             TestResourceType,
@@ -533,6 +558,7 @@ public class MonitorMetricsServiceTests
 
         // Act
         await _service.QueryMetricsAsync(
+            McpUserContext.Empty,
             TestSubscription,
             TestResourceGroup,
             TestResourceType,
@@ -567,6 +593,7 @@ public class MonitorMetricsServiceTests
 
         // Act
         await _service.QueryMetricsAsync(
+            McpUserContext.Empty,
             TestSubscription,
             TestResourceGroup,
             TestResourceType,
@@ -602,6 +629,7 @@ public class MonitorMetricsServiceTests
 
         // Act
         await _service.QueryMetricsAsync(
+            McpUserContext.Empty,
             TestSubscription,
             TestResourceGroup,
             TestResourceType,
@@ -612,6 +640,7 @@ public class MonitorMetricsServiceTests
 
         // Assert
         await _metricsQueryClientService.Received(1).CreateClientAsync(
+            Arg.Any<McpUserContext>(),
             TestTenant,
             Arg.Any<RetryPolicyOptions?>());
     }

@@ -41,6 +41,7 @@ public sealed class WorkspaceListCommand(ILogger<WorkspaceListCommand> logger) :
         {
             var monitorService = context.GetService<IMonitorService>();
             var workspaces = await monitorService.ListWorkspaces(
+                context.UserContext,
                 options.Subscription!,
                 options.Tenant,
                 options.RetryPolicy);

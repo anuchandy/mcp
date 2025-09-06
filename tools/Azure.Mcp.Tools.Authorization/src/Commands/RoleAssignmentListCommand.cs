@@ -56,6 +56,7 @@ public sealed class RoleAssignmentListCommand(ILogger<RoleAssignmentListCommand>
         {
             var authService = context.GetService<IAuthorizationService>();
             var assignments = await authService.ListRoleAssignments(
+                context.UserContext,
                 options.Scope,
                 options.Tenant,
                 options.RetryPolicy);

@@ -1,6 +1,7 @@
 // Copyright (c) Microsoft Corporation.
 // Licensed under the MIT License.
 
+using Azure.Mcp.Core.Areas.Server.Commands.Runtime;
 using Azure.Mcp.Core.Options;
 using Azure.Mcp.Core.Services.Azure;
 using Azure.Mcp.Tools.ServiceBus.Models;
@@ -12,12 +13,13 @@ namespace Azure.Mcp.Tools.ServiceBus.Services;
 public class ServiceBusService : BaseAzureService, IServiceBusService
 {
     public async Task<QueueDetails> GetQueueDetails(
+        McpUserContext userContext,
         string namespaceName,
         string queueName,
         string? tenantId = null,
         RetryPolicyOptions? retryPolicy = null)
     {
-        var credential = await GetCredential(tenantId);
+        var credential = await GetCredential(userContext, tenantId);
         var client = new ServiceBusAdministrationClient(namespaceName, credential);
         var runtimeProperties = (await client.GetQueueRuntimePropertiesAsync(queueName)).Value;
         var properties = (await client.GetQueueAsync(queueName)).Value;
@@ -48,13 +50,14 @@ public class ServiceBusService : BaseAzureService, IServiceBusService
     }
 
     public async Task<SubscriptionDetails> GetSubscriptionDetails(
+        McpUserContext userContext,
         string namespaceName,
         string topicName,
         string subscriptionName,
         string? tenantId = null,
         RetryPolicyOptions? retryPolicy = null)
     {
-        var credential = await GetCredential(tenantId);
+        var credential = await GetCredential(userContext, tenantId);
         var client = new ServiceBusAdministrationClient(namespaceName, credential);
         var runtimeProperties = (await client.GetSubscriptionRuntimePropertiesAsync(topicName, subscriptionName)).Value;
         var properties = (await client.GetSubscriptionAsync(topicName, subscriptionName)).Value;
@@ -79,12 +82,13 @@ public class ServiceBusService : BaseAzureService, IServiceBusService
     }
 
     public async Task<TopicDetails> GetTopicDetails(
+        McpUserContext userContext,
         string namespaceName,
         string topicName,
         string? tenantId = null,
         RetryPolicyOptions? retryPolicy = null)
     {
-        var credential = await GetCredential(tenantId);
+        var credential = await GetCredential(userContext, tenantId);
         var client = new ServiceBusAdministrationClient(namespaceName, credential);
         var runtimeProperties = (await client.GetTopicRuntimePropertiesAsync(topicName)).Value;
         var properties = (await client.GetTopicAsync(topicName)).Value;
@@ -105,13 +109,14 @@ public class ServiceBusService : BaseAzureService, IServiceBusService
     }
 
     public async Task<List<ServiceBusReceivedMessage>> PeekQueueMessages(
+        McpUserContext userContext,
         string namespaceName,
         string queueName,
         int maxMessages,
         string? tenantId = null,
         RetryPolicyOptions? retryPolicy = null)
     {
-        var credential = await GetCredential(tenantId);
+        var credential = await GetCredential(userContext, tenantId);
 
         await using (var client = new ServiceBusClient(namespaceName, credential))
         await using (var receiver = client.CreateReceiver(queueName))
@@ -123,6 +128,7 @@ public class ServiceBusService : BaseAzureService, IServiceBusService
     }
 
     public async Task<List<ServiceBusReceivedMessage>> PeekSubscriptionMessages(
+        McpUserContext userContext,
         string namespaceName,
         string topicName,
         string subscriptionName,
@@ -130,7 +136,7 @@ public class ServiceBusService : BaseAzureService, IServiceBusService
         string? tenantId = null,
         RetryPolicyOptions? retryPolicy = null)
     {
-        var credential = await GetCredential(tenantId);
+        var credential = await GetCredential(userContext, tenantId);
 
         await using (var client = new ServiceBusClient(namespaceName, credential))
         await using (var receiver = client.CreateReceiver(topicName, subscriptionName))

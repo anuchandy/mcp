@@ -3,6 +3,7 @@
 
 using System.Text.Json;
 using Azure.Mcp.Core.Models;
+using Azure.Mcp.Core.Areas.Server.Commands.Runtime;
 using Azure.Mcp.Core.Models.Command;
 using Azure.Mcp.Tools.Redis.Commands.ManagedRedis;
 using Azure.Mcp.Tools.Redis.Models.ManagedRedis;
@@ -58,6 +59,7 @@ public class DatabaseListCommandTests
         };
 
         _redisService.ListDatabasesAsync(
+            Arg.Any<McpUserContext>(),
             "cluster1",
             "rg1",
             "sub123",
@@ -68,7 +70,7 @@ public class DatabaseListCommandTests
 
         var command = new DatabaseListCommand(_logger);
         var args = command.GetCommand().Parse(["--subscription", "sub123", "--resource-group", "rg1", "--cluster", "cluster1"]);
-        var context = new CommandContext(_serviceProvider);
+        var context = new CommandContext(_serviceProvider, McpUserContext.Empty);
         var response = await command.ExecuteAsync(context, args);
 
         Assert.NotNull(response);
@@ -94,6 +96,7 @@ public class DatabaseListCommandTests
     public async Task ExecuteAsync_ReturnsNull_WhenNoDatabases()
     {
         _redisService.ListDatabasesAsync(
+            Arg.Any<McpUserContext>(),
             "cluster1",
             "rg1",
             "sub123",
@@ -105,7 +108,7 @@ public class DatabaseListCommandTests
         var command = new DatabaseListCommand(_logger);
 
         var args = command.GetCommand().Parse(["--subscription", "sub123", "--resource-group", "rg1", "--cluster", "cluster1"]);
-        var context = new CommandContext(_serviceProvider);
+        var context = new CommandContext(_serviceProvider, McpUserContext.Empty);
         var response = await command.ExecuteAsync(context, args);
 
         Assert.NotNull(response);
@@ -117,6 +120,7 @@ public class DatabaseListCommandTests
     {
         var expectedError = "Test error. To mitigate this issue, please refer to the troubleshooting guidelines here at https://aka.ms/azmcp/troubleshooting.";
         _redisService.ListDatabasesAsync(
+            Arg.Any<McpUserContext>(),
             "cluster1",
             "rg1",
             "sub123",
@@ -128,7 +132,7 @@ public class DatabaseListCommandTests
         var command = new DatabaseListCommand(_logger);
 
         var args = command.GetCommand().Parse(["--subscription", "sub123", "--resource-group", "rg1", "--cluster", "cluster1"]);
-        var context = new CommandContext(_serviceProvider);
+        var context = new CommandContext(_serviceProvider, McpUserContext.Empty);
 
         var response = await command.ExecuteAsync(context, args);
 
@@ -155,7 +159,7 @@ public class DatabaseListCommandTests
 
 
         var parseResult = command.GetCommand().Parse([.. options]);
-        var context = new CommandContext(_serviceProvider);
+        var context = new CommandContext(_serviceProvider, McpUserContext.Empty);
 
         var response = await command.ExecuteAsync(context, parseResult);
 

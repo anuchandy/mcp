@@ -58,6 +58,7 @@ public sealed class AvailabilityStatusListCommand(ILogger<AvailabilityStatusList
                 throw new InvalidOperationException("Resource Health service is not available.");
 
             var statuses = await resourceHealthService.ListAvailabilityStatusesAsync(
+                context.UserContext,
                 options.Subscription!,
                 options.ResourceGroup,
                 options.Tenant,

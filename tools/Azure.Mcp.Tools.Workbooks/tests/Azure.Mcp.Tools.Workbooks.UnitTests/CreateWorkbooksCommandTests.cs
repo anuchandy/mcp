@@ -2,6 +2,7 @@
 // Licensed under the MIT License.
 
 using System.CommandLine;
+using Azure.Mcp.Core.Areas.Server.Commands.Runtime;
 using Azure.Mcp.Core.Models.Command;
 using Azure.Mcp.Core.Options;
 using Azure.Mcp.Tools.Workbooks.Commands.Workbooks;
@@ -88,6 +89,7 @@ public class CreateWorkbooksCommandTests
         );
 
         _service.CreateWorkbook(
+            Arg.Any<McpUserContext>(),
             Arg.Any<string>(),
             Arg.Any<string>(),
             Arg.Any<string>(),
@@ -96,7 +98,7 @@ public class CreateWorkbooksCommandTests
             Arg.Any<RetryPolicyOptions?>())
             .Returns(workbook);
 
-        var context = new CommandContext(_serviceProvider);
+        var context = new CommandContext(_serviceProvider, McpUserContext.Empty);
         var parseResult = CreateParseResult("--subscription", "test-sub",
             "--resource-group", "test-rg",
             "--display-name", "Test Workbook",
@@ -111,6 +113,7 @@ public class CreateWorkbooksCommandTests
         Assert.Equal(200, result.Status);
 
         await _service.Received(1).CreateWorkbook(
+            Arg.Any<McpUserContext>(),
             "test-sub",
             "test-rg",
             "Test Workbook",
@@ -139,6 +142,7 @@ public class CreateWorkbooksCommandTests
         );
 
         _service.CreateWorkbook(
+            Arg.Any<McpUserContext>(),
             Arg.Any<string>(),
             Arg.Any<string>(),
             Arg.Any<string>(),
@@ -147,7 +151,7 @@ public class CreateWorkbooksCommandTests
             Arg.Any<RetryPolicyOptions?>())
             .Returns(workbook);
 
-        var context = new CommandContext(_serviceProvider);
+        var context = new CommandContext(_serviceProvider, McpUserContext.Empty);
         var parseResult = CreateParseResult("--subscription", "test-sub",
             "--resource-group", "test-rg",
             "--display-name", "Test Workbook",
@@ -159,6 +163,7 @@ public class CreateWorkbooksCommandTests
 
         // Assert
         await _service.Received(1).CreateWorkbook(
+            Arg.Any<McpUserContext>(),
             "test-sub",
             "test-rg",
             "Test Workbook",
@@ -172,6 +177,7 @@ public class CreateWorkbooksCommandTests
     {
         // Arrange
         _service.CreateWorkbook(
+            Arg.Any<McpUserContext>(),
             Arg.Any<string>(),
             Arg.Any<string>(),
             Arg.Any<string>(),
@@ -180,7 +186,7 @@ public class CreateWorkbooksCommandTests
             Arg.Any<RetryPolicyOptions?>())
             .Returns((WorkbookInfo?)null);
 
-        var context = new CommandContext(_serviceProvider);
+        var context = new CommandContext(_serviceProvider, McpUserContext.Empty);
         var parseResult = CreateParseResult("--subscription", "test-sub",
             "--resource-group", "test-rg",
             "--display-name", "Test Workbook",
@@ -199,6 +205,7 @@ public class CreateWorkbooksCommandTests
     {
         // Arrange
         _service.CreateWorkbook(
+            Arg.Any<McpUserContext>(),
             Arg.Any<string>(),
             Arg.Any<string>(),
             Arg.Any<string>(),
@@ -207,7 +214,7 @@ public class CreateWorkbooksCommandTests
             Arg.Any<RetryPolicyOptions?>())
             .Returns(Task.FromException<WorkbookInfo?>(new InvalidOperationException("Service error")));
 
-        var context = new CommandContext(_serviceProvider);
+        var context = new CommandContext(_serviceProvider, McpUserContext.Empty);
         var parseResult = CreateParseResult("--subscription", "test-sub",
             "--resource-group", "test-rg",
             "--display-name", "Test Workbook",
@@ -241,6 +248,7 @@ public class CreateWorkbooksCommandTests
         );
 
         _service.CreateWorkbook(
+            Arg.Any<McpUserContext>(),
             Arg.Any<string>(),
             Arg.Any<string>(),
             Arg.Any<string>(),
@@ -249,7 +257,7 @@ public class CreateWorkbooksCommandTests
             Arg.Any<RetryPolicyOptions?>())
             .Returns(workbook);
 
-        var context = new CommandContext(_serviceProvider);
+        var context = new CommandContext(_serviceProvider, McpUserContext.Empty);
         var parseResult = CreateParseResult("--subscription", "test-subscription",
             "--resource-group", "test-resource-group",
             "--display-name", "My Test Workbook",
@@ -260,6 +268,7 @@ public class CreateWorkbooksCommandTests
 
         // Assert
         await _service.Received(1).CreateWorkbook(
+            Arg.Any<McpUserContext>(),
             "test-subscription",
             "test-resource-group",
             "My Test Workbook",
@@ -274,6 +283,7 @@ public class CreateWorkbooksCommandTests
         // Arrange
         var workbook = new WorkbookInfo("test-id", null, null, null, null, null, null, null, null, null, null, null);
         _service.CreateWorkbook(
+            Arg.Any<McpUserContext>(),
             Arg.Any<string>(),
             Arg.Any<string>(),
             Arg.Any<string>(),
@@ -282,7 +292,7 @@ public class CreateWorkbooksCommandTests
             Arg.Any<RetryPolicyOptions?>())
             .Returns(workbook);
 
-        var context = new CommandContext(_serviceProvider);
+        var context = new CommandContext(_serviceProvider, McpUserContext.Empty);
         var parseResult = CreateParseResult("--subscription", "test-sub",
             "--resource-group", "test-rg",
             "--display-name", "Test Workbook",
@@ -293,6 +303,7 @@ public class CreateWorkbooksCommandTests
 
         // Assert
         await _service.Received(1).CreateWorkbook(
+            Arg.Any<McpUserContext>(),
             "test-sub",
             "test-rg",
             "Test Workbook",
@@ -307,6 +318,7 @@ public class CreateWorkbooksCommandTests
         // Arrange
         var workbook = new WorkbookInfo("test-id", null, null, null, null, null, null, null, null, null, null, null);
         _service.CreateWorkbook(
+            Arg.Any<McpUserContext>(),
             Arg.Any<string>(),
             Arg.Any<string>(),
             Arg.Any<string>(),
@@ -316,7 +328,7 @@ public class CreateWorkbooksCommandTests
             Arg.Any<string?>())
             .Returns(workbook);
 
-        var context = new CommandContext(_serviceProvider);
+        var context = new CommandContext(_serviceProvider, McpUserContext.Empty);
         var parseResult = CreateParseResult("--subscription", "test-sub",
             "--resource-group", "test-rg",
             "--display-name", "Test Workbook",
@@ -329,6 +341,7 @@ public class CreateWorkbooksCommandTests
 
         // Assert
         await _service.Received(1).CreateWorkbook(
+            Arg.Any<McpUserContext>(),
             "test-sub",
             "test-rg",
             "Test Workbook",
@@ -345,7 +358,7 @@ public class CreateWorkbooksCommandTests
     public async Task ExecuteAsync_WithInvalidDisplayName_ReturnsValidationError(string? invalidDisplayName)
     {
         // Arrange
-        var context = new CommandContext(_serviceProvider);
+        var context = new CommandContext(_serviceProvider, McpUserContext.Empty);
         var args = new List<string> { "--subscription", "test-sub", "--resource-group", "test-rg", "--serialized-content", """{"items":[]}""" };
 
         if (invalidDisplayName != null)
@@ -370,7 +383,7 @@ public class CreateWorkbooksCommandTests
     public async Task ExecuteAsync_WithInvalidSerializedContent_ReturnsValidationError(string? invalidSerializedContent)
     {
         // Arrange
-        var context = new CommandContext(_serviceProvider);
+        var context = new CommandContext(_serviceProvider, McpUserContext.Empty);
         var args = new List<string> { "--subscription", "test-sub", "--resource-group", "test-rg", "--display-name", "Test Workbook" };
 
         if (invalidSerializedContent != null)
@@ -430,6 +443,7 @@ public class CreateWorkbooksCommandTests
         );
 
         _service.CreateWorkbook(
+            Arg.Any<McpUserContext>(),
             Arg.Any<string>(),
             Arg.Any<string>(),
             Arg.Any<string>(),
@@ -438,7 +452,7 @@ public class CreateWorkbooksCommandTests
             Arg.Any<RetryPolicyOptions?>())
             .Returns(workbook);
 
-        var context = new CommandContext(_serviceProvider);
+        var context = new CommandContext(_serviceProvider, McpUserContext.Empty);
         var parseResult = CreateParseResult("--subscription", "test-sub",
             "--resource-group", "test-rg",
             "--display-name", "Complex Test Workbook",
@@ -459,6 +473,7 @@ public class CreateWorkbooksCommandTests
         // Arrange
         var workbook = new WorkbookInfo("test-id", null, null, null, null, null, null, null, null, null, null, null);
         _service.CreateWorkbook(
+            Arg.Any<McpUserContext>(),
             Arg.Any<string>(),
             Arg.Any<string>(),
             Arg.Any<string>(),
@@ -467,7 +482,7 @@ public class CreateWorkbooksCommandTests
             Arg.Any<RetryPolicyOptions?>())
             .Returns(workbook);
 
-        var context = new CommandContext(_serviceProvider);
+        var context = new CommandContext(_serviceProvider, McpUserContext.Empty);
         var parseResult = CreateParseResult("--subscription", "test-sub",
             "--resource-group", "test-rg",
             "--display-name", "Test Workbook",
@@ -482,6 +497,7 @@ public class CreateWorkbooksCommandTests
 
         // Assert
         await _service.Received(1).CreateWorkbook(
+            Arg.Any<McpUserContext>(),
             "test-sub",
             "test-rg",
             "Test Workbook",
@@ -499,6 +515,7 @@ public class CreateWorkbooksCommandTests
     {
         // Arrange
         _service.CreateWorkbook(
+            Arg.Any<McpUserContext>(),
             Arg.Any<string>(),
             Arg.Any<string>(),
             Arg.Any<string>(),
@@ -507,7 +524,7 @@ public class CreateWorkbooksCommandTests
             Arg.Any<RetryPolicyOptions?>())
             .Returns(Task.FromException<WorkbookInfo?>(new ArgumentException("Invalid workbook data")));
 
-        var context = new CommandContext(_serviceProvider);
+        var context = new CommandContext(_serviceProvider, McpUserContext.Empty);
         var parseResult = CreateParseResult("--subscription", "test-sub",
             "--resource-group", "test-rg",
             "--display-name", "Test Workbook",

@@ -2,6 +2,7 @@
 // Licensed under the MIT License.
 
 using System.CommandLine;
+using Azure.Mcp.Core.Areas.Server.Commands.Runtime;
 using Azure.Mcp.Core.Models.Command;
 using Azure.Mcp.Tools.Sql.Commands.FirewallRule;
 using Azure.Mcp.Tools.Sql.Services;
@@ -31,7 +32,7 @@ public class FirewallRuleDeleteCommandTests
         _serviceProvider = collection.BuildServiceProvider();
 
         _command = new(_logger);
-        _context = new(_serviceProvider);
+        _context = new CommandContext(_serviceProvider, McpUserContext.Empty);
         _commandDefinition = _command.GetCommand();
     }
 
@@ -65,6 +66,7 @@ public class FirewallRuleDeleteCommandTests
         if (shouldSucceed)
         {
             _service.DeleteFirewallRuleAsync(
+                Arg.Any<McpUserContext>(),
                 Arg.Any<string>(),
                 Arg.Any<string>(),
                 Arg.Any<string>(),
@@ -74,7 +76,7 @@ public class FirewallRuleDeleteCommandTests
                 .Returns(true);
         }
 
-        var context = new CommandContext(_serviceProvider);
+        var context = new CommandContext(_serviceProvider, McpUserContext.Empty);
         var parseResult = _commandDefinition.Parse(args);
 
         // Act
@@ -97,6 +99,7 @@ public class FirewallRuleDeleteCommandTests
     {
         // Arrange
         _service.DeleteFirewallRuleAsync(
+            Arg.Any<McpUserContext>(),
             "testserver",
             "testrg",
             "testsub",
@@ -105,7 +108,7 @@ public class FirewallRuleDeleteCommandTests
             Arg.Any<CancellationToken>())
             .Returns(true);
 
-        var context = new CommandContext(_serviceProvider);
+        var context = new CommandContext(_serviceProvider, McpUserContext.Empty);
         var parseResult = _commandDefinition.Parse("--subscription testsub --resource-group testrg --server testserver --firewall-rule-name TestRule");
 
         // Act
@@ -122,6 +125,7 @@ public class FirewallRuleDeleteCommandTests
     {
         // Arrange - Rule doesn't exist, but delete operation should still succeed (idempotent)
         _service.DeleteFirewallRuleAsync(
+            Arg.Any<McpUserContext>(),
             "testserver",
             "testrg",
             "testsub",
@@ -130,7 +134,7 @@ public class FirewallRuleDeleteCommandTests
             Arg.Any<CancellationToken>())
             .Returns(false);
 
-        var context = new CommandContext(_serviceProvider);
+        var context = new CommandContext(_serviceProvider, McpUserContext.Empty);
         var parseResult = _commandDefinition.Parse("--subscription testsub --resource-group testrg --server testserver --firewall-rule-name NonExistentRule");
 
         // Act
@@ -147,6 +151,7 @@ public class FirewallRuleDeleteCommandTests
     {
         // Arrange
         _service.DeleteFirewallRuleAsync(
+            Arg.Any<McpUserContext>(),
             Arg.Any<string>(),
             Arg.Any<string>(),
             Arg.Any<string>(),
@@ -155,7 +160,7 @@ public class FirewallRuleDeleteCommandTests
             Arg.Any<CancellationToken>())
             .Returns(Task.FromException<bool>(new Exception("Test error")));
 
-        var context = new CommandContext(_serviceProvider);
+        var context = new CommandContext(_serviceProvider, McpUserContext.Empty);
         var parseResult = _commandDefinition.Parse("--subscription testsub --resource-group testrg --server testserver --firewall-rule-name TestRule");
 
         // Act
@@ -173,6 +178,7 @@ public class FirewallRuleDeleteCommandTests
         // Arrange
         var requestException = new RequestFailedException(404, "Server not found");
         _service.DeleteFirewallRuleAsync(
+            Arg.Any<McpUserContext>(),
             Arg.Any<string>(),
             Arg.Any<string>(),
             Arg.Any<string>(),
@@ -181,7 +187,7 @@ public class FirewallRuleDeleteCommandTests
             Arg.Any<CancellationToken>())
             .Returns(Task.FromException<bool>(requestException));
 
-        var context = new CommandContext(_serviceProvider);
+        var context = new CommandContext(_serviceProvider, McpUserContext.Empty);
         var parseResult = _commandDefinition.Parse("--subscription testsub --resource-group testrg --server testserver --firewall-rule-name TestRule");
 
         // Act
@@ -198,6 +204,7 @@ public class FirewallRuleDeleteCommandTests
         // Arrange
         var requestException = new RequestFailedException(403, "Access denied");
         _service.DeleteFirewallRuleAsync(
+            Arg.Any<McpUserContext>(),
             Arg.Any<string>(),
             Arg.Any<string>(),
             Arg.Any<string>(),
@@ -206,7 +213,7 @@ public class FirewallRuleDeleteCommandTests
             Arg.Any<CancellationToken>())
             .Returns(Task.FromException<bool>(requestException));
 
-        var context = new CommandContext(_serviceProvider);
+        var context = new CommandContext(_serviceProvider, McpUserContext.Empty);
         var parseResult = _commandDefinition.Parse("--subscription testsub --resource-group testrg --server testserver --firewall-rule-name TestRule");
 
         // Act
@@ -227,6 +234,7 @@ public class FirewallRuleDeleteCommandTests
         const string ruleName = "TestRule";
 
         _service.DeleteFirewallRuleAsync(
+            Arg.Any<McpUserContext>(),
             Arg.Any<string>(),
             Arg.Any<string>(),
             Arg.Any<string>(),
@@ -235,7 +243,7 @@ public class FirewallRuleDeleteCommandTests
             Arg.Any<CancellationToken>())
             .Returns(true);
 
-        var context = new CommandContext(_serviceProvider);
+        var context = new CommandContext(_serviceProvider, McpUserContext.Empty);
         var parseResult = _commandDefinition.Parse($"--subscription {subscription} --resource-group {resourceGroup} --server {serverName} --firewall-rule-name {ruleName}");
 
         // Act
@@ -243,6 +251,7 @@ public class FirewallRuleDeleteCommandTests
 
         // Assert
         await _service.Received(1).DeleteFirewallRuleAsync(
+            Arg.Any<McpUserContext>(),
             serverName,
             resourceGroup,
             subscription,
@@ -256,6 +265,7 @@ public class FirewallRuleDeleteCommandTests
     {
         // Arrange
         _service.DeleteFirewallRuleAsync(
+            Arg.Any<McpUserContext>(),
             Arg.Any<string>(),
             Arg.Any<string>(),
             Arg.Any<string>(),
@@ -264,7 +274,7 @@ public class FirewallRuleDeleteCommandTests
             Arg.Any<CancellationToken>())
             .Returns(true);
 
-        var context = new CommandContext(_serviceProvider);
+        var context = new CommandContext(_serviceProvider, McpUserContext.Empty);
         var parseResult = _commandDefinition.Parse("--subscription testsub --resource-group testrg --server testserver --firewall-rule-name TestRule --retry-max-retries 3");
 
         // Act
@@ -276,6 +286,7 @@ public class FirewallRuleDeleteCommandTests
 
         // Verify the service was called with retry policy
         await _service.Received(1).DeleteFirewallRuleAsync(
+            Arg.Any<McpUserContext>(),
             "testserver",
             "testrg",
             "testsub",
@@ -294,6 +305,7 @@ public class FirewallRuleDeleteCommandTests
     {
         // Arrange
         _service.DeleteFirewallRuleAsync(
+            Arg.Any<McpUserContext>(),
             Arg.Any<string>(),
             Arg.Any<string>(),
             Arg.Any<string>(),
@@ -302,7 +314,7 @@ public class FirewallRuleDeleteCommandTests
             Arg.Any<CancellationToken>())
             .Returns(true);
 
-        var context = new CommandContext(_serviceProvider);
+        var context = new CommandContext(_serviceProvider, McpUserContext.Empty);
         var parseResult = _commandDefinition.Parse($"--subscription testsub --resource-group testrg --server testserver --firewall-rule-name {ruleName}");
 
         // Act
@@ -314,6 +326,7 @@ public class FirewallRuleDeleteCommandTests
 
         // Verify the service was called with the correct rule name
         await _service.Received(1).DeleteFirewallRuleAsync(
+            Arg.Any<McpUserContext>(),
             "testserver",
             "testrg",
             "testsub",
@@ -328,6 +341,7 @@ public class FirewallRuleDeleteCommandTests
         // Arrange
         var argumentException = new ArgumentException("Invalid firewall rule name");
         _service.DeleteFirewallRuleAsync(
+            Arg.Any<McpUserContext>(),
             Arg.Any<string>(),
             Arg.Any<string>(),
             Arg.Any<string>(),
@@ -336,7 +350,7 @@ public class FirewallRuleDeleteCommandTests
             Arg.Any<CancellationToken>())
             .Returns(Task.FromException<bool>(argumentException));
 
-        var context = new CommandContext(_serviceProvider);
+        var context = new CommandContext(_serviceProvider, McpUserContext.Empty);
         var parseResult = _commandDefinition.Parse("--subscription testsub --resource-group testrg --server testserver --firewall-rule-name InvalidRule");
 
         // Act
@@ -353,6 +367,7 @@ public class FirewallRuleDeleteCommandTests
         // Arrange
         const string ruleName = "TestRule";
         _service.DeleteFirewallRuleAsync(
+            Arg.Any<McpUserContext>(),
             Arg.Any<string>(),
             Arg.Any<string>(),
             Arg.Any<string>(),
@@ -361,7 +376,7 @@ public class FirewallRuleDeleteCommandTests
             Arg.Any<CancellationToken>())
             .Returns(true);
 
-        var context = new CommandContext(_serviceProvider);
+        var context = new CommandContext(_serviceProvider, McpUserContext.Empty);
         var parseResult = _commandDefinition.Parse($"--subscription testsub --resource-group testrg --server testserver --firewall-rule-name {ruleName}");
 
         // Act

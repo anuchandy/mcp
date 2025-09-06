@@ -3,6 +3,7 @@
 
 using System.Text.Json;
 using System.Text.Json.Serialization;
+using Azure.Mcp.Core.Areas.Server.Commands.Runtime;
 using Azure.Mcp.Core.Models.Command;
 using Azure.Mcp.Tools.MySql.Commands.Server;
 using Azure.Mcp.Tools.MySql.Services;
@@ -35,7 +36,7 @@ public class ServerListCommandTests
     public async Task ExecuteAsync_ReturnsServers_WhenSuccessful()
     {
         var expectedServers = new List<string> { "mysql-server-1", "mysql-server-2", "mysql-server-3" };
-        _mysqlService.ListServersAsync("sub123", "rg1", "user1").Returns(expectedServers);
+        _mysqlService.ListServersAsync(McpUserContext.Empty, "sub123", "rg1", "user1").Returns(expectedServers);
 
         var command = new ServerListCommand(_logger);
         var args = command.GetCommand().Parse([
@@ -43,7 +44,7 @@ public class ServerListCommandTests
             "--resource-group", "rg1",
             "--user", "user1"
         ]);
-        var context = new CommandContext(_serviceProvider);
+        var context = new CommandContext(_serviceProvider, McpUserContext.Empty);
 
         var response = await command.ExecuteAsync(context, args);
 
@@ -61,7 +62,7 @@ public class ServerListCommandTests
     [Fact]
     public async Task ExecuteAsync_ReturnsError_WhenServiceThrows()
     {
-        _mysqlService.ListServersAsync("sub123", "rg1", "user1")
+        _mysqlService.ListServersAsync(McpUserContext.Empty, "sub123", "rg1", "user1")
             .ThrowsAsync(new UnauthorizedAccessException("Access denied"));
 
         var command = new ServerListCommand(_logger);
@@ -70,7 +71,7 @@ public class ServerListCommandTests
             "--resource-group", "rg1",
             "--user", "user1"
         ]);
-        var context = new CommandContext(_serviceProvider);
+        var context = new CommandContext(_serviceProvider, McpUserContext.Empty);
 
         var response = await command.ExecuteAsync(context, args);
 

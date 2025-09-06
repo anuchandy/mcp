@@ -47,6 +47,7 @@ public sealed class RegistryRepositoryListCommand(ILogger<RegistryRepositoryList
         {
             var service = context.GetService<IAcrService>();
             var map = await service.ListRegistryRepositories(
+                context.UserContext,
                 options.Subscription!,
                 options.ResourceGroup,
                 options.Registry,

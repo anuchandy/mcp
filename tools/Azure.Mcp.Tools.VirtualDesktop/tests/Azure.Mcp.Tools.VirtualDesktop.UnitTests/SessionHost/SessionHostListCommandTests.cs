@@ -2,6 +2,7 @@
 // Licensed under the MIT License.
 
 using System.CommandLine;
+using Azure.Mcp.Core.Areas.Server.Commands.Runtime;
 using Azure.Mcp.Core.Models.Command;
 using Azure.Mcp.Core.Options;
 using Azure.Mcp.Tools.VirtualDesktop.Commands.SessionHost;
@@ -34,7 +35,7 @@ public class SessionHostListCommandTests
         _serviceProvider = collection.BuildServiceProvider();
 
         _command = new(_logger);
-        _context = new(_serviceProvider);
+        _context = new CommandContext(_serviceProvider, McpUserContext.Empty);
         _commandDefinition = _command.GetCommand();
     }
 
@@ -71,6 +72,7 @@ public class SessionHostListCommandTests
             };
 
             _virtualDesktopService.ListSessionHostsAsync(
+                Arg.Any<McpUserContext>(),
                 Arg.Any<string>(),
                 Arg.Any<string>(),
                 Arg.Any<string>(),
@@ -78,6 +80,7 @@ public class SessionHostListCommandTests
                 .Returns(Task.FromResult<IReadOnlyList<SessionHostModel>>(mockSessionHosts));
 
             _virtualDesktopService.ListSessionHostsByResourceIdAsync(
+                Arg.Any<McpUserContext>(),
                 Arg.Any<string>(),
                 Arg.Any<string>(),
                 Arg.Any<string>(),
@@ -85,6 +88,7 @@ public class SessionHostListCommandTests
                 .Returns(Task.FromResult<IReadOnlyList<SessionHostModel>>(mockSessionHosts));
 
             _virtualDesktopService.ListSessionHostsByResourceGroupAsync(
+                Arg.Any<McpUserContext>(),
                 Arg.Any<string>(),
                 Arg.Any<string>(),
                 Arg.Any<string>(),
@@ -93,7 +97,7 @@ public class SessionHostListCommandTests
                 .Returns(Task.FromResult<IReadOnlyList<SessionHostModel>>(mockSessionHosts));
         }
 
-        var context = new CommandContext(_serviceProvider);
+        var context = new CommandContext(_serviceProvider, McpUserContext.Empty);
         var parseResult = _commandDefinition.Parse(args);
 
         // Act
@@ -124,13 +128,14 @@ public class SessionHostListCommandTests
             new() { Name = "sessionhost2" }
         };
         _virtualDesktopService.ListSessionHostsAsync(
+            Arg.Any<McpUserContext>(),
             "sub123",
             "pool1",
             null,
             Arg.Any<RetryPolicyOptions>())
             .Returns(expectedSessionHosts);
 
-        var context = new CommandContext(_serviceProvider);
+        var context = new CommandContext(_serviceProvider, McpUserContext.Empty);
         var parseResult = _commandDefinition.Parse("--subscription sub123 --hostpool pool1");
 
         // Act
@@ -142,6 +147,7 @@ public class SessionHostListCommandTests
         Assert.NotNull(response.Results);
 
         await _virtualDesktopService.Received(1).ListSessionHostsAsync(
+            Arg.Any<McpUserContext>(),
             "sub123",
             "pool1",
             null,
@@ -160,13 +166,14 @@ public class SessionHostListCommandTests
         var resourceId = "/subscriptions/sub123/resourceGroups/rg1/providers/Microsoft.DesktopVirtualization/hostPools/pool1";
 
         _virtualDesktopService.ListSessionHostsByResourceIdAsync(
+            Arg.Any<McpUserContext>(),
             "sub123",
             resourceId,
             null,
             Arg.Any<RetryPolicyOptions>())
             .Returns(expectedSessionHosts);
 
-        var context = new CommandContext(_serviceProvider);
+        var context = new CommandContext(_serviceProvider, McpUserContext.Empty);
         var parseResult = _commandDefinition.Parse($"--subscription sub123 --hostpool-resource-id {resourceId}");
 
         // Act
@@ -178,12 +185,14 @@ public class SessionHostListCommandTests
         Assert.NotNull(response.Results);
 
         await _virtualDesktopService.Received(1).ListSessionHostsByResourceIdAsync(
+            Arg.Any<McpUserContext>(),
             "sub123",
             resourceId,
             null,
             Arg.Any<RetryPolicyOptions>());
 
         await _virtualDesktopService.DidNotReceive().ListSessionHostsAsync(
+            Arg.Any<McpUserContext>(),
             Arg.Any<string>(),
             Arg.Any<string>(),
             Arg.Any<string>(),
@@ -214,6 +223,7 @@ public class SessionHostListCommandTests
         };
 
         _virtualDesktopService.ListSessionHostsByResourceGroupAsync(
+            Arg.Any<McpUserContext>(),
             "sub123",
             "rg1",
             "pool1",
@@ -221,7 +231,7 @@ public class SessionHostListCommandTests
             Arg.Any<RetryPolicyOptions>())
             .Returns(expectedSessionHosts);
 
-        var context = new CommandContext(_serviceProvider);
+        var context = new CommandContext(_serviceProvider, McpUserContext.Empty);
 
         // Act
         var response = await _command.ExecuteAsync(context, parseResult);
@@ -239,6 +249,7 @@ public class SessionHostListCommandTests
         Assert.NotNull(response.Results);
 
         await _virtualDesktopService.Received(1).ListSessionHostsByResourceGroupAsync(
+            Arg.Any<McpUserContext>(),
             "sub123",
             "rg1",
             "pool1",
@@ -251,6 +262,7 @@ public class SessionHostListCommandTests
     {
         // Arrange
         _virtualDesktopService.ListSessionHostsAsync(
+            Arg.Any<McpUserContext>(),
             Arg.Any<string>(),
             Arg.Any<string>(),
             Arg.Any<string>(),
@@ -258,13 +270,14 @@ public class SessionHostListCommandTests
             .Returns(new List<SessionHostModel>());
 
         _virtualDesktopService.ListSessionHostsByResourceIdAsync(
+            Arg.Any<McpUserContext>(),
             Arg.Any<string>(),
             Arg.Any<string>(),
             Arg.Any<string>(),
             Arg.Any<RetryPolicyOptions>())
             .Returns(new List<SessionHostModel>());
 
-        var context = new CommandContext(_serviceProvider);
+        var context = new CommandContext(_serviceProvider, McpUserContext.Empty);
         var parseResult = _commandDefinition.Parse("--subscription sub123 --hostpool pool1");
 
         // Act
@@ -281,6 +294,7 @@ public class SessionHostListCommandTests
     {
         // Arrange
         _virtualDesktopService.ListSessionHostsAsync(
+            Arg.Any<McpUserContext>(),
             Arg.Any<string>(),
             Arg.Any<string>(),
             Arg.Any<string>(),
@@ -288,13 +302,14 @@ public class SessionHostListCommandTests
             .Returns(Task.FromException<IReadOnlyList<SessionHostModel>>(new Exception("Test error")));
 
         _virtualDesktopService.ListSessionHostsByResourceIdAsync(
+            Arg.Any<McpUserContext>(),
             Arg.Any<string>(),
             Arg.Any<string>(),
             Arg.Any<string>(),
             Arg.Any<RetryPolicyOptions>())
             .Returns(Task.FromException<IReadOnlyList<SessionHostModel>>(new Exception("Test error")));
 
-        var context = new CommandContext(_serviceProvider);
+        var context = new CommandContext(_serviceProvider, McpUserContext.Empty);
         var parseResult = _commandDefinition.Parse("--subscription sub123 --hostpool pool1");
 
         // Act
@@ -313,7 +328,7 @@ public class SessionHostListCommandTests
     public async Task ExecuteAsync_WithInvalidArgs_ReturnsBadRequest(string invalidArgs)
     {
         // Arrange
-        var context = new CommandContext(_serviceProvider);
+        var context = new CommandContext(_serviceProvider, McpUserContext.Empty);
 
         // Act & Assert
         try

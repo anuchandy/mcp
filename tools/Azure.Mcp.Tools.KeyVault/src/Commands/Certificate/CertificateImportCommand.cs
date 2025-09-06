@@ -67,6 +67,7 @@ public sealed class CertificateImportCommand(ILogger<CertificateImportCommand> l
             var keyVaultService = context.GetService<IKeyVaultService>();
 
             var certificate = await keyVaultService.ImportCertificate(
+                context.UserContext,
                 options.VaultName!,
                 options.CertificateName!,
                 options.CertificateData!,

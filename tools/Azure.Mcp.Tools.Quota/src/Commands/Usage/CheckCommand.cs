@@ -61,6 +61,7 @@ public class CheckCommand(ILogger<CheckCommand> logger) : SubscriptionCommand<Ch
                 .ToList();
             var quotaService = context.GetService<IQuotaService>();
             Dictionary<string, List<UsageInfo>> toolResult = await quotaService.GetAzureQuotaAsync(
+                context.UserContext,
                 resourceTypes,
                 options.Subscription!,
                 options.Region);

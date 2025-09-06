@@ -60,6 +60,7 @@ public sealed class LogsGetCommand(ILogger<LogsGetCommand> logger) : Subscriptio
 
             var deployService = context.GetService<IDeployService>();
             string result = await deployService.GetAzdResourceLogsAsync(
+                context.UserContext,
                 options.WorkspaceFolder!,
                 options.AzdEnvName!,
                 options.Subscription!,

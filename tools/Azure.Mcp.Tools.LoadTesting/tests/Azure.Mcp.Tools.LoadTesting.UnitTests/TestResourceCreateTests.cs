@@ -2,6 +2,7 @@
 // Licensed under the MIT License.
 
 using System.Text.Json;
+using Azure.Mcp.Core.Areas.Server.Commands.Runtime;
 using Azure.Mcp.Core.Models.Command;
 using Azure.Mcp.Core.Options;
 using Azure.Mcp.Tools.LoadTesting.Commands.LoadTestResource;
@@ -46,7 +47,7 @@ public class TestResourceCreateCommandTests
     public async Task ExecuteAsync_CreateLoadTests()
     {
         var expectedLoadTests = new TestResource { Id = "Id1", Name = "loadTest1" };
-        _service.CreateOrUpdateLoadTestingResourceAsync(Arg.Is("sub123"), Arg.Is("resourceGroup123"), Arg.Is("testResourceName"), Arg.Is("tenant123"), Arg.Any<RetryPolicyOptions>())
+        _service.CreateOrUpdateLoadTestingResourceAsync(Arg.Any<McpUserContext>(), Arg.Is("sub123"), Arg.Is("resourceGroup123"), Arg.Is("testResourceName"), Arg.Is("tenant123"), Arg.Any<RetryPolicyOptions>())
             .Returns(expectedLoadTests);
 
         var command = new TestResourceCreateCommand(_logger);
@@ -56,7 +57,7 @@ public class TestResourceCreateCommandTests
             "--test-resource-name", "testResourceName",
             "--tenant", "tenant123"
         ]);
-        var context = new CommandContext(_serviceProvider);
+        var context = new CommandContext(_serviceProvider, McpUserContext.Empty);
         var response = await command.ExecuteAsync(context, args);
         Assert.NotNull(response);
         Assert.NotNull(response.Results);
@@ -74,7 +75,7 @@ public class TestResourceCreateCommandTests
     public async Task ExecuteAsync_CreateLoadTests_FromDefaultResource()
     {
         var expectedLoadTests = new TestResource { Id = "Id1", Name = "loadTest1" };
-        _service.CreateOrUpdateLoadTestingResourceAsync(Arg.Is("sub123"), Arg.Is("resourceGroup123"), Arg.Is((string?)null), Arg.Is("tenant123"), Arg.Any<RetryPolicyOptions>())
+        _service.CreateOrUpdateLoadTestingResourceAsync(Arg.Any<McpUserContext>(), Arg.Is("sub123"), Arg.Is("resourceGroup123"), Arg.Is((string?)null), Arg.Is("tenant123"), Arg.Any<RetryPolicyOptions>())
             .Returns(expectedLoadTests);
 
         var command = new TestResourceCreateCommand(_logger);
@@ -83,7 +84,7 @@ public class TestResourceCreateCommandTests
             "--resource-group", "resourceGroup123",
             "--tenant", "tenant123"
         ]);
-        var context = new CommandContext(_serviceProvider);
+        var context = new CommandContext(_serviceProvider, McpUserContext.Empty);
         var response = await command.ExecuteAsync(context, args);
         Assert.NotNull(response);
         Assert.NotNull(response.Results);
@@ -99,10 +100,10 @@ public class TestResourceCreateCommandTests
     [Fact]
     public async Task ExecuteAsync_HandlesServiceErrors()
     {
-        _service.CreateOrUpdateLoadTestingResourceAsync(Arg.Is("sub123"), Arg.Is("resourceGroup123"), Arg.Is("loadTestName"), Arg.Is("tenant123"), Arg.Any<RetryPolicyOptions>())
+        _service.CreateOrUpdateLoadTestingResourceAsync(Arg.Any<McpUserContext>(), Arg.Is("sub123"), Arg.Is("resourceGroup123"), Arg.Is("loadTestName"), Arg.Is("tenant123"), Arg.Any<RetryPolicyOptions>())
             .Returns(Task.FromException<TestResource>(new Exception("Test error")));
 
-        var context = new CommandContext(_serviceProvider);
+        var context = new CommandContext(_serviceProvider, McpUserContext.Empty);
         var parseResult = _command.GetCommand().Parse([
             "--subscription", "sub123",
             "--resource-group", "resourceGroup123",

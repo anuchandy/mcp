@@ -62,6 +62,7 @@ public sealed class ResourceLogQueryCommand(ILogger<ResourceLogQueryCommand> log
         {
             var monitorService = context.GetService<IMonitorService>();
             var results = await monitorService.QueryResourceLogs(
+                context.UserContext,
                 options.Subscription!,
                 options.ResourceId!,
                 options.Query!,

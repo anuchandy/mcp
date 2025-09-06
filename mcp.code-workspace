@@ -1,0 +1,14 @@
+{
+	"folders": [
+		{
+			"path": "."
+		},
+		{
+			"path": "../self-hosted-mcp-server"
+		},
+		{
+			"path": "../csharp-sdk"
+		}
+	],
+	"settings": {}
+}

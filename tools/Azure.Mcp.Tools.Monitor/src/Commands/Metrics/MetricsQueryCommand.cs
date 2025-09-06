@@ -124,6 +124,7 @@ public sealed class MetricsQueryCommand(ILogger<MetricsQueryCommand> logger)
 
             // Call the metrics service method directly
             var results = await service.QueryMetricsAsync(
+                context.UserContext,
                 options.Subscription!,
                 options.ResourceGroup,
                 options.ResourceType,

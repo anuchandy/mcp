@@ -3,6 +3,7 @@
 
 using System.Text.Json;
 using System.Text.Json.Serialization;
+using Azure.Mcp.Core.Areas.Server.Commands.Runtime;
 using Azure.Mcp.Core.Models.Command;
 using Azure.Mcp.Core.Options;
 using Azure.Mcp.Tools.Search.Commands.Index;
@@ -41,6 +42,7 @@ public class IndexDescribeCommandTests
         // When using ThrowsAsync or Returns with NSubstitute, we need to match the exact parameter signature
         _searchService
             .DescribeIndex(
+                Arg.Any<McpUserContext>(),
                 Arg.Is<string>(s => s == serviceName),
                 Arg.Is<string>(i => i == indexName),
                 Arg.Any<RetryPolicyOptions?>())
@@ -49,7 +51,7 @@ public class IndexDescribeCommandTests
         var command = new IndexDescribeCommand(_logger);
 
         var args = command.GetCommand().Parse($"--service {serviceName} --index {indexName}");
-        var context = new CommandContext(_serviceProvider);
+        var context = new CommandContext(_serviceProvider, McpUserContext.Empty);
 
         // Act
         var response = await command.ExecuteAsync(context, args);
@@ -81,6 +83,7 @@ public class IndexDescribeCommandTests
 
         _searchService
             .DescribeIndex(
+                Arg.Any<McpUserContext>(),
                 Arg.Is<string>(s => s == serviceName),
                 Arg.Is<string>(i => i == indexName),
                 Arg.Any<RetryPolicyOptions?>())
@@ -89,7 +92,7 @@ public class IndexDescribeCommandTests
         var command = new IndexDescribeCommand(_logger);
 
         var args = command.GetCommand().Parse($"--service {serviceName} --index {indexName}");
-        var context = new CommandContext(_serviceProvider);
+        var context = new CommandContext(_serviceProvider, McpUserContext.Empty);
 
         // Act
         var response = await command.ExecuteAsync(context, args);
@@ -109,6 +112,7 @@ public class IndexDescribeCommandTests
 
         _searchService
             .DescribeIndex(
+                Arg.Any<McpUserContext>(),
                 Arg.Is<string>(s => s == serviceName),
                 Arg.Is<string>(i => i == indexName),
                 Arg.Any<RetryPolicyOptions?>())
@@ -117,7 +121,7 @@ public class IndexDescribeCommandTests
         var command = new IndexDescribeCommand(_logger);
 
         var args = command.GetCommand().Parse($"--service {serviceName} --index {indexName}");
-        var context = new CommandContext(_serviceProvider);
+        var context = new CommandContext(_serviceProvider, McpUserContext.Empty);
 
         // Act
         var response = await command.ExecuteAsync(context, args);
@@ -135,7 +139,7 @@ public class IndexDescribeCommandTests
         var command = new IndexDescribeCommand(_logger);
 
         var args = command.GetCommand().Parse(""); // Missing required options
-        var context = new CommandContext(_serviceProvider);
+        var context = new CommandContext(_serviceProvider, McpUserContext.Empty);
 
         // Act
         var response = await command.ExecuteAsync(context, args);

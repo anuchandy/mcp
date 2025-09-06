@@ -2,6 +2,7 @@
 // Licensed under the MIT License.
 
 using Azure.Core;
+using Azure.Mcp.Core.Areas.Server.Commands.Runtime;
 using Azure.Mcp.Core.Options;
 using Azure.Mcp.Tools.Workbooks.Models;
 using Microsoft.Extensions.Logging;
@@ -21,17 +22,17 @@ public class WorkbooksService(ISubscriptionService _subscriptionService, ITenant
     private readonly ILogger<WorkbooksService> _logger = logger;
     private readonly ITenantService _tenantService = tenantService;
 
-    public async Task<List<WorkbookInfo>> ListWorkbooks(string subscription, string resourceGroupName, WorkbookFilters? filters = null, RetryPolicyOptions? retryPolicy = null, string? tenant = null)
+    public async Task<List<WorkbookInfo>> ListWorkbooks(McpUserContext userContext, string subscription, string resourceGroupName, WorkbookFilters? filters = null, RetryPolicyOptions? retryPolicy = null, string? tenant = null)
     {
         ValidateRequiredParameters(subscription, resourceGroupName);
 
         try
         {
             // Resolve subscription to get the actual subscription ID for the query
-            var subscriptionResource = await _subscriptionService.GetSubscription(subscription, tenant, retryPolicy);
+            var subscriptionResource = await _subscriptionService.GetSubscription(userContext, subscription, tenant, retryPolicy);
             var subscriptionId = subscriptionResource.Data.SubscriptionId;
 
-            var armClient = await CreateArmClientAsync(tenant, retryPolicy);
+            var armClient = await CreateArmClientAsync(userContext, tenant, retryPolicy);
 
             var tenants = await _tenantService.GetTenants();
             var currentTenant = tenants.FirstOrDefault() ?? throw new InvalidOperationException("No accessible tenants found");
@@ -83,7 +84,7 @@ public class WorkbooksService(ISubscriptionService _subscriptionService, ITenant
         }
     }
 
-    public async Task<WorkbookInfo?> GetWorkbook(string workbookId, RetryPolicyOptions? retryPolicy = null, string? tenant = null)
+    public async Task<WorkbookInfo?> GetWorkbook(McpUserContext userContext, string workbookId, RetryPolicyOptions? retryPolicy = null, string? tenant = null)
     {
         if (string.IsNullOrEmpty(workbookId))
         {
@@ -93,7 +94,7 @@ public class WorkbooksService(ISubscriptionService _subscriptionService, ITenant
 
         try
         {
-            var armClient = await CreateArmClientAsync(tenant, retryPolicy);
+            var armClient = await CreateArmClientAsync(userContext, tenant, retryPolicy);
 
             // Parse the workbook resource ID to get the workbook directly
             var workbookResourceId = new ResourceIdentifier(workbookId);
@@ -134,7 +135,7 @@ public class WorkbooksService(ISubscriptionService _subscriptionService, ITenant
         }
     }
 
-    public async Task<WorkbookInfo?> UpdateWorkbook(string workbookId, string? displayName = null, string? serializedContent = null, RetryPolicyOptions? retryPolicy = null, string? tenant = null)
+    public async Task<WorkbookInfo?> UpdateWorkbook(McpUserContext userContext, string workbookId, string? displayName = null, string? serializedContent = null, RetryPolicyOptions? retryPolicy = null, string? tenant = null)
     {
         if (string.IsNullOrEmpty(workbookId))
         {
@@ -144,7 +145,7 @@ public class WorkbooksService(ISubscriptionService _subscriptionService, ITenant
 
         try
         {
-            var armClient = await CreateArmClientAsync(tenant, retryPolicy);
+            var armClient = await CreateArmClientAsync(userContext, tenant, retryPolicy);
 
             // Parse the workbook resource ID to get the workbook directly
             var workbookResourceId = new ResourceIdentifier(workbookId);
@@ -204,14 +205,14 @@ public class WorkbooksService(ISubscriptionService _subscriptionService, ITenant
         }
     }
 
-    public async Task<WorkbookInfo?> CreateWorkbook(string subscription, string resourceGroupName, string displayName, string serializedData, string sourceId, RetryPolicyOptions? retryPolicy = null, string? tenant = null)
+    public async Task<WorkbookInfo?> CreateWorkbook(McpUserContext userContext, string subscription, string resourceGroupName, string displayName, string serializedData, string sourceId, RetryPolicyOptions? retryPolicy = null, string? tenant = null)
     {
         ValidateRequiredParameters(subscription, resourceGroupName, displayName, serializedData, sourceId);
 
         try
         {
             // Get the subscription resource
-            var subscriptionResource = await _subscriptionService.GetSubscription(subscription, tenant, retryPolicy) ?? throw new Exception($"Subscription '{subscription}' not found");
+            var subscriptionResource = await _subscriptionService.GetSubscription(userContext, subscription, tenant, retryPolicy) ?? throw new Exception($"Subscription '{subscription}' not found");
             // Get the resource group
             var resourceGroupResource = await subscriptionResource.GetResourceGroups().GetAsync(resourceGroupName);
             if (resourceGroupResource?.Value == null)
@@ -262,13 +263,13 @@ public class WorkbooksService(ISubscriptionService _subscriptionService, ITenant
         }
     }
 
-    public async Task<bool> DeleteWorkbook(string workbookId, RetryPolicyOptions? retryPolicy = null, string? tenant = null)
+    public async Task<bool> DeleteWorkbook(McpUserContext userContext, string workbookId, RetryPolicyOptions? retryPolicy = null, string? tenant = null)
     {
         ValidateRequiredParameters(workbookId);
 
         try
         {
-            var armClient = await CreateArmClientAsync(tenant, retryPolicy);
+            var armClient = await CreateArmClientAsync(userContext, tenant, retryPolicy);
 
             // Parse the workbook resource ID to get the workbook directly
             var workbookResourceId = new ResourceIdentifier(workbookId);

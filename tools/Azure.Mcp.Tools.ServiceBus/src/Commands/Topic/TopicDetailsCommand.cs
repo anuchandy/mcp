@@ -63,6 +63,7 @@ public sealed class TopicDetailsCommand(ILogger<TopicDetailsCommand> logger) : S
         {
             var service = context.GetService<IServiceBusService>();
             var details = await service.GetTopicDetails(
+                context.UserContext,
                 options.Namespace!,
                 options.TopicName!,
                 options.Tenant,

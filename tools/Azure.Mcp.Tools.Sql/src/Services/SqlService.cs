@@ -2,6 +2,7 @@
 // Licensed under the MIT License.
 
 using System.Text.Json;
+using Azure.Mcp.Core.Areas.Server.Commands.Runtime;
 using Azure.Mcp.Core.Options;
 using Azure.Mcp.Core.Services.Azure;
 using Azure.Mcp.Core.Services.Azure.Subscription;
@@ -30,6 +31,7 @@ public class SqlService(ISubscriptionService subscriptionService, ITenantService
     /// <exception cref="KeyNotFoundException">Thrown when the specified database is not found</exception>
     /// <exception cref="ArgumentException">Thrown when required parameters are null or empty</exception>
     public async Task<SqlDatabase> GetDatabaseAsync(
+        McpUserContext userContext,
         string serverName,
         string databaseName,
         string resourceGroup,
@@ -40,6 +42,7 @@ public class SqlService(ISubscriptionService subscriptionService, ITenantService
         try
         {
             var result = await ExecuteSingleResourceQueryAsync(
+                userContext,
                 "Microsoft.Sql/servers/databases",
                 resourceGroup,
                 subscription,
@@ -75,6 +78,7 @@ public class SqlService(ISubscriptionService subscriptionService, ITenantService
     /// <returns>A list of SQL databases on the specified server</returns>
     /// <exception cref="ArgumentException">Thrown when required parameters are null or empty</exception>
     public async Task<List<SqlDatabase>> ListDatabasesAsync(
+        McpUserContext userContext,
         string serverName,
         string resourceGroup,
         string subscription,
@@ -84,6 +88,7 @@ public class SqlService(ISubscriptionService subscriptionService, ITenantService
         try
         {
             return await ExecuteResourceQueryAsync(
+                userContext,
                 "Microsoft.Sql/servers/databases",
                 resourceGroup,
                 subscription,
@@ -112,6 +117,7 @@ public class SqlService(ISubscriptionService subscriptionService, ITenantService
     /// <returns>A list of Entra ID administrators configured for the SQL server</returns>
     /// <exception cref="ArgumentException">Thrown when required parameters are null or empty</exception>
     public async Task<List<SqlServerEntraAdministrator>> GetEntraAdministratorsAsync(
+        McpUserContext userContext,
         string serverName,
         string resourceGroup,
         string subscription,
@@ -121,6 +127,7 @@ public class SqlService(ISubscriptionService subscriptionService, ITenantService
         try
         {
             return await ExecuteResourceQueryAsync(
+                userContext,
                 "Microsoft.Sql/servers/administrators",
                 resourceGroup,
                 subscription,
@@ -151,6 +158,7 @@ public class SqlService(ISubscriptionService subscriptionService, ITenantService
     /// <returns>A list of elastic pools configured on the SQL server</returns>
     /// <exception cref="ArgumentException">Thrown when required parameters are null or empty</exception>
     public async Task<List<SqlElasticPool>> GetElasticPoolsAsync(
+        McpUserContext userContext,
         string serverName,
         string resourceGroup,
         string subscription,
@@ -160,6 +168,7 @@ public class SqlService(ISubscriptionService subscriptionService, ITenantService
         try
         {
             return await ExecuteResourceQueryAsync(
+                userContext,
                 "Microsoft.Sql/servers/elasticPools",
                 resourceGroup,
                 subscription,
@@ -188,6 +197,7 @@ public class SqlService(ISubscriptionService subscriptionService, ITenantService
     /// <returns>A list of firewall rules configured on the SQL server</returns>
     /// <exception cref="ArgumentException">Thrown when required parameters are null or empty</exception>
     public async Task<List<SqlServerFirewallRule>> ListFirewallRulesAsync(
+        McpUserContext userContext,
         string serverName,
         string resourceGroup,
         string subscription,
@@ -197,6 +207,7 @@ public class SqlService(ISubscriptionService subscriptionService, ITenantService
         try
         {
             return await ExecuteResourceQueryAsync(
+                userContext,
                 "Microsoft.Sql/servers/firewallRules",
                 resourceGroup,
                 subscription,
@@ -228,6 +239,7 @@ public class SqlService(ISubscriptionService subscriptionService, ITenantService
     /// <returns>The created firewall rule</returns>
     /// <exception cref="ArgumentException">Thrown when required parameters are null or empty</exception>
     public async Task<SqlServerFirewallRule> CreateFirewallRuleAsync(
+        McpUserContext userContext,
         string serverName,
         string resourceGroup,
         string subscription,
@@ -242,7 +254,7 @@ public class SqlService(ISubscriptionService subscriptionService, ITenantService
         try
         {
             // Use ARM client directly for create operations
-            var armClient = await CreateArmClientAsync(null, retryPolicy);
+            var armClient = await CreateArmClientAsync(userContext, null, retryPolicy);
             var subscriptionResource = armClient.GetSubscriptionResource(Azure.ResourceManager.Resources.SubscriptionResource.CreateResourceIdentifier(subscription));
             var resourceGroupResource = await subscriptionResource.GetResourceGroupAsync(resourceGroup);
             var sqlServerResource = await resourceGroupResource.Value.GetSqlServers().GetAsync(serverName);
@@ -290,6 +302,7 @@ public class SqlService(ISubscriptionService subscriptionService, ITenantService
     /// <returns>True if the firewall rule was successfully deleted</returns>
     /// <exception cref="ArgumentException">Thrown when required parameters are null or empty</exception>
     public async Task<bool> DeleteFirewallRuleAsync(
+        McpUserContext userContext,
         string serverName,
         string resourceGroup,
         string subscription,
@@ -302,7 +315,7 @@ public class SqlService(ISubscriptionService subscriptionService, ITenantService
         try
         {
             // Use ARM client directly for delete operations
-            var armClient = await CreateArmClientAsync(null, retryPolicy);
+            var armClient = await CreateArmClientAsync(userContext, null, retryPolicy);
             var subscriptionResource = armClient.GetSubscriptionResource(Azure.ResourceManager.Resources.SubscriptionResource.CreateResourceIdentifier(subscription));
             var resourceGroupResource = await subscriptionResource.GetResourceGroupAsync(resourceGroup);
             var sqlServerResource = await resourceGroupResource.Value.GetSqlServers().GetAsync(serverName);

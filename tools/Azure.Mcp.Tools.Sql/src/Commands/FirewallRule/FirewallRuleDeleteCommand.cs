@@ -58,6 +58,7 @@ public sealed class FirewallRuleDeleteCommand(ILogger<FirewallRuleDeleteCommand>
             var sqlService = context.GetService<ISqlService>();
 
             var deleted = await sqlService.DeleteFirewallRuleAsync(
+                context.UserContext,
                 options.Server!,
                 options.ResourceGroup!,
                 options.Subscription!,

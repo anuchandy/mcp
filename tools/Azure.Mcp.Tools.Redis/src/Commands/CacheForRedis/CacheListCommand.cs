@@ -43,10 +43,10 @@ public sealed class CacheListCommand(ILogger<CacheListCommand> logger) : Subscri
         {
             var redisService = context.GetService<IRedisService>() ?? throw new InvalidOperationException("Redis service is not available.");
             var caches = await redisService.ListCachesAsync(
+                context.UserContext,
                 options.Subscription!,
                 options.Tenant,
-                options.AuthMethod,
-                options.RetryPolicy);
+                options.AuthMethod);
 
             context.Response.Results = caches.Any() ?
                 ResponseResult.Create(

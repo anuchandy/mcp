@@ -2,6 +2,7 @@
 // Licensed under the MIT License.
 
 using System.CommandLine;
+using Azure.Mcp.Core.Areas.Server.Commands.Runtime;
 using Azure.Mcp.Core.Models.Command;
 using Azure.Mcp.Core.Options;
 using Azure.Mcp.Tools.Acr.Commands.Registry;
@@ -30,7 +31,7 @@ public class RegistryListCommandTests
         var collection = new ServiceCollection().AddSingleton(_service);
         _serviceProvider = collection.BuildServiceProvider();
         _command = new(_logger);
-        _context = new(_serviceProvider);
+        _context = new CommandContext(_serviceProvider, McpUserContext.Empty);
         _commandDefinition = _command.GetCommand();
     }
 
@@ -54,7 +55,7 @@ public class RegistryListCommandTests
         // Arrange
         if (shouldSucceed)
         {
-            _service.ListRegistries(Arg.Any<string>(), Arg.Any<string>(), Arg.Any<string>(), Arg.Any<RetryPolicyOptions>())
+            _service.ListRegistries(Arg.Any<McpUserContext>(), Arg.Any<string>(), Arg.Any<string>(), Arg.Any<string>(), Arg.Any<RetryPolicyOptions>())
                 .Returns(new List<Models.AcrRegistryInfo>
                 {
                     new("registry1", "eastus", "registry1.azurecr.io", "Basic", "Basic"),
@@ -83,7 +84,7 @@ public class RegistryListCommandTests
     public async Task ExecuteAsync_HandlesServiceErrors()
     {
         // Arrange
-        _service.ListRegistries(Arg.Any<string>(), Arg.Any<string>(), Arg.Any<string>(), Arg.Any<RetryPolicyOptions>())
+        _service.ListRegistries(Arg.Any<McpUserContext>(), Arg.Any<string>(), Arg.Any<string>(), Arg.Any<string>(), Arg.Any<RetryPolicyOptions>())
             .Returns(Task.FromException<List<Models.AcrRegistryInfo>>(new Exception("Test error")));
 
         var parseResult = _commandDefinition.Parse(["--subscription", "sub"]);
@@ -102,7 +103,7 @@ public class RegistryListCommandTests
     {
         // Arrange
         var expectedRegistries = new List<Models.AcrRegistryInfo> { new("registry1", null, null, null, null) };
-        _service.ListRegistries("sub", "rg", Arg.Any<string>(), Arg.Any<RetryPolicyOptions>())
+        _service.ListRegistries(Arg.Any<McpUserContext>(), "sub", "rg", Arg.Any<string>(), Arg.Any<RetryPolicyOptions>())
             .Returns(expectedRegistries);
 
         var parseResult = _commandDefinition.Parse(["--subscription", "sub", "--resource-group", "rg"]);
@@ -113,14 +114,14 @@ public class RegistryListCommandTests
         // Assert
         Assert.Equal(200, response.Status);
         Assert.NotNull(response.Results);
-        await _service.Received(1).ListRegistries("sub", "rg", Arg.Any<string>(), Arg.Any<RetryPolicyOptions>());
+        await _service.Received(1).ListRegistries(Arg.Any<McpUserContext>(), "sub", "rg", Arg.Any<string>(), Arg.Any<RetryPolicyOptions>());
     }
 
     [Fact]
     public async Task ExecuteAsync_EmptyList_ReturnsNullResults()
     {
         // Arrange
-        _service.ListRegistries("sub", null, Arg.Any<string>(), Arg.Any<RetryPolicyOptions>())
+        _service.ListRegistries(Arg.Any<McpUserContext>(), "sub", null, Arg.Any<string>(), Arg.Any<RetryPolicyOptions>())
             .Returns(new List<Models.AcrRegistryInfo>());
 
         var parseResult = _commandDefinition.Parse(["--subscription", "sub"]);
@@ -138,7 +139,7 @@ public class RegistryListCommandTests
     {
         // Arrange
         var registry = new Models.AcrRegistryInfo("myregistry", "eastus", "myregistry.azurecr.io", "Basic", "Basic");
-        _service.ListRegistries("sub", null, Arg.Any<string>(), Arg.Any<RetryPolicyOptions>())
+        _service.ListRegistries(Arg.Any<McpUserContext>(), "sub", null, Arg.Any<string>(), Arg.Any<RetryPolicyOptions>())
             .Returns(new List<Models.AcrRegistryInfo> { registry });
 
         var parseResult = _commandDefinition.Parse(["--subscription", "sub"]);

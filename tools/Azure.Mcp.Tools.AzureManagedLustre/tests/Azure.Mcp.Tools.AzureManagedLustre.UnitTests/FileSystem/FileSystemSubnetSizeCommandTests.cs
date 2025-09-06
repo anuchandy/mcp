@@ -4,6 +4,7 @@
 using System.CommandLine;
 using System.Text.Json;
 using System.Text.Json.Serialization;
+using Azure.Mcp.Core.Areas.Server.Commands.Runtime;
 using Azure.Mcp.Core.Models.Command;
 using Azure.Mcp.Core.Options;
 using Azure.Mcp.Tools.AzureManagedLustre.Commands.FileSystem;
@@ -34,7 +35,7 @@ public class FileSystemSubnetSizeCommandTests
         _serviceProvider = services.BuildServiceProvider();
 
         _command = new(_logger);
-        _context = new(_serviceProvider);
+        _context = new CommandContext(_serviceProvider, McpUserContext.Empty);
         _commandDefinition = _command.GetCommand();
     }
 
@@ -53,6 +54,7 @@ public class FileSystemSubnetSizeCommandTests
     {
         // Arrange
         _amlfsService.GetRequiredAmlFSSubnetsSize(
+            Arg.Any<McpUserContext>(),
             Arg.Is(_knownSubscriptionId),
             Arg.Is("AMLFS-Durable-Premium-40"),
             Arg.Is(480),
@@ -84,7 +86,7 @@ public class FileSystemSubnetSizeCommandTests
     public async Task ExecuteAsync_ValidSkus_DoNotThrow(string sku)
     {
         // Arrange
-        _amlfsService.GetRequiredAmlFSSubnetsSize(Arg.Any<string>(), Arg.Any<string>(), Arg.Any<int>(), Arg.Any<string?>(), Arg.Any<RetryPolicyOptions?>()).Returns(10);
+        _amlfsService.GetRequiredAmlFSSubnetsSize(Arg.Any<McpUserContext>(), Arg.Any<string>(), Arg.Any<string>(), Arg.Any<int>(), Arg.Any<string?>(), Arg.Any<RetryPolicyOptions?>()).Returns(10);
         var args = _commandDefinition.Parse(["--sku", sku, "--size", "32", "--subscription", _knownSubscriptionId]);
 
         // Act
@@ -117,7 +119,7 @@ public class FileSystemSubnetSizeCommandTests
     public async Task ExecuteAsync_ServiceThrows_IsHandled()
     {
         // Arrange
-        _amlfsService.GetRequiredAmlFSSubnetsSize(Arg.Any<string>(), Arg.Any<string>(), Arg.Any<int>(), Arg.Any<string?>(), Arg.Any<RetryPolicyOptions?>())
+        _amlfsService.GetRequiredAmlFSSubnetsSize(Arg.Any<McpUserContext>(), Arg.Any<string>(), Arg.Any<string>(), Arg.Any<int>(), Arg.Any<string?>(), Arg.Any<RetryPolicyOptions?>())
             .ThrowsAsync(new Exception("boom"));
 
         var args = _commandDefinition.Parse(["--sku", "AMLFS-Durable-Premium-40", "--size", "100", "--subscription", _knownSubscriptionId]);

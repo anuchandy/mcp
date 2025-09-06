@@ -3,6 +3,7 @@
 
 using Azure.Core;
 using Azure.Developer.LoadTesting;
+using Azure.Mcp.Core.Areas.Server.Commands.Runtime;
 using Azure.Mcp.Core.Options;
 using Azure.Mcp.Core.Services.Azure;
 using Azure.Mcp.Core.Services.Azure.Subscription;
@@ -19,12 +20,12 @@ namespace Azure.Mcp.Tools.LoadTesting.Services;
 public class LoadTestingService(ISubscriptionService subscriptionService) : BaseAzureService, ILoadTestingService
 {
     ISubscriptionService _subscriptionService = subscriptionService;
-    public async Task<List<TestResource>> GetLoadTestResourcesAsync(string subscription, string? resourceGroup = null, string? testResourceName = null, string? tenant = null, RetryPolicyOptions? retryPolicy = null)
+    public async Task<List<TestResource>> GetLoadTestResourcesAsync(McpUserContext userContext, string subscription, string? resourceGroup = null, string? testResourceName = null, string? tenant = null, RetryPolicyOptions? retryPolicy = null)
     {
         ValidateRequiredParameters(subscription);
-        var subscriptionId = (await _subscriptionService.GetSubscription(subscription, tenant, retryPolicy)).Data.SubscriptionId;
+        var subscriptionId = (await _subscriptionService.GetSubscription(userContext, subscription, tenant, retryPolicy)).Data.SubscriptionId;
 
-        var credential = await GetCredential(tenant);
+        var credential = await GetCredential(userContext);
 
         var client = new ArmClient(credential);
         if (!string.IsNullOrEmpty(testResourceName))
@@ -73,12 +74,12 @@ public class LoadTestingService(ISubscriptionService subscriptionService) : Base
         }
     }
 
-    public async Task<TestResource> CreateOrUpdateLoadTestingResourceAsync(string subscription, string resourceGroup, string? testResourceName = null, string? tenant = null, RetryPolicyOptions? retryPolicy = null)
+    public async Task<TestResource> CreateOrUpdateLoadTestingResourceAsync(McpUserContext userContext, string subscription, string resourceGroup, string? testResourceName = null, string? tenant = null, RetryPolicyOptions? retryPolicy = null)
     {
         ValidateRequiredParameters(subscription, resourceGroup);
-        var subscriptionId = (await _subscriptionService.GetSubscription(subscription, tenant, retryPolicy)).Data.SubscriptionId;
+        var subscriptionId = (await _subscriptionService.GetSubscription(userContext, subscription, tenant, retryPolicy)).Data.SubscriptionId;
 
-        var credential = await GetCredential(tenant);
+        var credential = await GetCredential(userContext);
 
         var client = new ArmClient(credential);
         var rgResource = client.GetResourceGroupResource(ResourceGroupResource.CreateResourceIdentifier(subscriptionId, resourceGroup));
@@ -103,12 +104,12 @@ public class LoadTestingService(ISubscriptionService subscriptionService) : Base
         };
     }
 
-    public async Task<TestRun> GetLoadTestRunAsync(string subscription, string testResourceName, string testRunId, string? resourceGroup = null, string? tenant = null, RetryPolicyOptions? retryPolicy = null)
+    public async Task<TestRun> GetLoadTestRunAsync(McpUserContext userContext, string subscription, string testResourceName, string testRunId, string? resourceGroup = null, string? tenant = null, RetryPolicyOptions? retryPolicy = null)
     {
         ValidateRequiredParameters(subscription, testResourceName, testRunId);
-        var subscriptionId = (await _subscriptionService.GetSubscription(subscription, tenant, retryPolicy)).Data.SubscriptionId;
+        var subscriptionId = (await _subscriptionService.GetSubscription(userContext, subscription, tenant, retryPolicy)).Data.SubscriptionId;
 
-        var loadTestResource = await GetLoadTestResourcesAsync(subscriptionId, resourceGroup, testResourceName, tenant, retryPolicy);
+        var loadTestResource = await GetLoadTestResourcesAsync(userContext, subscriptionId, resourceGroup, testResourceName, tenant, retryPolicy);
         if (loadTestResource == null)
         {
             throw new Exception($"Load Test '{testResourceName}' not found in subscription '{subscriptionId}' and resource group '{resourceGroup}'.");
@@ -119,7 +120,7 @@ public class LoadTestingService(ISubscriptionService subscriptionService) : Base
             throw new Exception($"Data Plane URI for Load Test '{testResourceName}' is not available.");
         }
 
-        var credential = await GetCredential(tenant);
+        var credential = await GetCredential(userContext);
         var loadTestClient = new LoadTestRunClient(new Uri($"https://{dataPlaneUri}"), credential);
 
         var loadTestRunResponse = await loadTestClient.GetTestRunAsync(testRunId);
@@ -132,11 +133,11 @@ public class LoadTestingService(ISubscriptionService subscriptionService) : Base
         return JsonSerializer.Deserialize(loadTestRun, LoadTestJsonContext.Default.TestRun) ?? new TestRun();
     }
 
-    public async Task<List<TestRun>> GetLoadTestRunsFromTestIdAsync(string subscription, string testResourceName, string testId, string? resourceGroup = null, string? tenant = null, RetryPolicyOptions? retryPolicy = null)
+    public async Task<List<TestRun>> GetLoadTestRunsFromTestIdAsync(McpUserContext userContext, string subscription, string testResourceName, string testId, string? resourceGroup = null, string? tenant = null, RetryPolicyOptions? retryPolicy = null)
     {
         ValidateRequiredParameters(subscription, testResourceName, testId);
-        var subscriptionId = (await _subscriptionService.GetSubscription(subscription, tenant, retryPolicy)).Data.SubscriptionId;
-        var loadTestResource = await GetLoadTestResourcesAsync(subscriptionId, resourceGroup, testResourceName, tenant, retryPolicy);
+        var subscriptionId = (await _subscriptionService.GetSubscription(userContext, subscription, tenant, retryPolicy)).Data.SubscriptionId;
+        var loadTestResource = await GetLoadTestResourcesAsync(userContext, subscriptionId, resourceGroup, testResourceName, tenant, retryPolicy);
         if (loadTestResource == null)
         {
             throw new Exception($"Load Test '{testResourceName}' not found in subscription '{subscriptionId}' and resource group '{resourceGroup}'.");
@@ -147,7 +148,7 @@ public class LoadTestingService(ISubscriptionService subscriptionService) : Base
             throw new Exception($"Data Plane URI for Load Test '{testResourceName}' is not available.");
         }
 
-        var credential = await GetCredential(tenant);
+        var credential = await GetCredential(userContext);
         var loadTestClient = new LoadTestRunClient(new Uri($"https://{dataPlaneUri}"), credential);
 
         var loadTestRunResponse = loadTestClient.GetTestRunsAsync(testId: testId);
@@ -173,12 +174,12 @@ public class LoadTestingService(ISubscriptionService subscriptionService) : Base
         return testRuns;
     }
 
-    public async Task<TestRun> CreateOrUpdateLoadTestRunAsync(string subscription, string testResourceName, string testId, string? testRunId = null, string? oldTestRunId = null, string? resourceGroup = null, string? tenant = null, string? displayName = null, string? description = null, bool? debugMode = false, RetryPolicyOptions? retryPolicy = null)
+    public async Task<TestRun> CreateOrUpdateLoadTestRunAsync(McpUserContext userContext, string subscription, string testResourceName, string testId, string? testRunId = null, string? oldTestRunId = null, string? resourceGroup = null, string? tenant = null, string? displayName = null, string? description = null, bool? debugMode = false, RetryPolicyOptions? retryPolicy = null)
     {
         ValidateRequiredParameters(subscription, testResourceName, testRunId);
-        var subscriptionId = (await _subscriptionService.GetSubscription(subscription, tenant, retryPolicy)).Data.SubscriptionId;
+        var subscriptionId = (await _subscriptionService.GetSubscription(userContext, subscription, tenant, retryPolicy)).Data.SubscriptionId;
 
-        var loadTestResource = await GetLoadTestResourcesAsync(subscriptionId, resourceGroup, testResourceName, tenant, retryPolicy);
+        var loadTestResource = await GetLoadTestResourcesAsync(userContext, subscriptionId, resourceGroup, testResourceName, tenant, retryPolicy);
         if (loadTestResource == null)
         {
             throw new Exception($"Load Test '{testResourceName}' not found in subscription '{subscriptionId}' and resource group '{resourceGroup}'.");
@@ -189,7 +190,7 @@ public class LoadTestingService(ISubscriptionService subscriptionService) : Base
             throw new Exception($"Data Plane URI for Load Test '{testResourceName}' is not available.");
         }
 
-        var credential = await GetCredential(tenant);
+        var credential = await GetCredential(userContext);
         var loadTestClient = new LoadTestRunClient(new Uri($"https://{dataPlaneUri}"), credential);
 
         TestRunRequest requestBody = new TestRunRequest
@@ -211,11 +212,11 @@ public class LoadTestingService(ISubscriptionService subscriptionService) : Base
         return JsonSerializer.Deserialize(loadTestRun, LoadTestJsonContext.Default.TestRun) ?? new TestRun();
     }
 
-    public async Task<Test> GetTestAsync(string subscription, string testResourceName, string testId, string? resourceGroup = null, string? tenant = null, RetryPolicyOptions? retryPolicy = null)
+    public async Task<Test> GetTestAsync(McpUserContext userContext, string subscription, string testResourceName, string testId, string? resourceGroup = null, string? tenant = null, RetryPolicyOptions? retryPolicy = null)
     {
         ValidateRequiredParameters(subscription, testResourceName, testId);
-        var subscriptionId = (await _subscriptionService.GetSubscription(subscription, tenant, retryPolicy)).Data.SubscriptionId;
-        var loadTestResource = await GetLoadTestResourcesAsync(subscriptionId, resourceGroup, testResourceName, tenant, retryPolicy);
+        var subscriptionId = (await _subscriptionService.GetSubscription(userContext, subscription, tenant, retryPolicy)).Data.SubscriptionId;
+        var loadTestResource = await GetLoadTestResourcesAsync(userContext, subscriptionId, resourceGroup, testResourceName, tenant, retryPolicy);
         if (loadTestResource == null)
         {
             throw new Exception($"Load Test '{testResourceName}' not found in subscription '{subscriptionId}' and resource group '{resourceGroup}'.");
@@ -226,7 +227,7 @@ public class LoadTestingService(ISubscriptionService subscriptionService) : Base
             throw new Exception($"Data Plane URI for Load Test '{testResourceName}' is not available.");
         }
 
-        var credential = await GetCredential(tenant);
+        var credential = await GetCredential(userContext);
         var loadTestClient = new LoadTestAdministrationClient(new Uri($"https://{dataPlaneUri}"), credential);
 
         var loadTestResponse = await loadTestClient.GetTestAsync(testId);
@@ -238,14 +239,14 @@ public class LoadTestingService(ISubscriptionService subscriptionService) : Base
         var loadTest = loadTestResponse.Content.ToString();
         return JsonSerializer.Deserialize(loadTest, LoadTestJsonContext.Default.Test) ?? new Test();
     }
-    public async Task<Test> CreateTestAsync(string subscription, string testResourceName, string testId, string? resourceGroup = null,
+    public async Task<Test> CreateTestAsync(McpUserContext userContext, string subscription, string testResourceName, string testId, string? resourceGroup = null,
         string? displayName = null, string? description = null,
         int? duration = 20, int? virtualUsers = 50, int? rampUpTime = 1, string? endpointUrl = null, string? tenant = null, RetryPolicyOptions? retryPolicy = null)
     {
         ValidateRequiredParameters(subscription, testResourceName, testId);
-        var subscriptionId = (await _subscriptionService.GetSubscription(subscription, tenant, retryPolicy)).Data.SubscriptionId;
+        var subscriptionId = (await _subscriptionService.GetSubscription(userContext, subscription, tenant, retryPolicy)).Data.SubscriptionId;
 
-        var loadTestResource = await GetLoadTestResourcesAsync(subscriptionId, resourceGroup, testResourceName, tenant, retryPolicy);
+        var loadTestResource = await GetLoadTestResourcesAsync(userContext, subscriptionId, resourceGroup, testResourceName, tenant, retryPolicy);
         if (loadTestResource == null)
         {
             throw new Exception($"Load Test '{testResourceName}' not found in subscription '{subscriptionId}' and resource group '{resourceGroup}'.");
@@ -256,7 +257,7 @@ public class LoadTestingService(ISubscriptionService subscriptionService) : Base
             throw new Exception($"Data Plane URI for Load Test '{testResourceName}' is not available.");
         }
 
-        var credential = await GetCredential(tenant);
+        var credential = await GetCredential(userContext);
         var loadTestClient = new LoadTestAdministrationClient(new Uri($"https://{dataPlaneUri}"), credential);
         OptionalLoadTestConfig optionalLoadTestConfig = new OptionalLoadTestConfig
         {

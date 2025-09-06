@@ -3,6 +3,7 @@
 
 using System.Text.Json;
 using System.Text.Json.Serialization;
+using Azure.Mcp.Core.Areas.Server.Commands.Runtime;
 using Azure.Mcp.Core.Models.Command;
 using Azure.Mcp.TestUtilities;
 using Azure.Mcp.Tools.Postgres.Commands.Table;
@@ -35,11 +36,11 @@ public class TableSchemaGetCommandTests
     public async Task ExecuteAsync_ReturnsSchema_WhenSchemaExists()
     {
         var expectedSchema = new List<string>(["CREATE TABLE test (id INT);"]);
-        _postgresService.GetTableSchemaAsync("sub123", "rg1", "user1", "server1", "db123", "table123").Returns(expectedSchema);
+        _postgresService.GetTableSchemaAsync(McpUserContext.Empty, "sub123", "rg1", "user1", "server1", "db123", "table123").Returns(expectedSchema);
 
         var command = new TableSchemaGetCommand(_logger);
         var args = command.GetCommand().Parse(["--subscription", "sub123", "--resource-group", "rg1", "--user", "user1", "--server", "server1", "--database", "db123", "--table", "table123"]);
-        var context = new CommandContext(_serviceProvider);
+        var context = new CommandContext(_serviceProvider, McpUserContext.Empty);
 
         var response = await command.ExecuteAsync(context, args);
         Assert.NotNull(response);
@@ -54,11 +55,11 @@ public class TableSchemaGetCommandTests
     [Fact]
     public async Task ExecuteAsync_ReturnsNull_WhenSchemaDoesNotExist()
     {
-        _postgresService.GetTableSchemaAsync("sub123", "rg1", "user1", "server1", "db123", "table123").Returns([]);
+        _postgresService.GetTableSchemaAsync(McpUserContext.Empty, "sub123", "rg1", "user1", "server1", "db123", "table123").Returns([]);
 
         var command = new TableSchemaGetCommand(_logger);
         var args = command.GetCommand().Parse(["--subscription", "sub123", "--resource-group", "rg1", "--user", "user1", "--server", "server1", "--database", "db123", "--table", "table123"]);
-        var context = new CommandContext(_serviceProvider);
+        var context = new CommandContext(_serviceProvider, McpUserContext.Empty);
 
         var response = await command.ExecuteAsync(context, args);
 
@@ -87,7 +88,7 @@ public class TableSchemaGetCommandTests
             ("--table", "table123")
         ));
 
-        var context = new CommandContext(_serviceProvider);
+        var context = new CommandContext(_serviceProvider, McpUserContext.Empty);
         var response = await command.ExecuteAsync(context, args);
 
         Assert.NotNull(response);

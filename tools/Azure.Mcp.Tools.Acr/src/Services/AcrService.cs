@@ -2,6 +2,7 @@
 // Licensed under the MIT License.
 
 using Azure.Containers.ContainerRegistry;
+using Azure.Mcp.Core.Areas.Server.Commands.Runtime;
 using Azure.Mcp.Core.Services.Azure;
 using Azure.Mcp.Core.Services.Azure.Subscription;
 using Azure.Mcp.Core.Services.Azure.Tenant;
@@ -14,6 +15,7 @@ public sealed class AcrService(ISubscriptionService subscriptionService, ITenant
     private readonly ISubscriptionService _subscriptionService = subscriptionService ?? throw new ArgumentNullException(nameof(subscriptionService));
 
     public async Task<List<Models.AcrRegistryInfo>> ListRegistries(
+        McpUserContext userContext,
         string subscription,
         string? resourceGroup = null,
         string? tenant = null,
@@ -21,7 +23,7 @@ public sealed class AcrService(ISubscriptionService subscriptionService, ITenant
     {
         ValidateRequiredParameters(subscription);
 
-        var subscriptionResource = await _subscriptionService.GetSubscription(subscription, tenant, retryPolicy);
+        var subscriptionResource = await _subscriptionService.GetSubscription(userContext,subscription, tenant, retryPolicy);
         var registries = new List<Models.AcrRegistryInfo>();
 
         // Select enumeration source based on optional resource group
@@ -61,6 +63,7 @@ public sealed class AcrService(ISubscriptionService subscriptionService, ITenant
     }
 
     public async Task<Dictionary<string, List<string>>> ListRegistryRepositories(
+        McpUserContext userContext,
         string subscription,
         string? resourceGroup = null,
         string? registry = null,
@@ -69,7 +72,7 @@ public sealed class AcrService(ISubscriptionService subscriptionService, ITenant
     {
         ValidateRequiredParameters(subscription);
 
-        var subscriptionResource = await _subscriptionService.GetSubscription(subscription, tenant, retryPolicy);
+        var subscriptionResource = await _subscriptionService.GetSubscription(userContext, subscription, tenant, retryPolicy);
         var result = new Dictionary<string, List<string>>(StringComparer.OrdinalIgnoreCase);
 
         async Task AddRepositoriesForRegistryAsync(ContainerRegistryResource reg)
@@ -81,7 +84,7 @@ public sealed class AcrService(ISubscriptionService subscriptionService, ITenant
             }
 
             // Build data-plane client for this login server
-            var credential = await GetCredential(tenant);
+            var credential = await GetCredential(userContext, tenant);
             var options = ConfigureRetryPolicy(AddDefaultPolicies(new ContainerRegistryClientOptions()), retryPolicy);
             var acrEndpoint = new Uri($"https://{data.LoginServer}");
             var client = new ContainerRegistryClient(acrEndpoint, credential, options);

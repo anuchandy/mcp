@@ -84,6 +84,12 @@ public abstract class BaseDiscoveryStrategy(ILogger logger) : IMcpDiscoveryStrat
         return client;
     }
 
+    /// <inheritdoc />
+    public IEnumerable<IMcpClient> GetCachedClients()
+    {
+        return _clientCache.Values.ToArray();
+    }
+
     /// <summary>
     /// Disposes all cached MCP clients with double disposal protection.
     /// </summary>

@@ -1,6 +1,7 @@
 // Copyright (c) Microsoft Corporation.
 // Licensed under the MIT License.
 
+using Azure.Mcp.Core.Areas.Server.Commands.Runtime;
 using Azure.Mcp.Core.Options;
 using Azure.Mcp.Tools.Monitor.Models;
 
@@ -28,6 +29,7 @@ public interface IMonitorMetricsService
      /// <param name="retryPolicy">Optional retry policy parameters</param>
      /// <returns>List of metric results with time series data</returns>
     Task<List<MetricResult>> QueryMetricsAsync(
+        McpUserContext userContext,
         string subscription,
         string? resourceGroup,
         string? resourceType,
@@ -55,6 +57,7 @@ public interface IMonitorMetricsService
     /// <param name="retryPolicy">Optional retry policy parameters</param>
     /// <returns>List of metric definitions</returns>
     Task<List<MetricDefinition>> ListMetricDefinitionsAsync(
+        McpUserContext userContext,
         string subscription,
         string? resourceGroup,
         string? resourceType,
@@ -73,6 +76,7 @@ public interface IMonitorMetricsService
                                                     /// <param name="retryPolicy">Optional retry policy parameters</param>
                                                     /// <returns>List of metric namespaces</returns>
     Task<List<MetricNamespace>> ListMetricNamespacesAsync(
+        McpUserContext userContext,
         string subscription,
         string? resourceGroup,
         string? resourceType,

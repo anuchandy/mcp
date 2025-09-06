@@ -2,6 +2,7 @@
 // Licensed under the MIT License.
 
 using System.Text.Json;
+using Azure.Mcp.Core.Areas.Server.Commands.Runtime;
 using Azure.Mcp.Core.Models.Command;
 using Azure.Mcp.Core.Options;
 using Azure.Mcp.Tools.FunctionApp.Commands;
@@ -57,11 +58,11 @@ public sealed class FunctionAppListCommandTests
                 new("functionApp1", null, "eastus", "plan1", "Running", "functionapp1.azurewebsites.net", null),
                 new("functionApp2", null, "westus", "plan2", "Stopped", "functionapp2.azurewebsites.net", null)
             };
-            _functionAppService.ListFunctionApps(Arg.Any<string>(), Arg.Any<string?>(), Arg.Any<RetryPolicyOptions?>())
+            _functionAppService.ListFunctionApps(Arg.Any<McpUserContext>(), Arg.Any<string>(), Arg.Any<string?>(), Arg.Any<RetryPolicyOptions?>())
                 .Returns(testFunctionApps);
         }
 
-        var context = new CommandContext(_serviceProvider);
+        var context = new CommandContext(_serviceProvider, McpUserContext.Empty);
         var parseResult = _command.GetCommand().Parse(args);
 
         // Act
@@ -89,10 +90,10 @@ public sealed class FunctionAppListCommandTests
             new("functionApp1", "rg1", "eastus", "plan1", "Running", "functionapp1.azurewebsites.net", null),
             new("functionApp2", "rg2", "westus", "plan2", "Stopped", "functionapp2.azurewebsites.net", null)
         };
-        _functionAppService.ListFunctionApps(Arg.Any<string>(), Arg.Any<string?>(), Arg.Any<RetryPolicyOptions?>())
+        _functionAppService.ListFunctionApps(Arg.Any<McpUserContext>(), Arg.Any<string>(), Arg.Any<string?>(), Arg.Any<RetryPolicyOptions?>())
             .Returns(expectedFunctionApps);
 
-        var context = new CommandContext(_serviceProvider);
+        var context = new CommandContext(_serviceProvider, McpUserContext.Empty);
         var parseResult = _command.GetCommand().Parse("--subscription sub123");
 
         // Act
@@ -103,7 +104,7 @@ public sealed class FunctionAppListCommandTests
         Assert.NotNull(response.Results);
 
         // Verify the mock was called
-        await _functionAppService.Received(1).ListFunctionApps(Arg.Any<string>(), Arg.Any<string?>(), Arg.Any<RetryPolicyOptions?>());
+        await _functionAppService.Received(1).ListFunctionApps(Arg.Any<McpUserContext>(), Arg.Any<string>(), Arg.Any<string?>(), Arg.Any<RetryPolicyOptions?>());
 
         var json = JsonSerializer.Serialize(response.Results);
 
@@ -123,10 +124,10 @@ public sealed class FunctionAppListCommandTests
     public async Task ExecuteAsync_ReturnsNullWhenNoFunctionApp()
     {
         // Arrange
-        _functionAppService.ListFunctionApps(Arg.Any<string>(), Arg.Any<string?>(), Arg.Any<RetryPolicyOptions?>())
+        _functionAppService.ListFunctionApps(Arg.Any<McpUserContext>(),Arg.Any<string>(), Arg.Any<string?>(), Arg.Any<RetryPolicyOptions?>())
             .Returns(new List<FunctionAppInfo>());
 
-        var context = new CommandContext(_serviceProvider);
+        var context = new CommandContext(_serviceProvider, McpUserContext.Empty);
         var parseResult = _command.GetCommand().Parse("--subscription sub123");
 
         // Act
@@ -141,10 +142,10 @@ public sealed class FunctionAppListCommandTests
     public async Task ExecuteAsync_HandlesServiceErrors()
     {
         // Arrange
-        _functionAppService.ListFunctionApps(Arg.Any<string>(), Arg.Any<string?>(), Arg.Any<RetryPolicyOptions?>())
+        _functionAppService.ListFunctionApps(Arg.Any<McpUserContext>(),Arg.Any<string>(), Arg.Any<string?>(), Arg.Any<RetryPolicyOptions?>())
             .Returns(Task.FromException<List<FunctionAppInfo>?>(new Exception("Test error")));
 
-        var context = new CommandContext(_serviceProvider);
+        var context = new CommandContext(_serviceProvider, McpUserContext.Empty);
         var parseResult = _command.GetCommand().Parse("--subscription sub123");
 
         // Act

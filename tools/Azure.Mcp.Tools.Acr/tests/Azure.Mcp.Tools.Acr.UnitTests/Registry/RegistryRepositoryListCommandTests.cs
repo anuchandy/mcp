@@ -2,6 +2,7 @@
 // Licensed under the MIT License.
 
 using System.CommandLine;
+using Azure.Mcp.Core.Areas.Server.Commands.Runtime;
 using Azure.Mcp.Core.Models.Command;
 using Azure.Mcp.Core.Options;
 using Azure.Mcp.Tools.Acr.Commands.Registry;
@@ -30,7 +31,7 @@ public class RegistryRepositoryListCommandTests
         var collection = new ServiceCollection().AddSingleton(_service);
         _serviceProvider = collection.BuildServiceProvider();
         _command = new(_logger);
-        _context = new(_serviceProvider);
+        _context = new CommandContext(_serviceProvider, McpUserContext.Empty);
         _commandDefinition = _command.GetCommand();
     }
 
@@ -44,7 +45,7 @@ public class RegistryRepositoryListCommandTests
         // Arrange
         if (shouldSucceed)
         {
-            _service.ListRegistryRepositories(Arg.Any<string>(), Arg.Any<string?>(), Arg.Any<string?>(), Arg.Any<string?>(), Arg.Any<RetryPolicyOptions?>())
+            _service.ListRegistryRepositories(Arg.Any<McpUserContext>(), Arg.Any<string>(), Arg.Any<string?>(), Arg.Any<string?>(), Arg.Any<string?>(), Arg.Any<RetryPolicyOptions?>())
                 .Returns(new Dictionary<string, List<string>>
                 {
                     ["myacr"] = new List<string> { "repo1", "repo2" }
@@ -72,7 +73,7 @@ public class RegistryRepositoryListCommandTests
     public async Task ExecuteAsync_HandlesServiceErrors()
     {
         // Arrange
-        _service.ListRegistryRepositories(Arg.Any<string>(), Arg.Any<string?>(), Arg.Any<string?>(), Arg.Any<string?>(), Arg.Any<RetryPolicyOptions?>())
+        _service.ListRegistryRepositories(Arg.Any<McpUserContext>(), Arg.Any<string>(), Arg.Any<string?>(), Arg.Any<string?>(), Arg.Any<string?>(), Arg.Any<RetryPolicyOptions?>())
             .Returns(Task.FromException<Dictionary<string, List<string>>>(new Exception("Test error")));
 
         var parseResult = _commandDefinition.Parse(["--subscription", "sub"]);
@@ -90,7 +91,7 @@ public class RegistryRepositoryListCommandTests
     public async Task ExecuteAsync_Empty_ReturnsNullResults()
     {
         // Arrange
-        _service.ListRegistryRepositories(Arg.Any<string>(), Arg.Any<string?>(), Arg.Any<string?>(), Arg.Any<string?>(), Arg.Any<RetryPolicyOptions?>())
+        _service.ListRegistryRepositories(Arg.Any<McpUserContext>(), Arg.Any<string>(), Arg.Any<string?>(), Arg.Any<string?>(), Arg.Any<string?>(), Arg.Any<RetryPolicyOptions?>())
             .Returns(new Dictionary<string, List<string>>());
 
         var parseResult = _commandDefinition.Parse(["--subscription", "sub"]);

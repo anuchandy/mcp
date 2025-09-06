@@ -3,11 +3,13 @@
 
 using System.Text.Json;
 using Azure.Mcp.Core.Areas.Server.Commands.Discovery;
+using Azure.Mcp.Core.Areas.Server.Commands.Runtime;
 using Azure.Mcp.Core.Areas.Server.Commands.ToolLoading;
 using Azure.Mcp.Core.Areas.Server.Options;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
 using ModelContextProtocol.Protocol;
+using ModelContextProtocol.Server;
 using NSubstitute;
 using Xunit;
 
@@ -26,6 +28,14 @@ public class ServerToolLoaderTests
         var toolLoader = new ServerToolLoader(mockDiscoveryStrategy, toolLoaderOptions, logger);
         return (toolLoader, mockDiscoveryStrategy);
     }
+
+    // AzMcpRequestContext wrapping helper for tests
+    private static AzMcpRequestContext<TParams> Wrap<TParams>(RequestContext<TParams> inner) where TParams : class =>
+        new AzMcpRequestContext<TParams>(
+            inner,
+            null,
+            null,
+            AzRuntimeMode.Default);
 
     private static ModelContextProtocol.Server.RequestContext<ListToolsRequestParams> CreateRequest()
     {
@@ -76,7 +86,7 @@ public class ServerToolLoaderTests
 
         // Act - Call CallToolHandler WITHOUT calling ListToolsHandler first
         // This should work without requiring ListToolsHandler to be called first
-        var result = await toolLoader.CallToolHandler(request, CancellationToken.None);
+        var result = await toolLoader.CallToolHandler(Wrap(request), CancellationToken.None);
 
         // Assert - The tool call should succeed
         Assert.NotNull(result);
@@ -95,7 +105,7 @@ public class ServerToolLoaderTests
             .Returns(Task.FromResult(Enumerable.Empty<IMcpServerProvider>()));
 
         // Act
-        var result = await toolLoader.ListToolsHandler(request, CancellationToken.None);
+        var result = await toolLoader.ListToolsHandler(Wrap(request), CancellationToken.None);
 
         // Assert
         Assert.NotNull(result);
@@ -119,7 +129,7 @@ public class ServerToolLoaderTests
         var request = CreateRequest();
 
         // Act
-        var result = await toolLoader.ListToolsHandler(request, CancellationToken.None);
+        var result = await toolLoader.ListToolsHandler(Wrap(request), CancellationToken.None);
 
         // Assert
         Assert.NotNull(result);

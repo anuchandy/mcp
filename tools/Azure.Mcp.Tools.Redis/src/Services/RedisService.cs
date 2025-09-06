@@ -1,6 +1,7 @@
 // Copyright (c) Microsoft Corporation.
 // Licensed under the MIT License.
 
+using Azure.Mcp.Core.Areas.Server.Commands.Runtime;
 using Azure.Mcp.Core.Models.Identity;
 using Azure.Mcp.Core.Options;
 using Azure.Mcp.Core.Services.Azure;
@@ -19,6 +20,7 @@ public class RedisService(ISubscriptionService _subscriptionService, IResourceGr
     : BaseAzureService(tenantService), IRedisService
 {
     public async Task<IEnumerable<Cache>> ListCachesAsync(
+        McpUserContext userContext,
         string subscription,
         string? tenant = null,
         AuthMethod? authMethod = null,
@@ -28,7 +30,7 @@ public class RedisService(ISubscriptionService _subscriptionService, IResourceGr
 
         try
         {
-            var subscriptionResource = await _subscriptionService.GetSubscription(subscription, tenant, retryPolicy) ?? throw new Exception($"Subscription '{subscription}' not found");
+            var subscriptionResource = await _subscriptionService.GetSubscription(userContext,subscription, tenant, retryPolicy) ?? throw new Exception($"Subscription '{subscription}' not found");
             var caches = new List<Cache>();
 
             await foreach (var cacheResource in subscriptionResource.GetAllRedisAsync())
@@ -115,6 +117,7 @@ public class RedisService(ISubscriptionService _subscriptionService, IResourceGr
     }
 
     public async Task<IEnumerable<AccessPolicyAssignment>> ListAccessPolicyAssignmentsAsync(
+        McpUserContext userContext,
         string cacheName,
         string resourceGroupName,
         string subscription,
@@ -126,7 +129,7 @@ public class RedisService(ISubscriptionService _subscriptionService, IResourceGr
 
         try
         {
-            var resourceGroup = await _resourceGroupService.GetResourceGroupResource(subscription, resourceGroupName, tenant, retryPolicy) ?? throw new Exception($"Resource group named '{resourceGroupName}' not found");
+            var resourceGroup = await _resourceGroupService.GetResourceGroupResource(userContext, subscription, resourceGroupName, tenant, retryPolicy) ?? throw new Exception($"Resource group named '{resourceGroupName}' not found");
             var cacheResponse = await resourceGroup.GetRedisAsync(cacheName);
             var accessPolicyAssignmentCollection = cacheResponse.Value.GetRedisCacheAccessPolicyAssignments();
             var accessPolicyAssignments = new List<AccessPolicyAssignment>();
@@ -157,6 +160,7 @@ public class RedisService(ISubscriptionService _subscriptionService, IResourceGr
     }
 
     public async Task<IEnumerable<Cluster>> ListClustersAsync(
+        McpUserContext userContext,
         string subscription,
         string? tenant = null,
         AuthMethod? authMethod = null,
@@ -166,7 +170,7 @@ public class RedisService(ISubscriptionService _subscriptionService, IResourceGr
 
         try
         {
-            var subscriptionResource = await _subscriptionService.GetSubscription(subscription, tenant, retryPolicy) ?? throw new Exception($"Subscription '{subscription}' not found");
+            var subscriptionResource = await _subscriptionService.GetSubscription(userContext, subscription, tenant, retryPolicy) ?? throw new Exception($"Subscription '{subscription}' not found");
             var clusters = new List<Cluster>();
 
             await foreach (var clusterResource in subscriptionResource.GetRedisEnterpriseClustersAsync())
@@ -222,6 +226,7 @@ public class RedisService(ISubscriptionService _subscriptionService, IResourceGr
     }
 
     public async Task<IEnumerable<Database>> ListDatabasesAsync(
+        McpUserContext userContext,
         string clusterName,
         string resourceGroupName,
         string subscription,
@@ -233,7 +238,7 @@ public class RedisService(ISubscriptionService _subscriptionService, IResourceGr
 
         try
         {
-            var resourceGroup = await _resourceGroupService.GetResourceGroupResource(subscription, resourceGroupName, tenant, retryPolicy) ?? throw new Exception($"Resource group named '{resourceGroupName}' not found");
+            var resourceGroup = await _resourceGroupService.GetResourceGroupResource(userContext, subscription, resourceGroupName, tenant, retryPolicy) ?? throw new Exception($"Resource group named '{resourceGroupName}' not found");
             var clusterResponse = await resourceGroup.GetRedisEnterpriseClusterAsync(clusterName);
             var databaseCollection = clusterResponse.Value.GetRedisEnterpriseDatabases();
             var databases = new List<Database>();

@@ -57,6 +57,7 @@ public sealed class FileSystemListPathsCommand(ILogger<FileSystemListPathsComman
         {
             var storageService = context.GetService<IStorageService>();
             var paths = await storageService.ListDataLakePaths(
+                context.UserContext,
                 options.Account!,
                 options.FileSystem!,
                 options.Recursive,

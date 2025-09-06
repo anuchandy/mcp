@@ -3,6 +3,7 @@
 
 using System.Text.Json;
 using System.Text.Json.Serialization;
+using Azure.Mcp.Core.Areas.Server.Commands.Runtime;
 using Azure.Mcp.Core.Models.Command;
 using Azure.Mcp.Core.Options;
 using Azure.Mcp.Tools.Foundry.Commands;
@@ -40,6 +41,7 @@ public class ModelsListCommandTests
         };
 
         _foundryService.ListModels(
+            Arg.Any<McpUserContext>(),
                 Arg.Any<bool>(),
                 Arg.Any<string>(),
                 Arg.Any<string>(),
@@ -50,7 +52,7 @@ public class ModelsListCommandTests
 
         var command = new ModelsListCommand();
         var args = command.GetCommand().Parse("");
-        var context = new CommandContext(_serviceProvider);
+        var context = new CommandContext(_serviceProvider, McpUserContext.Empty);
         var response = await command.ExecuteAsync(context, args);
 
         Assert.NotNull(response);
@@ -77,6 +79,7 @@ public class ModelsListCommandTests
         };
 
         _foundryService.ListModels(
+            Arg.Any<McpUserContext>(),
                 Arg.Any<bool>(),
                 Arg.Any<string>(),
                 Arg.Any<string>(),
@@ -87,7 +90,7 @@ public class ModelsListCommandTests
 
         var command = new ModelsListCommand();
         var args = command.GetCommand().Parse(["--search-for-free-playground", "--publisher", publisherName, "--license", license, "--model-name", modelName]);
-        var context = new CommandContext(_serviceProvider);
+        var context = new CommandContext(_serviceProvider, McpUserContext.Empty);
         var response = await command.ExecuteAsync(context, args);
 
         Assert.NotNull(response);
@@ -105,6 +108,7 @@ public class ModelsListCommandTests
     public async Task ExecuteAsync_ReturnsEmpty_WhenNoModels()
     {
         _foundryService.ListModels(
+            Arg.Any<McpUserContext>(),
                 Arg.Any<bool>(),
                 Arg.Any<string>(),
                 Arg.Any<string>(),
@@ -115,7 +119,7 @@ public class ModelsListCommandTests
 
         var command = new ModelsListCommand();
         var args = command.GetCommand().Parse("");
-        var context = new CommandContext(_serviceProvider);
+        var context = new CommandContext(_serviceProvider, McpUserContext.Empty);
         var response = await command.ExecuteAsync(context, args);
 
         Assert.NotNull(response);
@@ -128,6 +132,7 @@ public class ModelsListCommandTests
         var expectedError = "Test error";
 
         _foundryService.ListModels(
+            Arg.Any<McpUserContext>(),
                 Arg.Any<bool>(),
                 Arg.Any<string>(),
                 Arg.Any<string>(),
@@ -138,7 +143,7 @@ public class ModelsListCommandTests
 
         var command = new ModelsListCommand();
         var args = command.GetCommand().Parse("");
-        var context = new CommandContext(_serviceProvider);
+        var context = new CommandContext(_serviceProvider, McpUserContext.Empty);
         var response = await command.ExecuteAsync(context, args);
 
         Assert.NotNull(response);

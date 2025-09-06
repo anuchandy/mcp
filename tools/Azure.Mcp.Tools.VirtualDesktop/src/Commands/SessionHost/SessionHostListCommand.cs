@@ -45,6 +45,7 @@ public sealed class SessionHostListCommand(ILogger<SessionHostListCommand> logge
             if (!string.IsNullOrEmpty(options.HostPoolResourceId))
             {
                 sessionHosts = await virtualDesktopService.ListSessionHostsByResourceIdAsync(
+                    context.UserContext,
                     options.Subscription!,
                     options.HostPoolResourceId,
                     options.Tenant,
@@ -53,6 +54,7 @@ public sealed class SessionHostListCommand(ILogger<SessionHostListCommand> logge
             else if (!string.IsNullOrEmpty(options.ResourceGroup))
             {
                 sessionHosts = await virtualDesktopService.ListSessionHostsByResourceGroupAsync(
+                    context.UserContext,
                     options.Subscription!,
                     options.ResourceGroup,
                     options.HostPoolName!,
@@ -62,6 +64,7 @@ public sealed class SessionHostListCommand(ILogger<SessionHostListCommand> logge
             else
             {
                 sessionHosts = await virtualDesktopService.ListSessionHostsAsync(
+                    context.UserContext,
                     options.Subscription!,
                     options.HostPoolName!,
                     options.Tenant,

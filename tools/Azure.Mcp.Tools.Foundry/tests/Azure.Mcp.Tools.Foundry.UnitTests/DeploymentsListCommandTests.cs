@@ -2,6 +2,7 @@
 // Licensed under the MIT License.
 
 using Azure.AI.Projects;
+using Azure.Mcp.Core.Areas.Server.Commands.Runtime;
 using Azure.Mcp.Core.Models.Command;
 using Azure.Mcp.Core.Options;
 using Azure.Mcp.Tools.Foundry.Commands;
@@ -39,6 +40,7 @@ public class DeploymentsListCommandTests
         };
 
         _foundryService.ListDeployments(
+            Arg.Any<McpUserContext>(),
                 Arg.Is<string>(s => s == endpoint),
                 Arg.Any<string>(),
                 Arg.Any<RetryPolicyOptions>())
@@ -46,7 +48,7 @@ public class DeploymentsListCommandTests
 
         var command = new DeploymentsListCommand();
         var args = command.GetCommand().Parse(["--endpoint", endpoint]);
-        var context = new CommandContext(_serviceProvider);
+        var context = new CommandContext(_serviceProvider, McpUserContext.Empty);
         var response = await command.ExecuteAsync(context, args);
 
         Assert.NotNull(response);
@@ -59,6 +61,7 @@ public class DeploymentsListCommandTests
         var endpoint = "https://test-endpoint.com";
 
         _foundryService.ListDeployments(
+            Arg.Any<McpUserContext>(),
                 Arg.Is<string>(s => s == endpoint),
                 Arg.Any<string>(),
                 Arg.Any<RetryPolicyOptions>())
@@ -66,7 +69,7 @@ public class DeploymentsListCommandTests
 
         var command = new DeploymentsListCommand();
         var args = command.GetCommand().Parse(["--endpoint", endpoint]);
-        var context = new CommandContext(_serviceProvider);
+        var context = new CommandContext(_serviceProvider, McpUserContext.Empty);
         var response = await command.ExecuteAsync(context, args);
 
         Assert.NotNull(response);
@@ -80,6 +83,7 @@ public class DeploymentsListCommandTests
         var expectedError = "Test error";
 
         _foundryService.ListDeployments(
+            Arg.Any<McpUserContext>(),
                 Arg.Any<string>(),
                 Arg.Any<string>(),
                 Arg.Any<RetryPolicyOptions>())
@@ -87,7 +91,7 @@ public class DeploymentsListCommandTests
 
         var command = new DeploymentsListCommand();
         var args = command.GetCommand().Parse(["--endpoint", endpoint]);
-        var context = new CommandContext(_serviceProvider);
+        var context = new CommandContext(_serviceProvider, McpUserContext.Empty);
         var response = await command.ExecuteAsync(context, args);
 
         Assert.NotNull(response);
@@ -102,6 +106,7 @@ public class DeploymentsListCommandTests
         var expectedError = "Test error";
 
         _foundryService.ListDeployments(
+            Arg.Any<McpUserContext>(),
                 Arg.Is<string>(s => s == endpoint),
                 Arg.Any<string>(),
                 Arg.Any<RetryPolicyOptions>())
@@ -109,7 +114,7 @@ public class DeploymentsListCommandTests
 
         var command = new DeploymentsListCommand();
         var args = command.GetCommand().Parse([]);
-        var context = new CommandContext(_serviceProvider);
+        var context = new CommandContext(_serviceProvider, McpUserContext.Empty);
         var response = await command.ExecuteAsync(context, args);
 
         Assert.NotNull(response);

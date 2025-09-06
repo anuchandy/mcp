@@ -39,6 +39,7 @@ public sealed class KeyValueLockCommand(ILogger<KeyValueLockCommand> logger) : B
         {
             var appConfigService = context.GetService<IAppConfigService>();
             await appConfigService.LockKeyValue(
+                context.UserContext,
                 options.Account!,
                 options.Key!,
                 options.Subscription!,

@@ -2,6 +2,7 @@
 // Licensed under the MIT License.
 
 using Azure.Core;
+using Azure.Mcp.Core.Areas.Server.Commands.Runtime;
 using Azure.Mcp.Core.Services.Azure;
 using Azure.Mcp.Tools.Deploy.Services.Util;
 
@@ -11,12 +12,13 @@ public class DeployService() : BaseAzureService, IDeployService
 {
 
     public async Task<string> GetAzdResourceLogsAsync(
+         McpUserContext userContext,
          string workspaceFolder,
          string azdEnvName,
          string subscriptionId,
          int? limit = null)
     {
-        TokenCredential credential = await GetCredential();
+        TokenCredential credential = await GetCredential(userContext);
         string result = await AzdResourceLogService.GetAzdResourceLogsAsync(
             credential,
             workspaceFolder,

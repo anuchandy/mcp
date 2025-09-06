@@ -39,6 +39,7 @@ public sealed class AccountListCommand(ILogger<AccountListCommand> logger) : Sub
         {
             var cosmosService = context.GetService<ICosmosService>();
             var accounts = await cosmosService.GetCosmosAccounts(
+                context.UserContext,
                 options.Subscription!,
                 options.Tenant,
                 options.RetryPolicy);

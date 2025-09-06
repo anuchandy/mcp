@@ -62,6 +62,7 @@ public sealed class KnowledgeIndexListCommand : GlobalCommand<KnowledgeIndexList
         {
             var service = context.GetService<IFoundryService>();
             var indexes = await service.ListKnowledgeIndexes(
+                context.UserContext,
                 options.Endpoint!,
                 options.Tenant,
                 options.RetryPolicy);

@@ -3,6 +3,7 @@
 
 using System.Text.Json;
 using System.Text.Json.Serialization;
+using Azure.Mcp.Core.Areas.Server.Commands.Runtime;
 using Azure.Mcp.Core.Models.Command;
 using Azure.Mcp.TestUtilities;
 using Azure.Mcp.Tools.Postgres.Commands.Table;
@@ -35,11 +36,11 @@ public class TableListCommandTests
     public async Task ExecuteAsync_ReturnsTables_WhenTablesExist()
     {
         var expectedTables = new List<string> { "table1", "table2" };
-        _postgresService.ListTablesAsync("sub123", "rg1", "user1", "server1", "db123").Returns(expectedTables);
+        _postgresService.ListTablesAsync(McpUserContext.Empty, "sub123", "rg1", "user1", "server1", "db123").Returns(expectedTables);
 
         var command = new TableListCommand(_logger);
         var args = command.GetCommand().Parse(["--subscription", "sub123", "--resource-group", "rg1", "--user", "user1", "--server", "server1", "--database", "db123"]);
-        var context = new CommandContext(_serviceProvider);
+        var context = new CommandContext(_serviceProvider, McpUserContext.Empty);
         var response = await command.ExecuteAsync(context, args);
 
         Assert.NotNull(response);
@@ -56,11 +57,11 @@ public class TableListCommandTests
     [Fact]
     public async Task ExecuteAsync_ReturnsEmptyList_WhenNoTablesExist()
     {
-        _postgresService.ListTablesAsync("sub123", "rg1", "user1", "server1", "db123").Returns([]);
+        _postgresService.ListTablesAsync(McpUserContext.Empty, "sub123", "rg1", "user1", "server1", "db123").Returns([]);
 
         var command = new TableListCommand(_logger);
         var args = command.GetCommand().Parse(["--subscription", "sub123", "--resource-group", "rg1", "--user", "user1", "--server", "server1", "--database", "db123"]);
-        var context = new CommandContext(_serviceProvider);
+        var context = new CommandContext(_serviceProvider, McpUserContext.Empty);
         var response = await command.ExecuteAsync(context, args);
 
         Assert.NotNull(response);
@@ -86,7 +87,7 @@ public class TableListCommandTests
             ("--database", "db123")
         ));
 
-        var context = new CommandContext(_serviceProvider);
+        var context = new CommandContext(_serviceProvider, McpUserContext.Empty);
         var response = await command.ExecuteAsync(context, args);
 
         Assert.NotNull(response);

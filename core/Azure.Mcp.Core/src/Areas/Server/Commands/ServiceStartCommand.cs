@@ -2,14 +2,18 @@
 // Licensed under the MIT License.
 
 using System.Net;
+using Azure.Mcp.Core.Areas.Server.Commands.Runtime;
 using Azure.Mcp.Core.Areas.Server.Options;
 using Azure.Mcp.Core.Commands;
 using Azure.Mcp.Core.Helpers;
+using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Hosting;
+using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
 using Microsoft.Extensions.Logging;
+using Microsoft.Identity.Web;
 using ModelContextProtocol.AspNetCore;
 using OpenTelemetry.Logs;
 using OpenTelemetry.Metrics;
@@ -30,6 +34,8 @@ public sealed class ServiceStartCommand : BaseCommand
     private readonly Option<string?> _modeOption = ServiceOptionDefinitions.Mode;
     private readonly Option<bool?> _readOnlyOption = ServiceOptionDefinitions.ReadOnly;
     private readonly Option<bool> _enableInsecureTransportsOption = ServiceOptionDefinitions.EnableInsecureTransports;
+    private readonly Option<bool> _enableOBOOption = ServiceOptionDefinitions.EnableOBO;
+    private readonly Option<string?> _oboChannelOption = ServiceOptionDefinitions.OboChannel;
 
     /// <summary>
     /// Gets the name of the command.
@@ -65,6 +71,8 @@ public sealed class ServiceStartCommand : BaseCommand
         command.Options.Add(_modeOption);
         command.Options.Add(_readOnlyOption);
         command.Options.Add(_enableInsecureTransportsOption);
+        command.Options.Add(_enableOBOOption);
+        command.Options.Add(_oboChannelOption);
     }
 
     /// <summary>
@@ -78,6 +86,7 @@ public sealed class ServiceStartCommand : BaseCommand
         string[]? namespaces = parseResult.GetValue(_namespaceOption);
         string? mode = parseResult.GetValue(_modeOption);
         bool? readOnly = parseResult.GetValue(_readOnlyOption);
+        string? oboChannel = parseResult.GetValue(_oboChannelOption);
 
         if (!IsValidMode(mode))
         {
@@ -85,6 +94,43 @@ public sealed class ServiceStartCommand : BaseCommand
         }
 
         var enableInsecureTransports = parseResult.GetValueOrDefault(_enableInsecureTransportsOption);
+        var enableOBO = parseResult.GetValueOrDefault(_enableOBOOption);
+
+        string? oboChannelName;
+        AzRuntimeMode azRuntimeMode;
+
+        if (enableOBO)
+        {
+            if (!enableInsecureTransports)
+            {
+                throw new InvalidOperationException(
+                        "--enable-obo-auth requires HTTP transport --enable-insecure-transports for On-Behalf-Of authentication.");
+            }
+            if (!string.IsNullOrWhiteSpace(oboChannel))
+            {
+                context.Response.Status = 400;
+                context.Response.Message = "--obo-channel is invalid when --enable-obo-auth is specified. The channel name will be generated.";
+                return context.Response;
+            }
+            oboChannelName = $"mcp_obo_v1_{Guid.NewGuid():N}";
+            azRuntimeMode = AzRuntimeMode.OboParent;
+        }
+        else if (!string.IsNullOrWhiteSpace(oboChannel))
+        {
+            if (enableInsecureTransports)
+            {
+                context.Response.Status = 400;
+                context.Response.Message = "When --obo-channel is specified, server uses stdio transport hence --enable-insecure-transports is not valid.";
+                return context.Response;
+            }
+            oboChannelName = oboChannel;
+            azRuntimeMode = AzRuntimeMode.OboChild;
+        }
+        else
+        {
+            oboChannelName = null;
+            azRuntimeMode = AzRuntimeMode.Default;
+        }
 
         if (enableInsecureTransports)
         {
@@ -102,6 +148,8 @@ public sealed class ServiceStartCommand : BaseCommand
             Mode = mode,
             ReadOnly = readOnly,
             EnableInsecureTransports = enableInsecureTransports,
+            AzRuntimeMode = azRuntimeMode,
+            OboChannel = oboChannelName,
         };
 
         using var host = CreateHost(serverOptions);
@@ -191,6 +239,21 @@ public sealed class ServiceStartCommand : BaseCommand
                         });
                     });
 
+                    // Configure authentication if OBO is enabled
+                    if (serverOptions.IsOboParent)
+                    {
+                        var configuration = new ConfigurationBuilder()
+                            .AddEnvironmentVariables()
+                            .Build();
+
+                        services.AddAuthentication(JwtBearerDefaults.AuthenticationScheme)
+                            .AddMicrosoftIdentityWebApi(configuration.GetSection("AzureAd"));
+
+                        services.AddMicrosoftIdentityWebAppAuthentication(configuration)
+                            .EnableTokenAcquisitionToCallDownstreamApi()
+                            .AddInMemoryTokenCaches();
+                    }
+
                     ConfigureServices(services);
                     ConfigureMcpServer(services, serverOptions);
                 });
@@ -198,6 +261,12 @@ public sealed class ServiceStartCommand : BaseCommand
                 webBuilder.Configure(app =>
                 {
                     app.UseCors("AllowAll");
+                    if (serverOptions.IsOboParent)
+                    {
+                        app.UseAuthentication();
+                        app.UseAuthorization();
+                    }
+                    
                     app.UseRouting();
                     app.UseEndpoints(endpoints =>
                     {

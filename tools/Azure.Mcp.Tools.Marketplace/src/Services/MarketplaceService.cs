@@ -3,6 +3,7 @@
 
 using Azure.Core;
 using Azure.Core.Pipeline;
+using Azure.Mcp.Core.Areas.Server.Commands.Runtime;
 using Azure.Mcp.Core.Options;
 using Azure.Mcp.Core.Services.Azure;
 using Azure.Mcp.Core.Services.Azure.Tenant;
@@ -40,6 +41,7 @@ public class MarketplaceService(ITenantService tenantService)
     /// <exception cref="ArgumentException">Thrown when required parameters are missing or invalid.</exception>
     /// <exception cref="Exception">Thrown when parsing the product response fails.</exception>
     public async Task<ProductDetails> GetProduct(
+        McpUserContext userContext,
         string productId,
         string subscription,
         bool? includeStopSoldPlans = null,
@@ -58,7 +60,7 @@ public class MarketplaceService(ITenantService tenantService)
         string productUrl = BuildProductUrl(subscription, productId, includeStopSoldPlans, language, market,
             lookupOfferInTenantLevel, planId, skuId, includeServiceInstructionTemplates);
 
-        return await GetMarketplaceResponseAsync(productUrl, pricingAudience, tenant, retryPolicy);
+        return await GetMarketplaceResponseAsync(userContext, productUrl, pricingAudience, tenant, retryPolicy);
     }
 
     private static string BuildProductUrl(
@@ -102,7 +104,7 @@ public class MarketplaceService(ITenantService tenantService)
         return $"{ManagementApiBaseUrl}/subscriptions/{subscription}/providers/Microsoft.Marketplace/products/{productId}?{queryString}";
     }
 
-    private async Task<ProductDetails> GetMarketplaceResponseAsync(string url, string? pricingAudience, string? tenant, RetryPolicyOptions? retryPolicy = null)
+    private async Task<ProductDetails> GetMarketplaceResponseAsync(McpUserContext userContext, string url, string? pricingAudience, string? tenant, RetryPolicyOptions? retryPolicy = null)
     {
         // Use Azure Core pipeline approach consistently
         var clientOptions = AddDefaultPolicies(new MarketplaceClientOptions());
@@ -120,7 +122,7 @@ public class MarketplaceService(ITenantService tenantService)
         // Create pipeline
         var pipeline = HttpPipelineBuilder.Build(clientOptions);
 
-        string accessToken = await GetAccessTokenAsync(tenant);
+        string accessToken = await GetAccessTokenAsync(userContext, tenant);
 
         var request = pipeline.CreateRequest();
         request.Method = RequestMethod.Get;
@@ -149,24 +151,24 @@ public class MarketplaceService(ITenantService tenantService)
         throw new HttpRequestException($"Request failed with status {response.Status}: {response.ReasonPhrase}");
     }
 
-    private async Task<string> GetAccessTokenAsync(string? tenant = null)
+    private async Task<string> GetAccessTokenAsync(McpUserContext userContext, string? tenant = null)
     {
         if (_cachedAccessToken != null && DateTimeOffset.UtcNow < _tokenExpiryTime)
         {
             return _cachedAccessToken;
         }
 
-        AccessToken accessToken = await GetEntraIdAccessTokenAsync(ManagementApiBaseUrl, tenant);
+        AccessToken accessToken = await GetEntraIdAccessTokenAsync(userContext, ManagementApiBaseUrl, tenant);
         _cachedAccessToken = accessToken.Token;
         _tokenExpiryTime = accessToken.ExpiresOn.AddSeconds(-TokenExpirationBuffer);
 
         return _cachedAccessToken;
     }
 
-    private async Task<AccessToken> GetEntraIdAccessTokenAsync(string resource, string? tenant = null)
+    private async Task<AccessToken> GetEntraIdAccessTokenAsync(McpUserContext userContext, string resource, string? tenant = null)
     {
         var tokenRequestContext = new TokenRequestContext([$"{resource}/.default"]);
-        var tokenCredential = await GetCredential(tenant);
+        var tokenCredential = await GetCredential(userContext);
         return await tokenCredential
             .GetTokenAsync(tokenRequestContext, CancellationToken.None);
     }

@@ -1,6 +1,7 @@
 // Copyright (c) Microsoft Corporation.
 // Licensed under the MIT License.
 
+using Azure.Mcp.Core.Areas.Server.Commands.Runtime;
 using Azure.Mcp.Core.Options;
 using Azure.Monitor.Query;
 
@@ -17,5 +18,5 @@ public interface IMetricsQueryClientService
     /// <param name="tenant">Optional tenant ID for authentication</param>
     /// <param name="retryPolicy">Optional retry policy configuration</param>
     /// <returns>A configured MetricsQueryClient instance</returns>
-    Task<MetricsQueryClient> CreateClientAsync(string? tenant = null, RetryPolicyOptions? retryPolicy = null);
+    Task<MetricsQueryClient> CreateClientAsync(McpUserContext userContext, string? tenant = null, RetryPolicyOptions? retryPolicy = null);
 }

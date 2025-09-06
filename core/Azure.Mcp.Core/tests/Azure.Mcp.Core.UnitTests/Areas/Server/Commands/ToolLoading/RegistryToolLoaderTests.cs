@@ -3,11 +3,13 @@
 
 using System.Text.Json;
 using Azure.Mcp.Core.Areas.Server.Commands.Discovery;
+using Azure.Mcp.Core.Areas.Server.Commands.Runtime;
 using Azure.Mcp.Core.Areas.Server.Commands.ToolLoading;
 using Azure.Mcp.Core.UnitTests.Areas.Server.Helpers;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
 using ModelContextProtocol.Protocol;
+using ModelContextProtocol.Server;
 using NSubstitute;
 using Xunit;
 
@@ -49,6 +51,14 @@ public class RegistryToolLoaderTests
         };
     }
 
+    // AzMcpRequestContext wrapping helper for tests
+    private static AzMcpRequestContext<TParams> Wrap<TParams>(RequestContext<TParams> inner) where TParams : class =>
+        new AzMcpRequestContext<TParams>(
+            inner,
+            null,
+            null,
+            AzRuntimeMode.Default);
+
     [Fact]
     public async Task ListToolsHandler_WithNoServers_ReturnsEmptyToolList()
     {
@@ -60,7 +70,7 @@ public class RegistryToolLoaderTests
             .Returns(Task.FromResult(Enumerable.Empty<IMcpServerProvider>()));
 
         // Act
-        var result = await toolLoader.ListToolsHandler(request, CancellationToken.None);
+        var result = await toolLoader.ListToolsHandler(Wrap(request), CancellationToken.None);
 
         // Assert
         Assert.NotNull(result);
@@ -89,7 +99,7 @@ public class RegistryToolLoaderTests
         var request = CreateListToolsRequest();
 
         // Act
-        var result = await toolLoader.ListToolsHandler(request, CancellationToken.None);
+        var result = await toolLoader.ListToolsHandler(Wrap(request), CancellationToken.None);
 
         // Assert
         Assert.NotNull(result);
@@ -137,7 +147,7 @@ public class RegistryToolLoaderTests
         var request = CreateListToolsRequest();
 
         // Act
-        var result = await toolLoader.ListToolsHandler(request, CancellationToken.None);
+        var result = await toolLoader.ListToolsHandler(Wrap(request), CancellationToken.None);
 
         // Assert
         Assert.NotNull(result);
@@ -191,7 +201,7 @@ public class RegistryToolLoaderTests
         var request = CreateListToolsRequest();
 
         // Act
-        var result = await toolLoader.ListToolsHandler(request, CancellationToken.None);
+        var result = await toolLoader.ListToolsHandler(Wrap(request), CancellationToken.None);
 
         // Assert
         Assert.NotNull(result);
@@ -217,7 +227,7 @@ public class RegistryToolLoaderTests
         var request = CreateCallToolRequest("unknown-tool");
 
         // Act
-        var result = await toolLoader.CallToolHandler(request, CancellationToken.None);
+        var result = await toolLoader.CallToolHandler(Wrap(request), CancellationToken.None);
 
         // Assert
         Assert.NotNull(result);
@@ -257,8 +267,8 @@ public class RegistryToolLoaderTests
         var request = CreateListToolsRequest();
 
         // Act
-        var defaultResult = await defaultToolLoader.ListToolsHandler(request, CancellationToken.None);
-        var readOnlyResult = await readOnlyToolLoader.ListToolsHandler(request, CancellationToken.None);
+        var defaultResult = await defaultToolLoader.ListToolsHandler(Wrap(request), CancellationToken.None);
+        var readOnlyResult = await readOnlyToolLoader.ListToolsHandler(Wrap(request), CancellationToken.None);
 
         // Assert - Both should return empty but valid results
         Assert.NotNull(defaultResult);
@@ -302,7 +312,7 @@ public class RegistryToolLoaderTests
             });
 
         // Act - Call CallToolHandler, which should initialize tools first
-        var result = await toolLoader.CallToolHandler(request, CancellationToken.None);
+        var result = await toolLoader.CallToolHandler(Wrap(request), CancellationToken.None);
 
         // Assert - The tool call should succeed
         Assert.NotNull(result);
@@ -353,7 +363,7 @@ public class RegistryToolLoaderTests
 
         // Act & Assert - List tools
         var listRequest = CreateListToolsRequest();
-        var listResult = await toolLoader.ListToolsHandler(listRequest, CancellationToken.None);
+        var listResult = await toolLoader.ListToolsHandler(Wrap(listRequest), CancellationToken.None);
         Assert.NotNull(listResult);
         Assert.Equal(2, listResult.Tools.Count);
         Assert.Contains(listResult.Tools, t => t.Name == "docs-search");
@@ -365,7 +375,7 @@ public class RegistryToolLoaderTests
             { "query", JsonDocument.Parse("\"MCP implementation\"").RootElement }
         });
 
-        var searchResult = await toolLoader.CallToolHandler(searchRequest, CancellationToken.None);
+        var searchResult = await toolLoader.CallToolHandler(Wrap(searchRequest), CancellationToken.None);
         Assert.NotNull(searchResult);
         Assert.False(searchResult.IsError);
 
@@ -379,7 +389,7 @@ public class RegistryToolLoaderTests
         {
             { "message", JsonDocument.Parse("\"Hello MCP!\"").RootElement }
         });
-        var echoResult = await toolLoader.CallToolHandler(echoRequest, CancellationToken.None);
+        var echoResult = await toolLoader.CallToolHandler(Wrap(echoRequest), CancellationToken.None);
         Assert.NotNull(echoResult);
         Assert.False(echoResult.IsError);
         var echoContent = echoResult.Content.OfType<TextContentBlock>().FirstOrDefault();
@@ -425,7 +435,7 @@ public class RegistryToolLoaderTests
         var request = CreateListToolsRequest();
 
         // Act
-        var result = await toolLoader.ListToolsHandler(request, CancellationToken.None);
+        var result = await toolLoader.ListToolsHandler(Wrap(request), CancellationToken.None);
 
         // Assert
         Assert.NotNull(result);
@@ -463,14 +473,14 @@ public class RegistryToolLoaderTests
 
         // Initialize tool loader by calling ListToolsHandler
         var request = CreateListToolsRequest();
-        await toolLoader.ListToolsHandler(request, CancellationToken.None);
+        await toolLoader.ListToolsHandler(Wrap(request), CancellationToken.None);
 
         // Act
         await toolLoader.DisposeAsync();
 
         // Assert - After disposal, calling operations should work but with empty state
         // (This tests that collections were cleared)
-        var result = await toolLoader.ListToolsHandler(request, CancellationToken.None);
+        var result = await toolLoader.ListToolsHandler(Wrap(request), CancellationToken.None);
         Assert.NotNull(result.Tools);
         // Tools might be re-populated from discovery strategy, but internal state was cleared
     }

@@ -2,12 +2,15 @@
 // Licensed under the MIT License.
 
 using System.Reflection;
+using System.Runtime.Versioning;
 using System.Text;
+using Azure.Core;
 using Azure.Mcp.Core.Areas.Server.Commands.Discovery;
 using Azure.Mcp.Core.Areas.Server.Commands.Runtime;
 using Azure.Mcp.Core.Areas.Server.Commands.ToolLoading;
 using Azure.Mcp.Core.Areas.Server.Options;
 using Azure.Mcp.Core.Helpers;
+using Azure.Mcp.Core.Services.Azure.Authentication;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
@@ -85,6 +88,39 @@ public static class AzureMcpServiceCollectionExtensions
 
         // Register MCP runtimes
         services.AddSingleton<IMcpRuntime, McpRuntime>();
+        
+        if (serviceStartOptions.IsOboParent)
+        {
+            services.AddSingleton<IAzMcpRequestContextFactory, OboParentRequestContextFactory>();
+            
+            // Register On-Behalf-Of authentication services for HTTP transport
+            services.AddHttpContextAccessor();
+            
+            // Register OBO 'TokenCredential' Factory for parent processes
+            services.AddSingleton<IOboTokenCredentialFactory, OboTokenCredentialFactory>();
+            
+            // Register broker service infrastructure for inter-process token communication
+            if (OperatingSystem.IsWindows() || OperatingSystem.IsLinux() || OperatingSystem.IsMacOS())
+            {
+                services.AddSingleton<IOboParentBrokerService, OboParentBrokerService>();
+                services.AddSingleton<NamedPipeServerService>();
+                services.AddHostedService<BrokerHostedService>();
+            }
+        }
+        else if (serviceStartOptions.IsOboChild)
+        {
+            services.AddSingleton<IAzMcpRequestContextFactory, OboChildRequestContextFactory>();
+            
+            // Register OBO Proxy 'TokenCredential' Factory for child processes
+            if (OperatingSystem.IsWindows() || OperatingSystem.IsLinux() || OperatingSystem.IsMacOS())
+            {
+                services.AddSingleton<IOboTokenCredentialFactory, OboProxyTokenCredentialFactory>();
+            }
+        }
+        else
+        {
+            services.AddSingleton<IAzMcpRequestContextFactory, DefaultRequestContextFactory>();
+        }
 
         // Register MCP discovery strategies based on proxy mode
         if (serviceStartOptions.Mode == ModeTypes.SingleToolProxy || serviceStartOptions.Mode == ModeTypes.NamespaceProxy)

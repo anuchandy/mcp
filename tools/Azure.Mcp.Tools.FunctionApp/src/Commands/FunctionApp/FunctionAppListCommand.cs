@@ -38,6 +38,7 @@ public sealed class FunctionAppListCommand(ILogger<FunctionAppListCommand> logge
         {
             var functionAppService = context.GetService<IFunctionAppService>();
             var functionApps = await functionAppService.ListFunctionApps(
+                context.UserContext,
                 options.Subscription!,
                 options.Tenant,
                 options.RetryPolicy);

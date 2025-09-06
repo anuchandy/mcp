@@ -3,6 +3,7 @@
 
 using System.Text.Json;
 using System.Text.Json.Serialization;
+using Azure.Mcp.Core.Areas.Server.Commands.Runtime;
 using Azure.Mcp.Core.Models.Command;
 using Azure.Mcp.Core.Options;
 using Azure.Mcp.Tools.Kusto.Commands;
@@ -37,12 +38,13 @@ public sealed class ClusterListCommandTests
         // Arrange
         var expectedClusters = new List<string> { "clusterA", "clusterB" };
         _kusto.ListClusters(
+            Arg.Any<McpUserContext>(),
             "sub123", Arg.Any<string>(), Arg.Any<RetryPolicyOptions>())
             .Returns(expectedClusters);
 
         var command = new ClusterListCommand(_logger);
         var args = command.GetCommand().Parse(["--subscription", "sub123"]);
-        var context = new CommandContext(_serviceProvider);
+        var context = new CommandContext(_serviceProvider, McpUserContext.Empty);
 
 
         // Act
@@ -63,12 +65,12 @@ public sealed class ClusterListCommandTests
     public async Task ExecuteAsync_ReturnsNull_WhenNoClustersExist()
     {
         // Arrange
-        _kusto.ListClusters("sub123", null, null)
+        _kusto.ListClusters(Arg.Any<McpUserContext>(), "sub123", Arg.Any<string>(), Arg.Any<RetryPolicyOptions>())
             .Returns([]);
 
         var command = new ClusterListCommand(_logger);
         var args = command.GetCommand().Parse(["--subscription", "sub123"]);
-        var context = new CommandContext(_serviceProvider);
+        var context = new CommandContext(_serviceProvider, McpUserContext.Empty);
 
         // Act
         var response = await command.ExecuteAsync(context, args);
@@ -86,12 +88,12 @@ public sealed class ClusterListCommandTests
         var subscriptionId = "sub123";
 
         // Arrange
-        _kusto.ListClusters(subscriptionId, null, Arg.Any<RetryPolicyOptions>())
+        _kusto.ListClusters(Arg.Any<McpUserContext>(), subscriptionId, null, Arg.Any<RetryPolicyOptions>())
             .Returns(Task.FromException<List<string>>(new Exception("Test error")));
 
         var command = new ClusterListCommand(_logger);
         var args = command.GetCommand().Parse(["--subscription", subscriptionId]);
-        var context = new CommandContext(_serviceProvider);
+        var context = new CommandContext(_serviceProvider, McpUserContext.Empty);
 
         // Act
         var response = await command.ExecuteAsync(context, args);

@@ -86,6 +86,7 @@ public sealed class ProductGetCommand(ILogger<ProductGetCommand> logger) : Subsc
 
             // Call service operation with required parameters
             var result = await marketplaceService.GetProduct(
+                context.UserContext,
                 options.ProductId!,
                 options.Subscription!,
                 options.IncludeStopSoldPlans,

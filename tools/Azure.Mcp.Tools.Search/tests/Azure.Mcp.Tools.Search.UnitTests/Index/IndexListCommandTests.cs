@@ -3,6 +3,7 @@
 
 using System.Text.Json;
 using System.Text.Json.Serialization;
+using Azure.Mcp.Core.Areas.Server.Commands.Runtime;
 using Azure.Mcp.Core.Models.Command;
 using Azure.Mcp.Core.Options;
 using Azure.Mcp.Tools.Search.Commands.Index;
@@ -37,13 +38,13 @@ public class IndexListCommandTests
     public async Task ExecuteAsync_ReturnsIndexes_WhenIndexesExist()
     {
         var expectedIndexes = new List<IndexInfo> { new("index1", null), new("index2", "This is the second index") };
-        _searchService.ListIndexes(Arg.Is("service123"), Arg.Any<RetryPolicyOptions>())
+        _searchService.ListIndexes(Arg.Any<McpUserContext>(), Arg.Is("service123"), Arg.Any<RetryPolicyOptions>())
             .Returns(expectedIndexes);
 
         var command = new IndexListCommand(_logger);
 
         var args = command.GetCommand().Parse("--service service123");
-        var context = new CommandContext(_serviceProvider);
+        var context = new CommandContext(_serviceProvider, McpUserContext.Empty);
 
         var response = await command.ExecuteAsync(context, args);
 
@@ -64,13 +65,13 @@ public class IndexListCommandTests
     [Fact]
     public async Task ExecuteAsync_ReturnsNull_WhenNoIndexes()
     {
-        _searchService.ListIndexes(Arg.Any<string>(), Arg.Any<RetryPolicyOptions>())
+        _searchService.ListIndexes(Arg.Any<McpUserContext>(), Arg.Any<string>(), Arg.Any<RetryPolicyOptions>())
             .Returns(new List<IndexInfo>());
 
         var command = new IndexListCommand(_logger);
 
         var args = command.GetCommand().Parse("--service service123");
-        var context = new CommandContext(_serviceProvider);
+        var context = new CommandContext(_serviceProvider, McpUserContext.Empty);
 
         var response = await command.ExecuteAsync(context, args);
 
@@ -84,13 +85,13 @@ public class IndexListCommandTests
         var expectedError = "Test error";
         var serviceName = "service123";
 
-        _searchService.ListIndexes(Arg.Is(serviceName), Arg.Any<RetryPolicyOptions>())
+        _searchService.ListIndexes(Arg.Any<McpUserContext>(), Arg.Is(serviceName), Arg.Any<RetryPolicyOptions>())
             .ThrowsAsync(new Exception(expectedError));
 
         var command = new IndexListCommand(_logger);
 
         var args = command.GetCommand().Parse($"--service {serviceName}");
-        var context = new CommandContext(_serviceProvider);
+        var context = new CommandContext(_serviceProvider, McpUserContext.Empty);
 
         var response = await command.ExecuteAsync(context, args);
 

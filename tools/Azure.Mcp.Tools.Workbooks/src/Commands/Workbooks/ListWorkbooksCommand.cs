@@ -66,6 +66,7 @@ public sealed class ListWorkbooksCommand(ILogger<ListWorkbooksCommand> logger) :
             var workbooksService = context.GetService<IWorkbooksService>();
             var filters = options.ToFilters();
             var workbooks = await workbooksService.ListWorkbooks(
+                context.UserContext,
                 options.Subscription!,
                 options.ResourceGroup!,
                 filters,

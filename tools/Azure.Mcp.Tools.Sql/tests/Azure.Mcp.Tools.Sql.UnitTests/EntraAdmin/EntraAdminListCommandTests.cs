@@ -2,6 +2,7 @@
 // Licensed under the MIT License.
 
 using System.CommandLine;
+using Azure.Mcp.Core.Areas.Server.Commands.Runtime;
 using Azure.Mcp.Core.Models.Command;
 using Azure.Mcp.Tools.Sql.Commands.EntraAdmin;
 using Azure.Mcp.Tools.Sql.Models;
@@ -32,7 +33,7 @@ public class EntraAdminListCommandTests
         _serviceProvider = collection.BuildServiceProvider();
 
         _command = new(_logger);
-        _context = new(_serviceProvider);
+        _context = new CommandContext(_serviceProvider, McpUserContext.Empty);
         _commandDefinition = _command.GetCommand();
     }
 
@@ -57,6 +58,7 @@ public class EntraAdminListCommandTests
         if (shouldSucceed)
         {
             _service.GetEntraAdministratorsAsync(
+                Arg.Any<McpUserContext>(),
                 Arg.Any<string>(),
                 Arg.Any<string>(),
                 Arg.Any<string>(),
@@ -65,7 +67,7 @@ public class EntraAdminListCommandTests
                 .Returns(new List<SqlServerEntraAdministrator>());
         }
 
-        var context = new CommandContext(_serviceProvider);
+        var context = new CommandContext(_serviceProvider, McpUserContext.Empty);
         var parseResult = _commandDefinition.Parse(args);
 
         // Act
@@ -95,6 +97,7 @@ public class EntraAdminListCommandTests
         };
 
         _service.GetEntraAdministratorsAsync(
+            Arg.Any<McpUserContext>(),
             "testserver",
             "testrg",
             "testsub",
@@ -102,7 +105,7 @@ public class EntraAdminListCommandTests
             Arg.Any<CancellationToken>())
             .Returns(administrators);
 
-        var context = new CommandContext(_serviceProvider);
+        var context = new CommandContext(_serviceProvider, McpUserContext.Empty);
         var parseResult = _commandDefinition.Parse("--subscription testsub --resource-group testrg --server testserver");
 
         // Act
@@ -119,6 +122,7 @@ public class EntraAdminListCommandTests
     {
         // Arrange
         _service.GetEntraAdministratorsAsync(
+            Arg.Any<McpUserContext>(),
             Arg.Any<string>(),
             Arg.Any<string>(),
             Arg.Any<string>(),
@@ -126,7 +130,7 @@ public class EntraAdminListCommandTests
             Arg.Any<CancellationToken>())
             .Returns(new List<SqlServerEntraAdministrator>());
 
-        var context = new CommandContext(_serviceProvider);
+        var context = new CommandContext(_serviceProvider, McpUserContext.Empty);
         var parseResult = _commandDefinition.Parse("--subscription testsub --resource-group testrg --server testserver");
 
         // Act
@@ -143,6 +147,7 @@ public class EntraAdminListCommandTests
     {
         // Arrange
         _service.GetEntraAdministratorsAsync(
+            Arg.Any<McpUserContext>(),
             Arg.Any<string>(),
             Arg.Any<string>(),
             Arg.Any<string>(),
@@ -150,7 +155,7 @@ public class EntraAdminListCommandTests
             Arg.Any<CancellationToken>())
             .Returns(Task.FromException<List<SqlServerEntraAdministrator>>(new Exception("Test error")));
 
-        var context = new CommandContext(_serviceProvider);
+        var context = new CommandContext(_serviceProvider, McpUserContext.Empty);
         var parseResult = _commandDefinition.Parse("--subscription testsub --resource-group testrg --server testserver");
 
         // Act
@@ -168,6 +173,7 @@ public class EntraAdminListCommandTests
         // Arrange
         var requestException = new RequestFailedException(404, "Server not found");
         _service.GetEntraAdministratorsAsync(
+            Arg.Any<McpUserContext>(),
             Arg.Any<string>(),
             Arg.Any<string>(),
             Arg.Any<string>(),
@@ -175,7 +181,7 @@ public class EntraAdminListCommandTests
             Arg.Any<CancellationToken>())
             .Returns(Task.FromException<List<SqlServerEntraAdministrator>>(requestException));
 
-        var context = new CommandContext(_serviceProvider);
+        var context = new CommandContext(_serviceProvider, McpUserContext.Empty);
         var parseResult = _commandDefinition.Parse("--subscription testsub --resource-group testrg --server testserver");
 
         // Act
@@ -192,6 +198,7 @@ public class EntraAdminListCommandTests
         // Arrange
         var requestException = new RequestFailedException(403, "Access denied");
         _service.GetEntraAdministratorsAsync(
+            Arg.Any<McpUserContext>(),
             Arg.Any<string>(),
             Arg.Any<string>(),
             Arg.Any<string>(),
@@ -199,7 +206,7 @@ public class EntraAdminListCommandTests
             Arg.Any<CancellationToken>())
             .Returns(Task.FromException<List<SqlServerEntraAdministrator>>(requestException));
 
-        var context = new CommandContext(_serviceProvider);
+        var context = new CommandContext(_serviceProvider, McpUserContext.Empty);
         var parseResult = _commandDefinition.Parse("--subscription testsub --resource-group testrg --server testserver");
 
         // Act

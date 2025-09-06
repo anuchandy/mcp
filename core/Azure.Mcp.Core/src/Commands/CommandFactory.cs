@@ -6,6 +6,7 @@ using System.Reflection;
 using System.Text.Encodings.Web;
 using System.Text.Json.Serialization;
 using Azure.Mcp.Core.Areas;
+using Azure.Mcp.Core.Areas.Server.Commands.Runtime;
 using Azure.Mcp.Core.Services.Telemetry;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
@@ -157,7 +158,7 @@ public class CommandFactory
 
             using var activity = await _telemetryService.StartActivity(ActivityName.CommandExecuted);
 
-            var cmdContext = new CommandContext(_serviceProvider, activity);
+            var cmdContext = new CommandContext(_serviceProvider, McpUserContext.Empty, activity);
             var startTime = DateTime.UtcNow;
             try
             {

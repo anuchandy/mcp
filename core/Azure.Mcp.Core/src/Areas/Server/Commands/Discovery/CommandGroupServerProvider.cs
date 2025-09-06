@@ -33,6 +33,11 @@ public sealed class CommandGroupServerProvider(CommandGroup commandGroup) : IMcp
     public bool ReadOnly { get; set; } = false;
 
     /// <summary>
+    /// Gets or sets the OBO channel for On-Behalf-Of authentication scenarios.
+    /// </summary>
+    public string? OboChannel { get; set; } = null;
+
+    /// <summary>
     /// Creates an MCP client from a command group.
     /// </summary>
     public async Task<IMcpClient> CreateClientAsync(McpClientOptions clientOptions)
@@ -66,6 +71,12 @@ public sealed class CommandGroupServerProvider(CommandGroup commandGroup) : IMcp
         if (ReadOnly)
         {
             arguments.Add($"--{ServiceOptionDefinitions.ReadOnlyName}");
+        }
+
+        if (!string.IsNullOrWhiteSpace(OboChannel))
+        {
+            arguments.Add($"--{ServiceOptionDefinitions.OboChannelName}");
+            arguments.Add(OboChannel);
         }
 
         return [.. arguments];

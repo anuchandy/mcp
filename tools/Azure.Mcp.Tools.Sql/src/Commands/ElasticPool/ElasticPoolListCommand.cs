@@ -44,6 +44,7 @@ public sealed class ElasticPoolListCommand(ILogger<ElasticPoolListCommand> logge
             var sqlService = context.GetService<ISqlService>();
 
             var elasticPools = await sqlService.GetElasticPoolsAsync(
+                context.UserContext,
                 options.Server!,
                 options.ResourceGroup!,
                 options.Subscription!,

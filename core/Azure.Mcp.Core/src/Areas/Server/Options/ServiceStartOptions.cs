@@ -2,6 +2,7 @@
 // Licensed under the MIT License.
 
 using System.Text.Json.Serialization;
+using Azure.Mcp.Core.Areas.Server.Commands.Runtime;
 
 namespace Azure.Mcp.Core.Areas.Server.Options;
 
@@ -43,4 +44,28 @@ public class ServiceStartOptions
     /// </summary>
     [JsonPropertyName("enableInsecureTransports")]
     public bool EnableInsecureTransports { get; set; } = false;
+
+    /// <summary>
+    /// Indicates whether the server is running as a default instance, an OBO parent, or an OBO child.
+    /// </summary>
+    [JsonPropertyName("azRuntimeMode")]
+    public AzRuntimeMode AzRuntimeMode { get; set; } = AzRuntimeMode.Default;
+
+    /// <summary>
+    /// Gets or sets the channel for On-Behalf-Of token brokering communication between parent and child processes.
+    /// </summary>
+    [JsonPropertyName("oboChannel")]
+    public string? OboChannel { get; set; } = null;
+
+    /// <summary>
+    /// Gets a value indicating whether this instance represents an OBO parent process.
+    /// Returns true if the AzRuntimeMode is set to OboParent.
+    /// </summary>
+    public bool IsOboParent => AzRuntimeMode == AzRuntimeMode.OboParent;
+
+    /// <summary>
+    /// Gets a value indicating whether this instance represents an OBO child process.
+    /// Returns true if the AzRuntimeMode is set to OboChild.
+    /// </summary>
+    public bool IsOboChild => AzRuntimeMode == AzRuntimeMode.OboChild;
 }

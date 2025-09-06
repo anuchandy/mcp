@@ -2,6 +2,7 @@
 // Licensed under the MIT License.
 
 using System.CommandLine;
+using Azure.Mcp.Core.Areas.Server.Commands.Runtime;
 using Azure.Mcp.Core.Models.Command;
 using Azure.Mcp.Core.Options;
 using Azure.Mcp.Tools.Marketplace.Commands.Product;
@@ -34,7 +35,7 @@ public class ProductGetCommandTests
         _serviceProvider = collection.BuildServiceProvider();
 
         _command = new(_logger);
-        _context = new(_serviceProvider);
+        _context = new CommandContext(_serviceProvider, McpUserContext.Empty);
         _commandDefinition = _command.GetCommand();
     }
 
@@ -61,6 +62,7 @@ public class ProductGetCommandTests
         };
 
         _marketplaceService.GetProduct(
+            Arg.Any<McpUserContext>(),
             Arg.Is(productId),
             Arg.Is(subscriptionId),
             Arg.Any<bool?>(),
@@ -110,6 +112,7 @@ public class ProductGetCommandTests
         var productId = "test-product";
 
         _marketplaceService.GetProduct(
+            Arg.Any<McpUserContext>(),
             Arg.Is(productId),
             Arg.Is(subscriptionId),
             Arg.Any<bool?>(),

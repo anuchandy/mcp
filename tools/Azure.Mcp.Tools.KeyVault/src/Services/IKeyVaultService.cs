@@ -1,6 +1,7 @@
 // Copyright (c) Microsoft Corporation.
 // Licensed under the MIT License.
 
+using Azure.Mcp.Core.Areas.Server.Commands.Runtime;
 using Azure.Mcp.Core.Options;
 using Azure.Security.KeyVault.Certificates;
 using Azure.Security.KeyVault.Keys;
@@ -20,6 +21,7 @@ public interface IKeyVaultService
     /// <param name="retryPolicy">Optional retry policy for the operation</param>
     /// <returns>The certificate operation</returns>
     Task<CertificateOperation> CreateCertificate(
+        McpUserContext userContext,
         string vaultName,
         string certificateName,
         string subscriptionId,
@@ -37,6 +39,7 @@ public interface IKeyVaultService
     /// <param name="retryPolicy">Optional retry policy for the operation</param>
     /// <returns>The created key</returns>
     Task<KeyVaultKey> CreateKey(
+        McpUserContext userContext,
         string vaultName,
         string keyName,
         string keyType,
@@ -55,6 +58,7 @@ public interface IKeyVaultService
     /// <param name="retryPolicy">Optional retry policy for the operation</param>
     /// <returns>The created secret</returns>
     Task<KeyVaultSecret> CreateSecret(
+        McpUserContext userContext,
         string vaultName,
         string secretName,
         string secretValue,
@@ -72,6 +76,7 @@ public interface IKeyVaultService
     /// <param name="retryPolicy">Optional retry policy for the operation</param>
     /// <returns>The certificate</returns>
     Task<KeyVaultCertificateWithPolicy> GetCertificate(
+        McpUserContext userContext,
         string vaultName,
         string certificateName,
         string subscriptionId,
@@ -88,6 +93,7 @@ public interface IKeyVaultService
     /// <param name="retryPolicy">Optional retry policy for the operation</param>
     /// <returns>The key</returns>
     Task<KeyVaultKey> GetKey(
+        McpUserContext userContext,
         string vaultName,
         string keyName,
         string subscriptionId,
@@ -104,6 +110,7 @@ public interface IKeyVaultService
     /// <param name="retryPolicy">Optional retry policy for the operation</param>
     /// <returns>The secret value</returns>
     Task<KeyVaultSecret> GetSecret(
+        McpUserContext userContext,
         string vaultName,
         string secretName,
         string subscriptionId,
@@ -119,6 +126,7 @@ public interface IKeyVaultService
     /// <param name="retryPolicy">Optional retry policy for the operation.</param>
     /// <returns>List of certificate names in the vault.</returns>
     Task<List<string>> ListCertificates(
+        McpUserContext userContext,
         string vaultName,
         string subscriptionId,
         string? tenantId = null,
@@ -133,6 +141,7 @@ public interface IKeyVaultService
     /// <param name="retryPolicy">Optional retry policy for the operation.</param>
     /// <returns>List of key names in the vault.</returns>
     Task<List<string>> ListKeys(
+        McpUserContext userContext,
         string vaultName,
         bool includeManagedKeys,
         string subscriptionId,
@@ -148,6 +157,7 @@ public interface IKeyVaultService
     /// <param name="retryPolicy">Optional retry policy for the operation.</param>
     /// <returns>List of secret names in the vault.</returns>
     Task<List<string>> ListSecrets(
+        McpUserContext userContext,
         string vaultName,
         string subscriptionId,
         string? tenantId = null,
@@ -165,6 +175,7 @@ public interface IKeyVaultService
     /// <param name="retryPolicy">Optional retry policy for the operation.</param>
     /// <returns>The imported certificate.</returns>
     Task<KeyVaultCertificateWithPolicy> ImportCertificate(
+        McpUserContext userContext,
         string vaultName,
         string certificateName,
         string certificateData,

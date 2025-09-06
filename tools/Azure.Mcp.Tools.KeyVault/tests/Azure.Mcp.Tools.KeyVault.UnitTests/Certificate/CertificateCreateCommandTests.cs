@@ -3,6 +3,7 @@
 
 using System.CommandLine;
 using System.Text.Json.Serialization;
+using Azure.Mcp.Core.Areas.Server.Commands.Runtime;
 using Azure.Mcp.Core.Models.Command;
 using Azure.Mcp.Core.Options;
 using Azure.Mcp.Tools.KeyVault.Commands.Certificate;
@@ -38,7 +39,7 @@ public class CertificateCreateCommandTests
 
         _serviceProvider = collection.BuildServiceProvider();
         _command = new(_logger);
-        _context = new(_serviceProvider);
+        _context = new CommandContext(_serviceProvider, McpUserContext.Empty);
         _commandDefinition = _command.GetCommand();
     }
 
@@ -51,6 +52,7 @@ public class CertificateCreateCommandTests
         // TODO (vcolin7): Find a way to mock CertificateOperation
         // We'll test that the service is called correctly, but let it fail since mocking the return is complex
         _keyVaultService.CreateCertificate(
+            Arg.Any<McpUserContext>(),
             Arg.Is(_knownVaultName),
             Arg.Is(_knownCertificateName),
             Arg.Is(_knownSubscriptionId),
@@ -69,6 +71,7 @@ public class CertificateCreateCommandTests
 
         // Assert - Verify the service was called with correct parameters
         await _keyVaultService.Received(1).CreateCertificate(
+            Arg.Any<McpUserContext>(),
             _knownVaultName,
             _knownCertificateName,
             _knownSubscriptionId,
@@ -105,6 +108,7 @@ public class CertificateCreateCommandTests
         var expectedError = "Test error";
 
         _keyVaultService.CreateCertificate(
+            Arg.Any<McpUserContext>(),
             Arg.Is(_knownVaultName),
             Arg.Is(_knownCertificateName),
             Arg.Is(_knownSubscriptionId),

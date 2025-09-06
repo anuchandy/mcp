@@ -42,6 +42,7 @@ public sealed class AccountDetailsCommand(ILogger<AccountDetailsCommand> logger)
 
             // Call service operation with required parameters
             var account = await storageService.GetStorageAccountDetails(
+                context.UserContext,
                 options.Account!,  // Required parameter ends with !
                 options.Subscription!,  // From SubscriptionCommand
                 options.Tenant,    // From GlobalCommand

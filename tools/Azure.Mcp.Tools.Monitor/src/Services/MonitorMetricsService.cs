@@ -2,6 +2,7 @@
 // Licensed under the MIT License.
 
 using System.Xml;
+using Azure.Mcp.Core.Areas.Server.Commands.Runtime;
 using Azure.Mcp.Core.Options;
 using Azure.Mcp.Core.Services.Azure;
 using Azure.Mcp.Tools.Monitor.Models;
@@ -20,6 +21,7 @@ public class MonitorMetricsService(IResourceResolverService resourceResolverServ
     private readonly IMetricsQueryClientService _metricsQueryClientService = metricsQueryClientService ?? throw new ArgumentNullException(nameof(metricsQueryClientService));
 
     public async Task<List<MetricResult>> QueryMetricsAsync(
+        McpUserContext userContext,
         string subscription,
         string? resourceGroup,
         string? resourceType,
@@ -37,8 +39,8 @@ public class MonitorMetricsService(IResourceResolverService resourceResolverServ
         ValidateRequiredParameters(subscription, resourceName, metricNamespace);
         ArgumentNullException.ThrowIfNull(metricNames);
 
-        var resourceId = await _resourceResolverService.ResolveResourceIdAsync(subscription, resourceGroup, resourceType, resourceName, tenant, retryPolicy);
-        var client = await _metricsQueryClientService.CreateClientAsync(tenant, retryPolicy);
+        var resourceId = await _resourceResolverService.ResolveResourceIdAsync(userContext, subscription, resourceGroup, resourceType, resourceName, tenant, retryPolicy);
+        var client = await _metricsQueryClientService.CreateClientAsync(userContext,tenant, retryPolicy);
 
         // Parse time range
         DateTimeOffset? startTimeOffset = null;
@@ -202,6 +204,7 @@ public class MonitorMetricsService(IResourceResolverService resourceResolverServ
     }
 
     public async Task<List<MetricDefinition>> ListMetricDefinitionsAsync(
+        McpUserContext userContext,
         string subscription,
         string? resourceGroup,
         string? resourceType,
@@ -213,8 +216,8 @@ public class MonitorMetricsService(IResourceResolverService resourceResolverServ
     {
         ValidateRequiredParameters(subscription, resourceName);
 
-        var resourceId = await _resourceResolverService.ResolveResourceIdAsync(subscription, resourceGroup, resourceType, resourceName, tenant, retryPolicy);
-        var client = await _metricsQueryClientService.CreateClientAsync(tenant, retryPolicy);
+        var resourceId = await _resourceResolverService.ResolveResourceIdAsync(userContext, subscription, resourceGroup, resourceType, resourceName, tenant, retryPolicy);
+        var client = await _metricsQueryClientService.CreateClientAsync(userContext, tenant, retryPolicy);
 
         // List metric definitions using the metrics query client
         var response = client.GetMetricDefinitionsAsync(resourceId, metricNamespace);
@@ -270,6 +273,7 @@ public class MonitorMetricsService(IResourceResolverService resourceResolverServ
     }
 
     public async Task<List<MetricNamespace>> ListMetricNamespacesAsync(
+        McpUserContext userContext,
         string subscription,
         string? resourceGroup,
         string? resourceType,
@@ -280,8 +284,8 @@ public class MonitorMetricsService(IResourceResolverService resourceResolverServ
     {
         ValidateRequiredParameters(subscription, resourceName);
 
-        var resourceId = await _resourceResolverService.ResolveResourceIdAsync(subscription, resourceGroup, resourceType, resourceName, tenant, retryPolicy);
-        var client = await _metricsQueryClientService.CreateClientAsync(tenant, retryPolicy);
+        var resourceId = await _resourceResolverService.ResolveResourceIdAsync(userContext,subscription, resourceGroup, resourceType, resourceName, tenant, retryPolicy);
+        var client = await _metricsQueryClientService.CreateClientAsync(userContext, tenant, retryPolicy);
 
         // List metric namespaces using the metrics query client
         var response = client.GetMetricNamespacesAsync(resourceId);

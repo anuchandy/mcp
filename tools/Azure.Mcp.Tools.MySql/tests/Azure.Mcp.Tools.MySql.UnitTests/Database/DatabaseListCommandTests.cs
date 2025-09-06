@@ -3,6 +3,7 @@
 
 using System.Text.Json;
 using System.Text.Json.Serialization;
+using Azure.Mcp.Core.Areas.Server.Commands.Runtime;
 using Azure.Mcp.Core.Models.Command;
 using Azure.Mcp.Tools.MySql.Commands.Database;
 using Azure.Mcp.Tools.MySql.Services;
@@ -35,7 +36,7 @@ public class DatabaseListCommandTests
     public async Task ExecuteAsync_ReturnsDatabases_WhenSuccessful()
     {
         var expectedDatabases = new List<string> { "db1", "db2", "db3" };
-        _mysqlService.ListDatabasesAsync("sub123", "rg1", "user1", "server1").Returns(expectedDatabases);
+        _mysqlService.ListDatabasesAsync(McpUserContext.Empty, "sub123", "rg1", "user1", "server1").Returns(expectedDatabases);
 
         var command = new DatabaseListCommand(_logger);
         var args = command.GetCommand().Parse([
@@ -44,7 +45,7 @@ public class DatabaseListCommandTests
             "--user", "user1",
             "--server", "server1"
         ]);
-        var context = new CommandContext(_serviceProvider);
+        var context = new CommandContext(_serviceProvider, McpUserContext.Empty);
 
         var response = await command.ExecuteAsync(context, args);
 
@@ -62,7 +63,7 @@ public class DatabaseListCommandTests
     [Fact]
     public async Task ExecuteAsync_ReturnsMessage_WhenNoDatabasesExist()
     {
-        _mysqlService.ListDatabasesAsync("sub123", "rg1", "user1", "server1").Returns([]);
+        _mysqlService.ListDatabasesAsync(McpUserContext.Empty, "sub123", "rg1", "user1", "server1").Returns([]);
 
         var command = new DatabaseListCommand(_logger);
         var args = command.GetCommand().Parse([
@@ -71,7 +72,7 @@ public class DatabaseListCommandTests
             "--user", "user1",
             "--server", "server1"
         ]);
-        var context = new CommandContext(_serviceProvider);
+        var context = new CommandContext(_serviceProvider, McpUserContext.Empty);
 
         var response = await command.ExecuteAsync(context, args);
 
@@ -83,7 +84,7 @@ public class DatabaseListCommandTests
     [Fact]
     public async Task ExecuteAsync_ReturnsError_WhenServiceThrows()
     {
-        _mysqlService.ListDatabasesAsync("sub123", "rg1", "user1", "server1")
+        _mysqlService.ListDatabasesAsync(McpUserContext.Empty, "sub123", "rg1", "user1", "server1")
             .ThrowsAsync(new UnauthorizedAccessException("Access denied"));
 
         var command = new DatabaseListCommand(_logger);
@@ -93,7 +94,7 @@ public class DatabaseListCommandTests
             "--user", "user1",
             "--server", "server1"
         ]);
-        var context = new CommandContext(_serviceProvider);
+        var context = new CommandContext(_serviceProvider, McpUserContext.Empty);
 
         var response = await command.ExecuteAsync(context, args);
 

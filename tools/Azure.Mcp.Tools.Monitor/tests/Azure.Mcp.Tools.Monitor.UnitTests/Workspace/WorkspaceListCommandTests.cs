@@ -3,6 +3,7 @@
 
 using System.CommandLine;
 using System.Text.Json;
+using Azure.Mcp.Core.Areas.Server.Commands.Runtime;
 using Azure.Mcp.Core.Models.Command;
 using Azure.Mcp.Core.Options;
 using Azure.Mcp.Tools.Monitor.Commands;
@@ -39,7 +40,7 @@ public sealed class WorkspaceListCommandTests
         _serviceProvider = collection.BuildServiceProvider();
 
         _command = new(_logger);
-        _context = new(_serviceProvider);
+        _context = new CommandContext(_serviceProvider, McpUserContext.Empty);
         _commandDefinition = _command.GetCommand();
     }
 
@@ -57,7 +58,7 @@ public sealed class WorkspaceListCommandTests
                 new() { Name = "workspace1", CustomerId = "guid1" },
                 new() { Name = "workspace2", CustomerId = "guid2" }
             };
-            _monitorService.ListWorkspaces(Arg.Any<string>(), Arg.Any<string>(), Arg.Any<RetryPolicyOptions>())
+            _monitorService.ListWorkspaces(Arg.Any<McpUserContext>(), Arg.Any<string>(), Arg.Any<string>(), Arg.Any<RetryPolicyOptions>())
                 .Returns(testWorkspaces);
         }
 
@@ -87,7 +88,7 @@ public sealed class WorkspaceListCommandTests
             new() { Name = "workspace2", CustomerId = "guid2" },
             new() { Name = "workspace3", CustomerId = "guid3" }
         };
-        _monitorService.ListWorkspaces(Arg.Any<string>(), Arg.Any<string>(), Arg.Any<RetryPolicyOptions>())
+        _monitorService.ListWorkspaces(Arg.Any<McpUserContext>(), Arg.Any<string>(), Arg.Any<string>(), Arg.Any<RetryPolicyOptions>())
             .Returns(expectedWorkspaces);
 
         // Act
@@ -98,7 +99,7 @@ public sealed class WorkspaceListCommandTests
         Assert.NotNull(response.Results);
 
         // Verify the mock was called
-        await _monitorService.Received(1).ListWorkspaces(Arg.Any<string>(), Arg.Any<string>(), Arg.Any<RetryPolicyOptions>());
+        await _monitorService.Received(1).ListWorkspaces(Arg.Any<McpUserContext>(), Arg.Any<string>(), Arg.Any<string>(), Arg.Any<RetryPolicyOptions>());
 
         var json = JsonSerializer.Serialize(response.Results);
         var result = JsonSerializer.Deserialize(json, MonitorJsonContext.Default.WorkspaceListCommandResult);
@@ -115,7 +116,7 @@ public sealed class WorkspaceListCommandTests
     public async Task ExecuteAsync_ReturnsNullWhenNoWorkspaces()
     {
         // Arrange
-        _monitorService.ListWorkspaces(Arg.Any<string>(), Arg.Any<string>(), Arg.Any<RetryPolicyOptions>())
+        _monitorService.ListWorkspaces(Arg.Any<McpUserContext>(), Arg.Any<string>(), Arg.Any<string>(), Arg.Any<RetryPolicyOptions>())
             .Returns(new List<WorkspaceInfo>());
 
         // Act
@@ -130,7 +131,7 @@ public sealed class WorkspaceListCommandTests
     public async Task ExecuteAsync_HandlesServiceErrors()
     {
         // Arrange
-        _monitorService.ListWorkspaces(Arg.Any<string>(), Arg.Any<string>(), Arg.Any<RetryPolicyOptions>())
+        _monitorService.ListWorkspaces(Arg.Any<McpUserContext>(), Arg.Any<string>(), Arg.Any<string>(), Arg.Any<RetryPolicyOptions>())
             .Returns(Task.FromException<List<WorkspaceInfo>>(new Exception("Test error")));
 
         // Act

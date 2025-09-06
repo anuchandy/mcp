@@ -2,6 +2,7 @@
 // Licensed under the MIT License.
 
 using System.Diagnostics;
+using Azure.Mcp.Core.Areas.Server.Commands.Runtime;
 using Microsoft.Extensions.DependencyInjection;
 
 namespace Azure.Mcp.Core.Models.Command;
@@ -27,12 +28,21 @@ public class CommandContext
     public Activity? Activity { get; }
 
     /// <summary>
+    /// User identity context for Azure service operations.
+    /// Contains tenant, user object ID, and serialized ClaimsPrincipal for secure token acquisition.
+    /// </summary>
+    public McpUserContext UserContext { get; }
+
+    /// <summary>
     /// Creates a new command context
     /// </summary>
     /// <param name="serviceProvider">The service provider for dependency injection</param>
-    public CommandContext(IServiceProvider serviceProvider, Activity? activity = default)
+    /// <param name="userContext">The user identity context for Azure service operations</param>
+    /// <param name="activity">The current telemetry activity</param>
+    public CommandContext(IServiceProvider serviceProvider, McpUserContext userContext, Activity? activity = default)
     {
         _serviceProvider = serviceProvider;
+        UserContext = userContext;
         Activity = activity;
         Response = new CommandResponse
         {

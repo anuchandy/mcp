@@ -45,6 +45,7 @@ public sealed class HostpoolListCommand(ILogger<HostpoolListCommand> logger) : B
             if (!string.IsNullOrEmpty(options.ResourceGroup))
             {
                 hostpools = await virtualDesktopService.ListHostpoolsByResourceGroupAsync(
+                    context.UserContext,
                     options.Subscription!,
                     options.ResourceGroup,
                     options.Tenant,
@@ -53,6 +54,7 @@ public sealed class HostpoolListCommand(ILogger<HostpoolListCommand> logger) : B
             else
             {
                 hostpools = await virtualDesktopService.ListHostpoolsAsync(
+                    context.UserContext,
                     options.Subscription!,
                     options.Tenant,
                     options.RetryPolicy);

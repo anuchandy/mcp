@@ -4,6 +4,7 @@
 using System.CommandLine;
 using System.Text.Json;
 using System.Text.Json.Serialization;
+using Azure.Mcp.Core.Areas.Server.Commands.Runtime;
 using Azure.Mcp.Core.Models.Command;
 using Azure.Mcp.Core.Options;
 using Azure.Mcp.Tools.Storage.Commands.Blob.Batch;
@@ -39,7 +40,7 @@ public class BatchSetTierCommandTests
 
         _serviceProvider = collection.BuildServiceProvider();
         _command = new(_logger);
-        _context = new(_serviceProvider);
+        _context = new CommandContext(_serviceProvider, McpUserContext.Empty);
         _commandDefinition = _command.GetCommand();
     }
 
@@ -62,6 +63,7 @@ public class BatchSetTierCommandTests
         );
 
         _storageService.SetBlobTierBatch(
+            Arg.Any<McpUserContext>(),
             Arg.Is(_knownAccount),
             Arg.Is(_knownContainer),
             Arg.Is(_knownTier),
@@ -107,6 +109,7 @@ public class BatchSetTierCommandTests
         );
 
         _storageService.SetBlobTierBatch(
+            Arg.Any<McpUserContext>(),
             Arg.Is(_knownAccount),
             Arg.Is(_knownContainer),
             Arg.Is(_knownTier),
@@ -158,6 +161,7 @@ public class BatchSetTierCommandTests
             );
 
             _storageService.SetBlobTierBatch(
+                Arg.Any<McpUserContext>(),
                 Arg.Any<string>(),
                 Arg.Any<string>(),
                 Arg.Any<string>(),
@@ -196,6 +200,7 @@ public class BatchSetTierCommandTests
         var expectedError = "Test error";
 
         _storageService.SetBlobTierBatch(
+            Arg.Any<McpUserContext>(),
             Arg.Any<string>(),
             Arg.Any<string>(),
             Arg.Any<string>(),
@@ -229,6 +234,7 @@ public class BatchSetTierCommandTests
         var requestFailedException = new RequestFailedException(404, "Not Found");
 
         _storageService.SetBlobTierBatch(
+            Arg.Any<McpUserContext>(),
             Arg.Any<string>(),
             Arg.Any<string>(),
             Arg.Any<string>(),
@@ -262,6 +268,7 @@ public class BatchSetTierCommandTests
         var requestFailedException = new RequestFailedException(403, "Forbidden");
 
         _storageService.SetBlobTierBatch(
+            Arg.Any<McpUserContext>(),
             Arg.Any<string>(),
             Arg.Any<string>(),
             Arg.Any<string>(),

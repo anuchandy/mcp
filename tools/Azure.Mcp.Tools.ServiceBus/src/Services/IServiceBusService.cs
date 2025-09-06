@@ -1,6 +1,7 @@
 // Copyright (c) Microsoft Corporation.
 // Licensed under the MIT License.
 
+using Azure.Mcp.Core.Areas.Server.Commands.Runtime;
 using Azure.Mcp.Core.Options;
 using Azure.Mcp.Tools.ServiceBus.Models;
 using Azure.Messaging.ServiceBus;
@@ -20,6 +21,7 @@ public interface IServiceBusService
     /// <returns>Subscription details</returns>
     /// <exception cref="RequestFailedException">When the service request fails</exception>
     Task<SubscriptionDetails> GetSubscriptionDetails(
+        McpUserContext userContext,
         string namespaceName,
         string topicName,
         string subscriptionName,
@@ -37,6 +39,7 @@ public interface IServiceBusService
     /// <returns>Queue details</returns>
     /// <exception cref="RequestFailedException">When the service request fails</exception>
     Task<QueueDetails> GetQueueDetails(
+        McpUserContext userContext,
         string namespaceName,
         string queueName,
         string? tenantId = null,
@@ -52,6 +55,7 @@ public interface IServiceBusService
     /// <returns>Topic details</returns>
     /// <exception cref="RequestFailedException">When the service request fails</exception>
     Task<TopicDetails> GetTopicDetails(
+        McpUserContext userContext,
         string namespaceName,
         string topicName,
         string? tenantId = null,
@@ -69,6 +73,7 @@ public interface IServiceBusService
     /// <returns>List of peeked messages</returns>
     /// <exception cref="RequestFailedException">When the service request fails</exception>
     Task<List<ServiceBusReceivedMessage>> PeekQueueMessages(
+        McpUserContext userContext,
         string namespaceName,
         string queueName,
         int maxMessages,
@@ -88,6 +93,7 @@ public interface IServiceBusService
     /// <returns>List of peeked messages</returns>
     /// <exception cref="RequestFailedException">When the service request fails</exception>
     Task<List<ServiceBusReceivedMessage>> PeekSubscriptionMessages(
+        McpUserContext userContext,
         string namespaceName,
         string topicName,
         string subscriptionName,

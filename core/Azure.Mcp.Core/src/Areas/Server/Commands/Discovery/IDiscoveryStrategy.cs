@@ -30,4 +30,9 @@ public interface IMcpDiscoveryStrategy : IAsyncDisposable
     /// <exception cref="KeyNotFoundException">Thrown when no server with the specified name is found.</exception>
     /// <exception cref="ArgumentNullException">Thrown when the name parameter is null.</exception>
     Task<IMcpClient> GetOrCreateClientAsync(string name, McpClientOptions? clientOptions = null);
+
+    /// <summary>
+    /// Returns a snapshot enumeration of currently cached MCP clients.
+    /// </summary>
+    IEnumerable<IMcpClient> GetCachedClients();
 }

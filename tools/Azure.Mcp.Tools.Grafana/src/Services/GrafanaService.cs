@@ -2,6 +2,7 @@
 // Licensed under the MIT License.
 // cSpell:ignore Grafanas
 
+using Azure.Mcp.Core.Areas.Server.Commands.Runtime;
 using Azure.Mcp.Core.Models.Identity;
 using Azure.Mcp.Core.Options;
 using Azure.Mcp.Core.Services.Azure;
@@ -15,6 +16,7 @@ public class GrafanaService(ISubscriptionService _subscriptionService, ITenantSe
     : BaseAzureService(tenantService), IGrafanaService
 {
     public async Task<IEnumerable<Models.Workspace.Workspace>> ListWorkspacesAsync(
+        McpUserContext userContext,
         string subscription,
         string? tenant = null,
         RetryPolicyOptions? retryPolicy = null)
@@ -23,7 +25,7 @@ public class GrafanaService(ISubscriptionService _subscriptionService, ITenantSe
 
         try
         {
-            var subscriptionResource = await _subscriptionService.GetSubscription(subscription, tenant, retryPolicy) ?? throw new Exception($"Subscription '{subscription}' not found");
+            var subscriptionResource = await _subscriptionService.GetSubscription(userContext, subscription, tenant, retryPolicy) ?? throw new Exception($"Subscription '{subscription}' not found");
             var workspaces = new List<Models.Workspace.Workspace>();
 
             await foreach (var workspaceResource in subscriptionResource.GetManagedGrafanasAsync())
