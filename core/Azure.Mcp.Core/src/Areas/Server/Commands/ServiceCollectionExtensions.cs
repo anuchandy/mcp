@@ -8,6 +8,7 @@ using Azure.Mcp.Core.Areas.Server.Commands.Runtime;
 using Azure.Mcp.Core.Areas.Server.Commands.ToolLoading;
 using Azure.Mcp.Core.Areas.Server.Options;
 using Azure.Mcp.Core.Helpers;
+using Azure.Mcp.Core.Services.Azure.Authentication;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
@@ -85,6 +86,26 @@ public static class AzureMcpServiceCollectionExtensions
 
         // Register MCP runtimes
         services.AddSingleton<IMcpRuntime, McpRuntime>();
+
+        // Register On-Behalf-Of authentication services if enabled
+        if (serviceStartOptions.EnableOnBehalfOfAuth)
+        {
+            // Validation: OBO requires HTTP transport (this should be caught earlier in ServiceStartCommand)
+            if (!serviceStartOptions.EnableInsecureTransports)
+            {
+                throw new InvalidOperationException(
+                    "On-Behalf-Of authentication requires HTTP transport. " +
+                    "This configuration should have been validated earlier.");
+            }
+            
+            // Register OBO services for HTTP transport
+            services.AddScoped<IOboCredentialFactory, OboCredentialFactory>();
+            services.AddHttpContextAccessor();
+            services.AddScoped<IAuthenticationContext, HttpAuthenticationContext>();
+        }
+        // When OBO is disabled, IAuthenticationContext is not registered.
+        // BaseAzureService.GetCredential() will use GetService<IAuthenticationContext>() which returns null,
+        // causing it to fall back to DefaultAzureCredential for all scenarios.
 
         // Register MCP discovery strategies based on proxy mode
         if (serviceStartOptions.Mode == ModeTypes.SingleToolProxy || serviceStartOptions.Mode == ModeTypes.NamespaceProxy)

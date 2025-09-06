@@ -5,11 +5,14 @@ using System.Net;
 using Azure.Mcp.Core.Areas.Server.Options;
 using Azure.Mcp.Core.Commands;
 using Azure.Mcp.Core.Helpers;
+using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Hosting;
+using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
 using Microsoft.Extensions.Logging;
+using Microsoft.Identity.Web;
 using ModelContextProtocol.AspNetCore;
 using OpenTelemetry.Logs;
 using OpenTelemetry.Metrics;
@@ -30,6 +33,7 @@ public sealed class ServiceStartCommand : BaseCommand
     private readonly Option<string?> _modeOption = ServiceOptionDefinitions.Mode;
     private readonly Option<bool?> _readOnlyOption = ServiceOptionDefinitions.ReadOnly;
     private readonly Option<bool> _enableInsecureTransportsOption = ServiceOptionDefinitions.EnableInsecureTransports;
+    private readonly Option<bool> _enableOnBehalfOfAuthOption = ServiceOptionDefinitions.EnableOnBehalfOfAuth;
 
     /// <summary>
     /// Gets the name of the command.
@@ -65,6 +69,7 @@ public sealed class ServiceStartCommand : BaseCommand
         command.Options.Add(_modeOption);
         command.Options.Add(_readOnlyOption);
         command.Options.Add(_enableInsecureTransportsOption);
+        command.Options.Add(_enableOnBehalfOfAuthOption);
     }
 
     /// <summary>
@@ -85,6 +90,15 @@ public sealed class ServiceStartCommand : BaseCommand
         }
 
         var enableInsecureTransports = parseResult.GetValueOrDefault(_enableInsecureTransportsOption);
+        var enableOnBehalfOfAuth = parseResult.GetValueOrDefault(_enableOnBehalfOfAuthOption);
+
+        // Validate OBO configuration
+        if (enableOnBehalfOfAuth && !enableInsecureTransports)
+        {
+            throw new InvalidOperationException(
+                "On-Behalf-Of authentication (--enable-obo-auth) requires HTTP transport (--enable-insecure-transports). " +
+                "OBO authentication cannot work with STDIO transport as it requires HTTP context and JWT tokens.");
+        }
 
         if (enableInsecureTransports)
         {
@@ -102,6 +116,7 @@ public sealed class ServiceStartCommand : BaseCommand
             Mode = mode,
             ReadOnly = readOnly,
             EnableInsecureTransports = enableInsecureTransports,
+            EnableOnBehalfOfAuth = enableOnBehalfOfAuth,
         };
 
         using var host = CreateHost(serverOptions);
@@ -191,6 +206,21 @@ public sealed class ServiceStartCommand : BaseCommand
                         });
                     });
 
+                    // Configure authentication if OBO is enabled
+                    if (serverOptions.EnableOnBehalfOfAuth)
+                    {
+                        var configuration = new ConfigurationBuilder()
+                            .AddEnvironmentVariables()
+                            .Build();
+
+                        services.AddAuthentication(JwtBearerDefaults.AuthenticationScheme)
+                            .AddMicrosoftIdentityWebApi(configuration.GetSection("AzureAd"));
+
+                        services.AddMicrosoftIdentityWebAppAuthentication(configuration)
+                            .EnableTokenAcquisitionToCallDownstreamApi()
+                            .AddInMemoryTokenCaches();
+                    }
+
                     ConfigureServices(services);
                     ConfigureMcpServer(services, serverOptions);
                 });
@@ -198,6 +228,13 @@ public sealed class ServiceStartCommand : BaseCommand
                 webBuilder.Configure(app =>
                 {
                     app.UseCors("AllowAll");
+                    
+                    if (serverOptions.EnableOnBehalfOfAuth)
+                    {
+                        app.UseAuthentication();
+                        app.UseAuthorization();
+                    }
+                    
                     app.UseRouting();
                     app.UseEndpoints(endpoints =>
                     {

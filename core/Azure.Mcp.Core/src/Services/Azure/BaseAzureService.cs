@@ -9,21 +9,23 @@ using Azure.Mcp.Core.Services.Azure.Authentication;
 using Azure.Mcp.Core.Services.Azure.Tenant;
 using Azure.ResourceManager;
 using Microsoft.Extensions.Logging;
+using Microsoft.Extensions.DependencyInjection;
 
 namespace Azure.Mcp.Core.Services.Azure;
 
-public abstract class BaseAzureService(ITenantService? tenantService = null, ILoggerFactory? loggerFactory = null)
+public abstract class BaseAzureService(ITenantService? tenantService = null, ILoggerFactory? loggerFactory = null, IServiceProvider? serviceProvider = null)
 {
     private static readonly UserAgentPolicy s_sharedUserAgentPolicy;
     public static readonly string DefaultUserAgent;
 
-    private CustomChainedCredential? _credential;
+    private TokenCredential? _credential;
     private string? _lastTenantId;
     private ArmClient? _armClient;
     private string? _lastArmClientTenantId;
     private RetryPolicyOptions? _lastRetryPolicy;
     private readonly ITenantService? _tenantService = tenantService;
     private readonly ILoggerFactory? _loggerFactory = loggerFactory;
+    private readonly IServiceProvider? _serviceProvider = serviceProvider;
 
     protected ILoggerFactory LoggerFactory => _loggerFactory ?? Microsoft.Extensions.Logging.Abstractions.NullLoggerFactory.Instance;
 
@@ -76,6 +78,21 @@ public abstract class BaseAzureService(ITenantService? tenantService = null, ILo
 
         try
         {
+            // Check if OBO authentication context is available
+            var authContext = _serviceProvider?.GetService<IAuthenticationContext>();
+            if (authContext != null && authContext.IsAuthenticated)
+            {
+                var oboCredentialFactory = _serviceProvider?.GetService<IOboCredentialFactory>();
+                if (oboCredentialFactory != null)
+                {
+                    // Use a general Azure Resource Manager scope for OBO authentication
+                    _credential = oboCredentialFactory.CreateCredentialForService(AzureService.ResourceManager);
+                    _lastTenantId = tenantId;
+                    return _credential;
+                }
+            }
+
+            // Fallback to default credential chain
             ILogger<CustomChainedCredential>? logger = _loggerFactory?.CreateLogger<CustomChainedCredential>();
             _credential = new CustomChainedCredential(tenantId, logger);
             _lastTenantId = tenantId;

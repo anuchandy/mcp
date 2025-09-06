@@ -43,4 +43,12 @@ public class ServiceStartOptions
     /// </summary>
     [JsonPropertyName("enableInsecureTransports")]
     public bool EnableInsecureTransports { get; set; } = false;
+
+    /// <summary>
+    /// Gets or sets whether On-Behalf-Of (OBO) authentication is enabled.
+    /// When true, the server will expect authentication context and use OBO credentials
+    /// for Azure service access. When false, the default Azure credential chain is used.
+    /// </summary>
+    [JsonPropertyName("enableOnBehalfOfAuth")]
+    public bool EnableOnBehalfOfAuth { get; set; } = false;
 }

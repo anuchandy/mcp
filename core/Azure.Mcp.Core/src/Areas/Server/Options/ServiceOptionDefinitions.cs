@@ -10,6 +10,7 @@ public static class ServiceOptionDefinitions
     public const string ModeName = "mode";
     public const string ReadOnlyName = "read-only";
     public const string EnableInsecureTransportsName = "enable-insecure-transports";
+    public const string EnableOnBehalfOfAuthName = "enable-obo-auth";
 
     public static readonly Option<string> Transport = new($"--{TransportName}")
     {
@@ -52,6 +53,14 @@ public static class ServiceOptionDefinitions
         Required = false,
         Hidden = true,
         Description = "Enable insecure transport",
+        DefaultValueFactory = _ => false
+    };
+
+    public static readonly Option<bool> EnableOnBehalfOfAuth = new(
+        $"--{EnableOnBehalfOfAuthName}")
+    {
+        Required = false,
+        Description = "Enable On-Behalf-Of authentication for multi-user scenarios. Requires HTTP transport and authentication middleware.",
         DefaultValueFactory = _ => false
     };
 }
