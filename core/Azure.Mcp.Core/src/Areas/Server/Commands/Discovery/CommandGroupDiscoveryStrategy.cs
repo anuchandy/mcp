@@ -42,7 +42,7 @@ public sealed class CommandGroupDiscoveryStrategy(CommandFactory commandFactory,
             {
                 ReadOnly = _options.Value.ReadOnly ?? false,
                 EntryPoint = EntryPoint,
-                OboChannel = (_options.Value.IsOboParent() || _options.Value.IsOboChild()) 
+                OboChannel = (_options.Value.IsOboParent() || (string.IsNullOrEmpty(_options.Value.OboChannel) == false)) 
                     ? _options.Value.OboChannel ?? "<channel>" 
                     : null
             })

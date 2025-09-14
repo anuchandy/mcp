@@ -68,28 +68,22 @@ public abstract class BaseAzureService(ITenantService? tenantService = null, ILo
 
     protected async Task<TokenCredential> GetCredential(string? tenant = null)
     {
-        var tenantId = string.IsNullOrEmpty(tenant) ? null : await ResolveTenantIdAsync(tenant);
-
-        // Return cached credential if it exists and tenant ID hasn't changed
-        if (_credential != null && _lastTenantId == tenantId)
+        // Check for directly registered TokenCredential first (OBO Child or OBO Parent case)
+        var directCredential = _serviceProvider?.GetService<TokenCredential>();
+        if (directCredential != null)
         {
-            return _credential;
+            // DO NOT cache directCredential as it may be user-specific (OBO case)
+            // and BaseAzureService instances can be singletons shared across users
+            return directCredential;
         }
 
+        var tenantId = string.IsNullOrEmpty(tenant) ? null : await ResolveTenantIdAsync(tenant);
         try
         {
-            // Check if OBO authentication context is available
-            var authContext = _serviceProvider?.GetService<IAuthenticationContext>();
-            if (authContext != null && authContext.IsAuthenticated)
+            // Return cached credential if it exists and tenant ID hasn't changed
+            if (_credential != null && _lastTenantId == tenantId)
             {
-                var oboCredentialFactory = _serviceProvider?.GetService<IOboCredentialFactory>();
-                if (oboCredentialFactory != null)
-                {
-                    // Use a general Azure Resource Manager scope for OBO authentication
-                    _credential = oboCredentialFactory.CreateCredentialForService(AzureService.ResourceManager);
-                    _lastTenantId = tenantId;
-                    return _credential;
-                }
+                return _credential;
             }
 
             // Fallback to default credential chain

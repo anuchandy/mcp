@@ -3,6 +3,7 @@
 
 using System.Reflection;
 using System.Text;
+using Azure.Core;
 using Azure.Mcp.Core.Areas.Server.Commands.Discovery;
 using Azure.Mcp.Core.Areas.Server.Commands.Runtime;
 using Azure.Mcp.Core.Areas.Server.Commands.ToolLoading;
@@ -93,9 +94,11 @@ public static class AzureMcpServiceCollectionExtensions
             services.AddSingleton<IAzMcpRequestContextFactory, OboParentRequestContextFactory>();
             
             // Register On-Behalf-Of authentication services for HTTP transport
-            services.AddScoped<IOboCredentialFactory, OboCredentialFactory>();
             services.AddHttpContextAccessor();
             services.AddScoped<IAuthenticationContext, HttpAuthenticationContext>();
+            
+            // Register scope-aware TokenCredential for OBO Parent mode
+            services.AddScoped<TokenCredential, AzOBOTokenCredentials>();
         }
         else if (serviceStartOptions.IsOboChild())
         {
