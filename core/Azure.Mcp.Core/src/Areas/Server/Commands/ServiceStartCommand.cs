@@ -33,7 +33,8 @@ public sealed class ServiceStartCommand : BaseCommand
     private readonly Option<string?> _modeOption = ServiceOptionDefinitions.Mode;
     private readonly Option<bool?> _readOnlyOption = ServiceOptionDefinitions.ReadOnly;
     private readonly Option<bool> _enableInsecureTransportsOption = ServiceOptionDefinitions.EnableInsecureTransports;
-    private readonly Option<bool> _enableOnBehalfOfAuthOption = ServiceOptionDefinitions.EnableOnBehalfOfAuth;
+    private readonly Option<bool> _enableOBOOption = ServiceOptionDefinitions.EnableOBO;
+    private readonly Option<string?> _oboChannelOption = ServiceOptionDefinitions.OboChannel;
 
     /// <summary>
     /// Gets the name of the command.
@@ -69,7 +70,8 @@ public sealed class ServiceStartCommand : BaseCommand
         command.Options.Add(_modeOption);
         command.Options.Add(_readOnlyOption);
         command.Options.Add(_enableInsecureTransportsOption);
-        command.Options.Add(_enableOnBehalfOfAuthOption);
+        command.Options.Add(_enableOBOOption);
+        command.Options.Add(_oboChannelOption);
     }
 
     /// <summary>
@@ -83,6 +85,7 @@ public sealed class ServiceStartCommand : BaseCommand
         string[]? namespaces = parseResult.GetValue(_namespaceOption);
         string? mode = parseResult.GetValue(_modeOption);
         bool? readOnly = parseResult.GetValue(_readOnlyOption);
+        string? oboChannel = parseResult.GetValue(_oboChannelOption);
 
         if (!IsValidMode(mode))
         {
@@ -90,10 +93,10 @@ public sealed class ServiceStartCommand : BaseCommand
         }
 
         var enableInsecureTransports = parseResult.GetValueOrDefault(_enableInsecureTransportsOption);
-        var enableOnBehalfOfAuth = parseResult.GetValueOrDefault(_enableOnBehalfOfAuthOption);
+        var enableOBO = parseResult.GetValueOrDefault(_enableOBOOption);
 
         // Validate OBO configuration
-        if (enableOnBehalfOfAuth && !enableInsecureTransports)
+        if (enableOBO && !enableInsecureTransports)
         {
             throw new InvalidOperationException(
                 "On-Behalf-Of authentication (--enable-obo-auth) requires HTTP transport (--enable-insecure-transports). " +
@@ -116,7 +119,8 @@ public sealed class ServiceStartCommand : BaseCommand
             Mode = mode,
             ReadOnly = readOnly,
             EnableInsecureTransports = enableInsecureTransports,
-            EnableOnBehalfOfAuth = enableOnBehalfOfAuth,
+            EnableOBO = enableOBO,
+            OboChannel = oboChannel,
         };
 
         using var host = CreateHost(serverOptions);
@@ -207,7 +211,7 @@ public sealed class ServiceStartCommand : BaseCommand
                     });
 
                     // Configure authentication if OBO is enabled
-                    if (serverOptions.EnableOnBehalfOfAuth)
+                    if (serverOptions.EnableOBO)
                     {
                         var configuration = new ConfigurationBuilder()
                             .AddEnvironmentVariables()
@@ -228,8 +232,7 @@ public sealed class ServiceStartCommand : BaseCommand
                 webBuilder.Configure(app =>
                 {
                     app.UseCors("AllowAll");
-                    
-                    if (serverOptions.EnableOnBehalfOfAuth)
+                    if (serverOptions.EnableOBO)
                     {
                         app.UseAuthentication();
                         app.UseAuthorization();

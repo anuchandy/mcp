@@ -10,7 +10,8 @@ public static class ServiceOptionDefinitions
     public const string ModeName = "mode";
     public const string ReadOnlyName = "read-only";
     public const string EnableInsecureTransportsName = "enable-insecure-transports";
-    public const string EnableOnBehalfOfAuthName = "enable-obo-auth";
+    public const string EnableOBOName = "enable-obo-auth";
+    public const string OboChannelName = "obo-channel";
 
     public static readonly Option<string> Transport = new($"--{TransportName}")
     {
@@ -56,11 +57,20 @@ public static class ServiceOptionDefinitions
         DefaultValueFactory = _ => false
     };
 
-    public static readonly Option<bool> EnableOnBehalfOfAuth = new(
-        $"--{EnableOnBehalfOfAuthName}")
+    public static readonly Option<bool> EnableOBO = new(
+        $"--{EnableOBOName}")
     {
         Required = false,
         Description = "Enable On-Behalf-Of authentication for multi-user scenarios. Requires HTTP transport and authentication middleware.",
         DefaultValueFactory = _ => false
+    };
+
+    public static readonly Option<string?> OboChannel = new(
+        $"--{OboChannelName}")
+    {
+        Required = false,
+        Description = "Channel for On-Behalf-Of token brokering communication between parent and child processes.",
+        Arity = ArgumentArity.ZeroOrOne,
+        DefaultValueFactory = _ => (string?)null
     };
 }

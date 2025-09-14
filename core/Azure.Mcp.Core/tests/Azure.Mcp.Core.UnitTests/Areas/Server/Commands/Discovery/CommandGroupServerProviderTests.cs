@@ -164,4 +164,69 @@ public class CommandGroupServerProviderTests
         var expected = new[] { "server", "start", "--mode", "all", "--namespace", "testGroup", "--read-only" };
         Assert.Equal(expected, arguments);
     }
+
+    [Fact]
+    public void BuildArguments_WithOboChannel_IncludesOboChannelFlag()
+    {
+        // Arrange
+        var commandGroup = new CommandGroup("testGroup", "Test Description");
+        var provider = new CommandGroupServerProvider(commandGroup);
+        provider.OboChannel = "test-channel-123";
+
+        // Act
+        var arguments = provider.BuildArguments();
+
+        // Assert
+        var expected = new[] { "server", "start", "--mode", "all", "--namespace", "testGroup", "--obo-channel", "test-channel-123" };
+        Assert.Equal(expected, arguments);
+    }
+
+    [Fact]
+    public void BuildArguments_WithReadOnlyAndOboChannel_IncludesBothFlags()
+    {
+        // Arrange
+        var commandGroup = new CommandGroup("testGroup", "Test Description");
+        var provider = new CommandGroupServerProvider(commandGroup);
+        provider.ReadOnly = true;
+        provider.OboChannel = "test-channel-456";
+
+        // Act
+        var arguments = provider.BuildArguments();
+
+        // Assert
+        var expected = new[] { "server", "start", "--mode", "all", "--namespace", "testGroup", "--read-only", "--obo-channel", "test-channel-456" };
+        Assert.Equal(expected, arguments);
+    }
+
+    [Fact]
+    public void BuildArguments_WithNullOboChannel_DoesNotIncludeOboChannelFlag()
+    {
+        // Arrange
+        var commandGroup = new CommandGroup("testGroup", "Test Description");
+        var provider = new CommandGroupServerProvider(commandGroup);
+        provider.OboChannel = null;
+
+        // Act
+        var arguments = provider.BuildArguments();
+
+        // Assert
+        var expected = new[] { "server", "start", "--mode", "all", "--namespace", "testGroup" };
+        Assert.Equal(expected, arguments);
+    }
+
+    [Fact]
+    public void BuildArguments_WithEmptyOboChannel_DoesNotIncludeOboChannelFlag()
+    {
+        // Arrange
+        var commandGroup = new CommandGroup("testGroup", "Test Description");
+        var provider = new CommandGroupServerProvider(commandGroup);
+        provider.OboChannel = string.Empty;
+
+        // Act
+        var arguments = provider.BuildArguments();
+
+        // Assert
+        var expected = new[] { "server", "start", "--mode", "all", "--namespace", "testGroup" };
+        Assert.Equal(expected, arguments);
+    }
 }

@@ -103,7 +103,7 @@ public class ServiceCollectionExtensionsTests
         var services = new ServiceCollection();
         var serviceStartOptions = new ServiceStartOptions
         {
-            EnableOnBehalfOfAuth = true,
+            EnableOBO = true,
             EnableInsecureTransports = true
         };
 
@@ -135,7 +135,7 @@ public class ServiceCollectionExtensionsTests
         var services = new ServiceCollection();
         var serviceStartOptions = new ServiceStartOptions
         {
-            EnableOnBehalfOfAuth = false,
+            EnableOBO = false,
             EnableInsecureTransports = true
         };
 
@@ -156,25 +156,5 @@ public class ServiceCollectionExtensionsTests
         Assert.Null(authContext);  // Should not be registered when OBO is disabled
     }
 
-    [Fact]
-    public void AddAzureMcpServer_WithOboEnabledButStdioTransport_ThrowsInvalidOperationException()
-    {
-        // Arrange
-        var services = new ServiceCollection();
-        var serviceStartOptions = new ServiceStartOptions
-        {
-            EnableOnBehalfOfAuth = true,
-            EnableInsecureTransports = false  // STDIO transport
-        };
 
-        services.AddLogging();
-
-        // Act & Assert
-        var exception = Assert.Throws<InvalidOperationException>(() =>
-        {
-            services.AddAzureMcpServer(serviceStartOptions);
-        });
-
-        Assert.Contains("On-Behalf-Of authentication requires HTTP transport", exception.Message);
-    }
 }

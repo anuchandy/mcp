@@ -2,6 +2,7 @@
 // Licensed under the MIT License.
 
 using Azure.Mcp.Core.Areas.Server.Commands.Discovery;
+using Azure.Mcp.Core.Areas.Server.Commands.Runtime;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
 using ModelContextProtocol;
@@ -59,7 +60,7 @@ public sealed class ServerToolLoader(IMcpDiscoveryStrategy serverDiscoveryStrate
         }
         """, ServerJsonContext.Default.JsonElement);
 
-    public override async ValueTask<ListToolsResult> ListToolsHandler(RequestContext<ListToolsRequestParams> request, CancellationToken cancellationToken)
+    public override async ValueTask<ListToolsResult> ListToolsHandler(AzMcpRequestContext<ListToolsRequestParams> request, CancellationToken cancellationToken)
     {
         var serverList = await _serverDiscoveryStrategy.DiscoverServersAsync();
         var allToolsResponse = new ListToolsResult
@@ -88,7 +89,7 @@ public sealed class ServerToolLoader(IMcpDiscoveryStrategy serverDiscoveryStrate
         return allToolsResponse;
     }
 
-    public override async ValueTask<CallToolResult> CallToolHandler(RequestContext<CallToolRequestParams> request, CancellationToken cancellationToken)
+    public override async ValueTask<CallToolResult> CallToolHandler(AzMcpRequestContext<CallToolRequestParams> request, CancellationToken cancellationToken)
     {
         if (string.IsNullOrWhiteSpace(request.Params?.Name))
         {
@@ -169,7 +170,7 @@ public sealed class ServerToolLoader(IMcpDiscoveryStrategy serverDiscoveryStrate
         };
     }
 
-    private async Task<CallToolResult> InvokeChildToolAsync(RequestContext<CallToolRequestParams> request, string? intent, string tool, string command, Dictionary<string, object?> parameters, CancellationToken cancellationToken)
+    private async Task<CallToolResult> InvokeChildToolAsync(AzMcpRequestContext<CallToolRequestParams> request, string? intent, string tool, string command, Dictionary<string, object?> parameters, CancellationToken cancellationToken)
     {
         if (request.Params == null)
         {
@@ -230,6 +231,18 @@ public sealed class ServerToolLoader(IMcpDiscoveryStrategy serverDiscoveryStrate
 
             // At this point we should always have a valid command (child tool) call to invoke.
             await NotifyProgressAsync(request, $"Calling {tool} {command}...", cancellationToken);
+            // Inject identity context per invocation so multi-user scenarios don't rely on process state.
+            if (request.Role == AzRuntimeMode.OboParent)
+            {
+                if (!string.IsNullOrWhiteSpace(request.TenantId) && !parameters.ContainsKey("tenantId"))
+                {
+                    parameters["tenantId"] = request.TenantId;
+                }
+                if (!string.IsNullOrWhiteSpace(request.UserObjectId) && !parameters.ContainsKey("userObjectId"))
+                {
+                    parameters["userObjectId"] = request.UserObjectId;
+                }
+            }
             var toolCallResponse = await client.CallToolAsync(command, parameters, cancellationToken: cancellationToken);
             if (toolCallResponse.IsError is true)
             {
@@ -302,7 +315,7 @@ public sealed class ServerToolLoader(IMcpDiscoveryStrategy serverDiscoveryStrate
         }
     }
 
-    private async Task<CallToolResult> InvokeToolLearn(RequestContext<CallToolRequestParams> request, string? intent, string tool, CancellationToken cancellationToken)
+    private async Task<CallToolResult> InvokeToolLearn(AzMcpRequestContext<CallToolRequestParams> request, string? intent, string tool, CancellationToken cancellationToken)
     {
         var toolsJson = await GetChildToolListJsonAsync(request, tool);
 
@@ -340,7 +353,7 @@ public sealed class ServerToolLoader(IMcpDiscoveryStrategy serverDiscoveryStrate
     /// <param name="request"></param>
     /// <param name="tool"></param>
     /// <returns></returns>
-    private async Task<List<Tool>> GetChildToolListAsync(RequestContext<CallToolRequestParams> request, string tool)
+    private async Task<List<Tool>> GetChildToolListAsync(AzMcpRequestContext<CallToolRequestParams> request, string tool)
     {
         if (_cachedToolLists.TryGetValue(tool, out var cachedList))
         {
@@ -375,19 +388,19 @@ public sealed class ServerToolLoader(IMcpDiscoveryStrategy serverDiscoveryStrate
         return list;
     }
 
-    private async Task<string> GetChildToolListJsonAsync(RequestContext<CallToolRequestParams> request, string tool)
+    private async Task<string> GetChildToolListJsonAsync(AzMcpRequestContext<CallToolRequestParams> request, string tool)
     {
         var listTools = await GetChildToolListAsync(request, tool);
         return JsonSerializer.Serialize(listTools, ServerJsonContext.Default.ListTool);
     }
 
-    private async Task<Tool> GetChildToolAsync(RequestContext<CallToolRequestParams> request, string toolName, string commandName)
+    private async Task<Tool> GetChildToolAsync(AzMcpRequestContext<CallToolRequestParams> request, string toolName, string commandName)
     {
         var tools = await GetChildToolListAsync(request, toolName);
         return tools.First(t => string.Equals(t.Name, commandName, StringComparison.OrdinalIgnoreCase));
     }
 
-    private async Task<string> GetChildToolJsonAsync(RequestContext<CallToolRequestParams> request, string toolName, string commandName)
+    private async Task<string> GetChildToolJsonAsync(AzMcpRequestContext<CallToolRequestParams> request, string toolName, string commandName)
     {
         var tool = await GetChildToolAsync(request, toolName, commandName);
         return JsonSerializer.Serialize(tool, ServerJsonContext.Default.Tool);
@@ -398,7 +411,7 @@ public sealed class ServerToolLoader(IMcpDiscoveryStrategy serverDiscoveryStrate
         return server?.ClientCapabilities?.Sampling != null;
     }
 
-    private static async Task NotifyProgressAsync(RequestContext<CallToolRequestParams> request, string message, CancellationToken cancellationToken)
+    private static async Task NotifyProgressAsync(AzMcpRequestContext<CallToolRequestParams> request, string message, CancellationToken cancellationToken)
     {
         var progressToken = request.Params?.ProgressToken;
         if (progressToken == null)
@@ -414,7 +427,7 @@ public sealed class ServerToolLoader(IMcpDiscoveryStrategy serverDiscoveryStrate
             }, cancellationToken);
     }
     private async Task<(string? commandName, Dictionary<string, object?> parameters)> GetCommandAndParametersFromIntentAsync(
-        RequestContext<CallToolRequestParams> request,
+        AzMcpRequestContext<CallToolRequestParams> request,
         string intent,
         string tool,
         List<Tool> availableTools,

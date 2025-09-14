@@ -2,11 +2,13 @@
 // Licensed under the MIT License.
 
 using System.Text.Json;
+using Azure.Mcp.Core.Areas.Server.Commands.Runtime;
 using Azure.Mcp.Core.Areas.Server.Commands.ToolLoading;
 using Azure.Mcp.Core.Commands;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
 using ModelContextProtocol.Protocol;
+using ModelContextProtocol.Server;
 using NSubstitute;
 using Xunit;
 
@@ -26,6 +28,17 @@ public class CommandFactoryToolLoaderTests
         return (toolLoader, commandFactory);
     }
 
+    // AzMcpRequestContext wrapping helper for tests
+    private static AzMcpRequestContext<TParams> Wrap<TParams>(RequestContext<TParams> inner) where TParams : class =>
+        new AzMcpRequestContext<TParams>(
+            inner,
+            sessionId: "test-session",
+            correlationId: Guid.NewGuid().ToString("n"),
+            tenantId: null,
+            userObjectId: null,
+            role: AzRuntimeMode.Default,
+            timestampUtc: DateTimeOffset.UtcNow);
+
     private static ModelContextProtocol.Server.RequestContext<ListToolsRequestParams> CreateRequest()
     {
         var mockServer = Substitute.For<ModelContextProtocol.Server.IMcpServer>();
@@ -41,7 +54,7 @@ public class CommandFactoryToolLoaderTests
         var (toolLoader, commandFactory) = CreateToolLoader();
         var request = CreateRequest();
 
-        var result = await toolLoader.ListToolsHandler(request, CancellationToken.None);
+        var result = await toolLoader.ListToolsHandler(Wrap(request), CancellationToken.None);
 
         // Verify basic structure
         Assert.NotNull(result);
@@ -81,7 +94,7 @@ public class CommandFactoryToolLoaderTests
         var (toolLoader, _) = CreateToolLoader(readOnlyOptions);
         var request = CreateRequest();
 
-        var result = await toolLoader.ListToolsHandler(request, CancellationToken.None);
+        var result = await toolLoader.ListToolsHandler(Wrap(request), CancellationToken.None);
 
         // Verify basic structure
         Assert.NotNull(result);
@@ -109,7 +122,7 @@ public class CommandFactoryToolLoaderTests
 
         try
         {
-            var result = await toolLoader.ListToolsHandler(request, CancellationToken.None);
+            var result = await toolLoader.ListToolsHandler(Wrap(request), CancellationToken.None);
 
             // Verify basic structure
             Assert.NotNull(result);
@@ -148,7 +161,7 @@ public class CommandFactoryToolLoaderTests
 
         try
         {
-            var result = await toolLoader.ListToolsHandler(request, CancellationToken.None);
+            var result = await toolLoader.ListToolsHandler(Wrap(request), CancellationToken.None);
 
             // Verify basic structure
             Assert.NotNull(result);
@@ -187,7 +200,7 @@ public class CommandFactoryToolLoaderTests
                 // Verify that tools from non-specified services are not included
                 var allToolsOptions = new ToolLoaderOptions(); // No filter = all tools
                 var (allToolsLoader, _) = CreateToolLoader(allToolsOptions);
-                var allToolsResult = await allToolsLoader.ListToolsHandler(request, CancellationToken.None);
+                var allToolsResult = await allToolsLoader.ListToolsHandler(Wrap(request), CancellationToken.None);
 
                 var excludedTools = allToolsResult.Tools.Where(t =>
                     !existingServices.Any(service =>
@@ -233,7 +246,7 @@ public class CommandFactoryToolLoaderTests
             }
         };
 
-        var result = await toolLoader.CallToolHandler(request, CancellationToken.None);
+        var result = await toolLoader.CallToolHandler(Wrap(request), CancellationToken.None);
 
         Assert.NotNull(result);
         Assert.NotNull(result.Content);
@@ -251,7 +264,7 @@ public class CommandFactoryToolLoaderTests
             Params = null
         };
 
-        var result = await toolLoader.CallToolHandler(request, CancellationToken.None);
+        var result = await toolLoader.CallToolHandler(Wrap(request), CancellationToken.None);
 
         Assert.NotNull(result);
         Assert.True(result.IsError);
@@ -278,7 +291,7 @@ public class CommandFactoryToolLoaderTests
             }
         };
 
-        var result = await toolLoader.CallToolHandler(request, CancellationToken.None);
+        var result = await toolLoader.CallToolHandler(Wrap(request), CancellationToken.None);
 
         Assert.NotNull(result);
         Assert.True(result.IsError);
@@ -299,7 +312,7 @@ public class CommandFactoryToolLoaderTests
         };
         var (toolLoader, _) = CreateToolLoader(filteredOptions);
         var request = CreateRequest();
-        var result = await toolLoader.ListToolsHandler(request, CancellationToken.None);
+        var result = await toolLoader.ListToolsHandler(Wrap(request), CancellationToken.None);
 
         Assert.NotNull(result);
         Assert.NotEmpty(result.Tools);
@@ -372,7 +385,7 @@ public class CommandFactoryToolLoaderTests
         };
 
         // Act - Call CallToolHandler BEFORE ListToolsHandler
-        var callResult = await toolLoader.CallToolHandler(callToolRequest, CancellationToken.None);
+        var callResult = await toolLoader.CallToolHandler(Wrap(callToolRequest), CancellationToken.None);
 
         // Assert based on what we know might happen
         Assert.NotNull(callResult);
@@ -391,7 +404,7 @@ public class CommandFactoryToolLoaderTests
 
         // Now call ListToolsHandler to verify it still works after CallToolHandler
         var listToolsRequest = CreateRequest();
-        var listResult = await toolLoader.ListToolsHandler(listToolsRequest, CancellationToken.None);
+        var listResult = await toolLoader.ListToolsHandler(Wrap(listToolsRequest), CancellationToken.None);
 
         // Assert that ListToolsHandler still works
         Assert.NotNull(listResult);
@@ -415,7 +428,7 @@ public class CommandFactoryToolLoaderTests
         var request = CreateRequest();
 
         // Act
-        var result = await toolLoader.ListToolsHandler(request, CancellationToken.None);
+        var result = await toolLoader.ListToolsHandler(Wrap(request), CancellationToken.None);
 
         // Find the appconfig_kv_set tool and print all tool names
         var appConfigSetTool = result.Tools.FirstOrDefault(t => t.Name == "azmcp_appconfig_kv_set");

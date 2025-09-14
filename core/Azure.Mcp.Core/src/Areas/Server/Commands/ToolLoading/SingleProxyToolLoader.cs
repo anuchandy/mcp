@@ -2,6 +2,7 @@
 // Licensed under the MIT License.
 
 using Azure.Mcp.Core.Areas.Server.Commands.Discovery;
+using Azure.Mcp.Core.Areas.Server.Commands.Runtime;
 using Microsoft.Extensions.Logging;
 using ModelContextProtocol;
 using ModelContextProtocol.Client;
@@ -63,7 +64,7 @@ public sealed class SingleProxyToolLoader(IMcpDiscoveryStrategy discoveryStrateg
         }
         """, ServerJsonContext.Default.JsonElement);
 
-    public override ValueTask<ListToolsResult> ListToolsHandler(RequestContext<ListToolsRequestParams> request, CancellationToken cancellationToken)
+    public override ValueTask<ListToolsResult> ListToolsHandler(AzMcpRequestContext<ListToolsRequestParams> request, CancellationToken cancellationToken)
     {
         var toolsResult = new ListToolsResult
         {
@@ -97,7 +98,7 @@ public sealed class SingleProxyToolLoader(IMcpDiscoveryStrategy discoveryStrateg
     /// <param name="request">The request context containing parameters and metadata.</param>
     /// <param name="cancellationToken">A cancellation token.</param>
     /// <returns>A <see cref="CallToolResult"/> representing the result of the operation.</returns>
-    public override async ValueTask<CallToolResult> CallToolHandler(RequestContext<CallToolRequestParams> request, CancellationToken cancellationToken = default)
+    public override async ValueTask<CallToolResult> CallToolHandler(AzMcpRequestContext<CallToolRequestParams> request, CancellationToken cancellationToken = default)
     {
         var args = request.Params?.Arguments;
         string? intent = null;
@@ -184,14 +185,14 @@ public sealed class SingleProxyToolLoader(IMcpDiscoveryStrategy discoveryStrateg
         return toolsJson;
     }
 
-    private async Task<string> GetToolListJsonAsync(RequestContext<CallToolRequestParams> request, string tool)
+    private async Task<string> GetToolListJsonAsync(AzMcpRequestContext<CallToolRequestParams> request, string tool)
     {
         if (_cachedToolListsJson.TryGetValue(tool, out var cachedJson))
         {
             return cachedJson;
         }
 
-        var clientOptions = CreateClientOptions(request.Server);
+        var clientOptions = CreateClientOptions(request.Server!);
         var client = await _discoveryStrategy.GetOrCreateClientAsync(tool, clientOptions);
         var listTools = await client.ListToolsAsync();
         var toolsJson = JsonSerializer.Serialize(listTools, ServerJsonContext.Default.IListMcpClientTool);
@@ -200,7 +201,7 @@ public sealed class SingleProxyToolLoader(IMcpDiscoveryStrategy discoveryStrateg
         return toolsJson;
     }
 
-    private async Task<CallToolResult> RootLearnModeAsync(RequestContext<CallToolRequestParams> request, string intent, CancellationToken cancellationToken)
+    private async Task<CallToolResult> RootLearnModeAsync(AzMcpRequestContext<CallToolRequestParams> request, string intent, CancellationToken cancellationToken)
     {
         var toolsJson = await GetRootToolsJsonAsync();
         var learnResponse = new CallToolResult
@@ -230,7 +231,7 @@ public sealed class SingleProxyToolLoader(IMcpDiscoveryStrategy discoveryStrateg
         return response;
     }
 
-    private async Task<CallToolResult> ToolLearnModeAsync(RequestContext<CallToolRequestParams> request, string intent, string tool, CancellationToken cancellationToken)
+    private async Task<CallToolResult> ToolLearnModeAsync(AzMcpRequestContext<CallToolRequestParams> request, string intent, string tool, CancellationToken cancellationToken)
     {
         var toolsJson = await GetToolListJsonAsync(request, tool);
         if (string.IsNullOrEmpty(toolsJson))
@@ -266,7 +267,7 @@ public sealed class SingleProxyToolLoader(IMcpDiscoveryStrategy discoveryStrateg
         return response;
     }
 
-    private async Task<CallToolResult> CommandModeAsync(RequestContext<CallToolRequestParams> request, string intent, string tool, string command, Dictionary<string, object?> parameters, CancellationToken cancellationToken)
+    private async Task<CallToolResult> CommandModeAsync(AzMcpRequestContext<CallToolRequestParams> request, string intent, string tool, string command, Dictionary<string, object?> parameters, CancellationToken cancellationToken)
     {
         IMcpClient? client;
 
@@ -317,7 +318,7 @@ public sealed class SingleProxyToolLoader(IMcpDiscoveryStrategy discoveryStrateg
         return server?.ClientCapabilities?.Sampling != null;
     }
 
-    private static async Task NotifyProgressAsync(RequestContext<CallToolRequestParams> request, string message, CancellationToken cancellationToken)
+    private static async Task NotifyProgressAsync(AzMcpRequestContext<CallToolRequestParams> request, string message, CancellationToken cancellationToken)
     {
         var progressToken = request.Params?.ProgressToken;
         if (progressToken == null)
@@ -333,7 +334,7 @@ public sealed class SingleProxyToolLoader(IMcpDiscoveryStrategy discoveryStrateg
             }, cancellationToken);
     }
 
-    private async Task<string?> GetToolNameFromIntentAsync(RequestContext<CallToolRequestParams> request, string intent, string toolsJson, CancellationToken cancellationToken)
+    private async Task<string?> GetToolNameFromIntentAsync(AzMcpRequestContext<CallToolRequestParams> request, string intent, string toolsJson, CancellationToken cancellationToken)
     {
         await NotifyProgressAsync(request, "Learning about Azure capabilities...", cancellationToken);
 
@@ -381,7 +382,7 @@ public sealed class SingleProxyToolLoader(IMcpDiscoveryStrategy discoveryStrateg
     }
 
     private async Task<(string? commandName, Dictionary<string, object?> parameters)> GetCommandAndParametersFromIntentAsync(
-        RequestContext<CallToolRequestParams> request,
+        AzMcpRequestContext<CallToolRequestParams> request,
         string intent,
         string tool,
         string toolsJson,

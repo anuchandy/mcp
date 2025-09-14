@@ -2,6 +2,7 @@
 // Licensed under the MIT License.
 
 using Azure.Mcp.Core.Areas.Server.Commands.Discovery;
+using Azure.Mcp.Core.Areas.Server.Commands.Runtime;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
 using ModelContextProtocol.Client;
@@ -37,7 +38,7 @@ public sealed class RegistryToolLoader(
     /// <param name="request">The request context containing parameters and metadata.</param>
     /// <param name="cancellationToken">A cancellation token.</param>
     /// <returns>A result containing the list of available tools.</returns>
-    public override async ValueTask<ListToolsResult> ListToolsHandler(RequestContext<ListToolsRequestParams> request, CancellationToken cancellationToken)
+    public override async ValueTask<ListToolsResult> ListToolsHandler(AzMcpRequestContext<ListToolsRequestParams> request, CancellationToken cancellationToken)
     {
         await InitializeAsync(cancellationToken);
 
@@ -69,7 +70,7 @@ public sealed class RegistryToolLoader(
     /// <param name="request">The request context containing parameters and metadata.</param>
     /// <param name="cancellationToken">A cancellation token.</param>
     /// <returns>The result of the tool call operation.</returns>
-    public override async ValueTask<CallToolResult> CallToolHandler(RequestContext<CallToolRequestParams> request, CancellationToken cancellationToken)
+    public override async ValueTask<CallToolResult> CallToolHandler(AzMcpRequestContext<CallToolRequestParams> request, CancellationToken cancellationToken)
     {
         if (request.Params == null)
         {

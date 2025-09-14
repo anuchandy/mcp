@@ -1,6 +1,7 @@
 // Copyright (c) Microsoft Corporation.
 // Licensed under the MIT License.
 
+using Azure.Mcp.Core.Areas.Server.Commands.Runtime;
 using Microsoft.Extensions.Logging;
 using ModelContextProtocol.Protocol;
 
@@ -30,7 +31,7 @@ public abstract class BaseToolLoader(ILogger logger) : IToolLoader
     /// <param name="request">The request context containing metadata and parameters.</param>
     /// <param name="cancellationToken">A token to monitor for cancellation requests.</param>
     /// <returns>A result containing the list of available tools.</returns>
-    public abstract ValueTask<ListToolsResult> ListToolsHandler(RequestContext<ListToolsRequestParams> request, CancellationToken cancellationToken);
+    public abstract ValueTask<ListToolsResult> ListToolsHandler(AzMcpRequestContext<ListToolsRequestParams> request, CancellationToken cancellationToken);
 
     /// <summary>
     /// Handles requests to call a specific tool with the provided parameters.
@@ -38,7 +39,7 @@ public abstract class BaseToolLoader(ILogger logger) : IToolLoader
     /// <param name="request">The request context containing the tool name and parameters.</param>
     /// <param name="cancellationToken">A token to monitor for cancellation requests.</param>
     /// <returns>A result containing the output of the tool invocation.</returns>
-    public abstract ValueTask<CallToolResult> CallToolHandler(RequestContext<CallToolRequestParams> request, CancellationToken cancellationToken);
+    public abstract ValueTask<CallToolResult> CallToolHandler(AzMcpRequestContext<CallToolRequestParams> request, CancellationToken cancellationToken);
 
     /// <summary>
     /// Extracts the "parameters" JsonElement from the tool call request arguments.
@@ -48,7 +49,7 @@ public abstract class BaseToolLoader(ILogger logger) : IToolLoader
     /// The "parameters" JsonElement if it exists and is a valid JSON object; 
     /// otherwise, returns an empty JSON object.
     /// </returns>
-    protected static JsonElement GetParametersJsonElement(RequestContext<CallToolRequestParams> request)
+    protected static JsonElement GetParametersJsonElement(AzMcpRequestContext<CallToolRequestParams> request)
     {
         IReadOnlyDictionary<string, JsonElement>? args = request.Params?.Arguments;
         if (args != null && args.TryGetValue("parameters", out var parametersElem) && parametersElem.ValueKind == JsonValueKind.Object)
@@ -67,7 +68,7 @@ public abstract class BaseToolLoader(ILogger logger) : IToolLoader
     /// A dictionary containing the parameter names and values if the "parameters" object exists and is valid;
     /// otherwise, returns an empty dictionary.
     /// </returns>
-    protected static Dictionary<string, object?> GetParametersDictionary(RequestContext<CallToolRequestParams> request)
+    protected static Dictionary<string, object?> GetParametersDictionary(AzMcpRequestContext<CallToolRequestParams> request)
     {
         JsonElement parametersElem = GetParametersJsonElement(request);
         return parametersElem.EnumerateObject().ToDictionary(prop => prop.Name, prop => (object?)prop.Value);

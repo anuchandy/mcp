@@ -597,4 +597,64 @@ public class CommandGroupDiscoveryStrategyTests
         Assert.DoesNotContain("extension", serverNames); // Should be ignored
     }
 
+    [Fact]
+    public async Task DiscoverServersAsync_WithOboParent_SetsOboChannelProperty()
+    {
+        // Arrange
+        var options = new ServiceStartOptions
+        {
+            EnableOBO = true,
+            OboChannel = "test-channel-123",
+            Namespace = ["storage"] // Limit to one namespace for easier testing
+        };
+        var strategy = CreateStrategy(options: options);
+
+        // Act
+        var servers = await strategy.DiscoverServersAsync();
+        var provider = servers.Cast<CommandGroupServerProvider>().First();
+
+        // Assert
+        Assert.Equal("test-channel-123", provider.OboChannel);
+    }
+
+    [Fact]
+    public async Task DiscoverServersAsync_WithOboChild_SetsDefaultOboChannel()
+    {
+        // Arrange
+        var options = new ServiceStartOptions
+        {
+            EnableOBO = true,
+            OboChannel = null, // Child with no explicit channel
+            Namespace = ["storage"] // Limit to one namespace for easier testing
+        };
+        var strategy = CreateStrategy(options: options);
+
+        // Act
+        var servers = await strategy.DiscoverServersAsync();
+        var provider = servers.Cast<CommandGroupServerProvider>().First();
+
+        // Assert
+        Assert.Equal("<channel>", provider.OboChannel);
+    }
+
+    [Fact]
+    public async Task DiscoverServersAsync_WithoutObo_DoesNotSetOboChannel()
+    {
+        // Arrange
+        var options = new ServiceStartOptions
+        {
+            EnableOBO = false,
+            OboChannel = "should-be-ignored",
+            Namespace = ["storage"] // Limit to one namespace for easier testing
+        };
+        var strategy = CreateStrategy(options: options);
+
+        // Act
+        var servers = await strategy.DiscoverServersAsync();
+        var provider = servers.Cast<CommandGroupServerProvider>().First();
+
+        // Assert
+        Assert.Null(provider.OboChannel);
+    }
+
 }

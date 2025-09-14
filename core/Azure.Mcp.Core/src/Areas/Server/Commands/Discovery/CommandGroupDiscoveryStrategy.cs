@@ -42,6 +42,9 @@ public sealed class CommandGroupDiscoveryStrategy(CommandFactory commandFactory,
             {
                 ReadOnly = _options.Value.ReadOnly ?? false,
                 EntryPoint = EntryPoint,
+                OboChannel = (_options.Value.IsOboParent() || _options.Value.IsOboChild()) 
+                    ? _options.Value.OboChannel ?? "<channel>" 
+                    : null
             })
             .Cast<IMcpServerProvider>();
 

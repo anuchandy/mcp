@@ -1,6 +1,7 @@
 // Copyright (c) Microsoft Corporation.
 // Licensed under the MIT License.
 
+using Azure.Mcp.Core.Areas.Server.Commands.Runtime;
 using Microsoft.Extensions.Logging;
 using ModelContextProtocol.Protocol;
 
@@ -47,7 +48,7 @@ public sealed class CompositeToolLoader(IEnumerable<IToolLoader> toolLoaders, IL
     /// <param name="request">The request context containing metadata and parameters.</param>
     /// <param name="cancellationToken">A token to monitor for cancellation requests.</param>
     /// <returns>A result containing the combined list of all available tools, or an empty list if initialization fails.</returns>
-    public override async ValueTask<ListToolsResult> ListToolsHandler(RequestContext<ListToolsRequestParams> request, CancellationToken cancellationToken)
+    public override async ValueTask<ListToolsResult> ListToolsHandler(AzMcpRequestContext<ListToolsRequestParams> request, CancellationToken cancellationToken)
     {
         try
         {
@@ -77,7 +78,7 @@ public sealed class CompositeToolLoader(IEnumerable<IToolLoader> toolLoaders, IL
     /// <param name="request">The request context containing the tool name and parameters.</param>
     /// <param name="cancellationToken">A token to monitor for cancellation requests.</param>
     /// <returns>A result containing the output of the tool invocation, or an error result if the tool is not found or initialization fails.</returns>
-    public override async ValueTask<CallToolResult> CallToolHandler(RequestContext<CallToolRequestParams> request, CancellationToken cancellationToken)
+    public override async ValueTask<CallToolResult> CallToolHandler(AzMcpRequestContext<CallToolRequestParams> request, CancellationToken cancellationToken)
     {
         if (request.Params == null)
         {
@@ -167,9 +168,19 @@ public sealed class CompositeToolLoader(IEnumerable<IToolLoader> toolLoaders, IL
                 Params = new ListToolsRequestParams()
             };
 
+            // Wrap in AzMcpRequestContext for each loader call (session/correlation placeholders for now)
+            var azCtx = new AzMcpRequestContext<ListToolsRequestParams>(
+                listToolsRequest,
+                sessionId: "init",
+                correlationId: Guid.NewGuid().ToString("n"),
+                tenantId: null,
+                userObjectId: null,
+                role: AzRuntimeMode.Default,
+                timestampUtc: DateTimeOffset.UtcNow);
+
             foreach (var loader in _toolLoaders)
             {
-                var toolsResponse = await loader.ListToolsHandler(listToolsRequest, cancellationToken);
+                var toolsResponse = await loader.ListToolsHandler(azCtx, cancellationToken);
                 if (toolsResponse == null)
                 {
                     throw new InvalidOperationException("Tool loader returned null response during initialization.");

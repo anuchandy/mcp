@@ -49,6 +49,24 @@ public class ServiceStartOptions
     /// When true, the server will expect authentication context and use OBO credentials
     /// for Azure service access. When false, the default Azure credential chain is used.
     /// </summary>
-    [JsonPropertyName("enableOnBehalfOfAuth")]
-    public bool EnableOnBehalfOfAuth { get; set; } = false;
+    [JsonPropertyName("enableOBO")]
+    public bool EnableOBO { get; set; } = false;
+
+    /// <summary>
+    /// Gets or sets the channel for On-Behalf-Of token brokering communication between parent and child processes.
+    /// </summary>
+    [JsonPropertyName("oboChannel")]
+    public string? OboChannel { get; set; } = null;
+
+    /// <summary>
+    /// Gets a value indicating whether this instance represents an OBO parent process.
+    /// Returns true if EnableOBO is true and OboChannel is not specified.
+    /// </summary>
+    public bool IsOboParent() => EnableOBO && string.IsNullOrEmpty(OboChannel);
+
+    /// <summary>
+    /// Gets a value indicating whether this instance represents an OBO child process.
+    /// Returns true if OboChannel is present (not null or empty).
+    /// </summary>
+    public bool IsOboChild() => !string.IsNullOrEmpty(OboChannel);
 }

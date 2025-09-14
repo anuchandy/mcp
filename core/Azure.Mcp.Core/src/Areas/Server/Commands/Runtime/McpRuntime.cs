@@ -2,6 +2,7 @@
 // Licensed under the MIT License.
 
 using System.Diagnostics;
+using Azure.Mcp.Core.Areas.Server.Commands.Runtime;
 using Azure.Mcp.Core.Areas.Server.Commands.ToolLoading;
 using Azure.Mcp.Core.Areas.Server.Options;
 using Azure.Mcp.Core.Models.Option;
@@ -24,6 +25,7 @@ public sealed class McpRuntime : IMcpRuntime
     private readonly ILogger<McpRuntime> _logger;
 
     private readonly ITelemetryService _telemetry;
+    private readonly IAzMcpRequestContextFactory _contextFactory;
 
     /// <summary>
     /// Initializes a new instance of the McpRuntime class.
@@ -34,13 +36,15 @@ public sealed class McpRuntime : IMcpRuntime
     /// <exception cref="ArgumentNullException">Thrown if any required dependencies are null.</exception>
     public McpRuntime(
         IToolLoader toolLoader,
-        IOptions<ServiceStartOptions> options,
-        ITelemetryService telemetry,
-        ILogger<McpRuntime> logger)
+    IOptions<ServiceStartOptions> options,
+    ITelemetryService telemetry,
+    IAzMcpRequestContextFactory contextFactory,
+    ILogger<McpRuntime> logger)
     {
         _toolLoader = toolLoader ?? throw new ArgumentNullException(nameof(toolLoader));
         _options = options ?? throw new ArgumentNullException(nameof(options));
         _telemetry = telemetry ?? throw new ArgumentNullException(nameof(telemetry));
+        _contextFactory = contextFactory ?? throw new ArgumentNullException(nameof(contextFactory));
         _logger = logger ?? throw new ArgumentNullException(nameof(logger));
 
         _logger.LogInformation("McpRuntime initialized with tool loader of type {ToolLoaderType}.", _toolLoader.GetType().Name);
@@ -96,7 +100,8 @@ public sealed class McpRuntime : IMcpRuntime
         CallToolResult callTool;
         try
         {
-            callTool = await _toolLoader.CallToolHandler(request!, cancellationToken);
+            var enriched = _contextFactory.Create(request!);
+            callTool = await _toolLoader.CallToolHandler(enriched, cancellationToken);
 
             var isSuccessful = !callTool.IsError.HasValue || !callTool.IsError.Value;
             if (isSuccessful)
@@ -143,7 +148,8 @@ public sealed class McpRuntime : IMcpRuntime
 
         try
         {
-            var result = await _toolLoader.ListToolsHandler(request!, cancellationToken);
+            var enriched = _contextFactory.Create(request!);
+            var result = await _toolLoader.ListToolsHandler(enriched, cancellationToken);
             activity?.SetStatus(ActivityStatusCode.Ok);
 
             return result;

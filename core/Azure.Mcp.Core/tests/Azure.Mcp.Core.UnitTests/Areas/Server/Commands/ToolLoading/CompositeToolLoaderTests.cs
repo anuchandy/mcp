@@ -2,6 +2,7 @@
 // Licensed under the MIT License.
 
 using System.Text.Json;
+using Azure.Mcp.Core.Areas.Server.Commands.Runtime;
 using Azure.Mcp.Core.Areas.Server.Commands.ToolLoading;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
@@ -40,6 +41,17 @@ public class CompositeToolLoaderTests
             }
         };
     }
+
+    // AzMcpRequestContext wrapping moved into runtime; tests now work directly with RequestContext.
+    private static AzMcpRequestContext<TParams> Wrap<TParams>(RequestContext<TParams> inner) where TParams : class =>
+        new AzMcpRequestContext<TParams>(
+            inner,
+            sessionId: "test-session",
+            correlationId: Guid.NewGuid().ToString("n"),
+            tenantId: null,
+            userObjectId: null,
+            role: AzRuntimeMode.Default,
+            timestampUtc: DateTimeOffset.UtcNow);
 
     private static Tool CreateTestTool(string name, string description = "Test tool")
     {
@@ -82,14 +94,14 @@ public class CompositeToolLoaderTests
             CreateTestTool("tool1", "First tool"),
             CreateTestTool("tool2", "Second tool")
         };
-        mockLoader.ListToolsHandler(Arg.Any<RequestContext<ListToolsRequestParams>>(), Arg.Any<CancellationToken>())
-            .Returns(new ListToolsResult { Tools = expectedTools });
+        mockLoader.ListToolsHandler(Arg.Any<AzMcpRequestContext<ListToolsRequestParams>>(), Arg.Any<CancellationToken>())
+                .Returns(new ListToolsResult { Tools = expectedTools });
 
         var toolLoaders = new List<IToolLoader> { mockLoader };
         var toolLoader = new CompositeToolLoader(toolLoaders, logger);
         var request = CreateListToolsRequest();
 
-        var result = await toolLoader.ListToolsHandler(request, CancellationToken.None);
+        var result = await toolLoader.ListToolsHandler(Wrap(request), CancellationToken.None);
 
         Assert.NotNull(result);
         Assert.NotNull(result.Tools);
@@ -109,17 +121,17 @@ public class CompositeToolLoaderTests
         var mockLoader1 = Substitute.For<IToolLoader>();
         var mockLoader2 = Substitute.For<IToolLoader>();
 
-        mockLoader1.ListToolsHandler(Arg.Any<RequestContext<ListToolsRequestParams>>(), Arg.Any<CancellationToken>())
-            .Returns(new ListToolsResult { Tools = new List<Tool> { CreateTestTool("tool1") } });
+        mockLoader1.ListToolsHandler(Arg.Any<AzMcpRequestContext<ListToolsRequestParams>>(), Arg.Any<CancellationToken>())
+                .Returns(new ListToolsResult { Tools = new List<Tool> { CreateTestTool("tool1") } });
 
-        mockLoader2.ListToolsHandler(Arg.Any<RequestContext<ListToolsRequestParams>>(), Arg.Any<CancellationToken>())
-            .Returns(new ListToolsResult { Tools = new List<Tool> { CreateTestTool("tool2"), CreateTestTool("tool3") } });
+        mockLoader2.ListToolsHandler(Arg.Any<AzMcpRequestContext<ListToolsRequestParams>>(), Arg.Any<CancellationToken>())
+                .Returns(new ListToolsResult { Tools = new List<Tool> { CreateTestTool("tool2"), CreateTestTool("tool3") } });
 
         var toolLoaders = new List<IToolLoader> { mockLoader1, mockLoader2 };
         var toolLoader = new CompositeToolLoader(toolLoaders, logger);
         var request = CreateListToolsRequest();
 
-        var result = await toolLoader.ListToolsHandler(request, CancellationToken.None);
+        var result = await toolLoader.ListToolsHandler(Wrap(request), CancellationToken.None);
 
         Assert.NotNull(result);
         Assert.NotNull(result.Tools);
@@ -136,14 +148,14 @@ public class CompositeToolLoaderTests
         var logger = serviceProvider.GetRequiredService<ILogger<CompositeToolLoader>>();
 
         var mockLoader = Substitute.For<IToolLoader>();
-        mockLoader.ListToolsHandler(Arg.Any<RequestContext<ListToolsRequestParams>>(), Arg.Any<CancellationToken>())
-            .Returns((ListToolsResult)null!);
+        mockLoader.ListToolsHandler(Arg.Any<AzMcpRequestContext<ListToolsRequestParams>>(), Arg.Any<CancellationToken>())
+                .Returns((ListToolsResult)null!);
 
         var toolLoaders = new List<IToolLoader> { mockLoader };
         var toolLoader = new CompositeToolLoader(toolLoaders, logger);
         var request = CreateListToolsRequest();
 
-        var result = await toolLoader.ListToolsHandler(request, CancellationToken.None);
+        var result = await toolLoader.ListToolsHandler(Wrap(request), CancellationToken.None);
 
         Assert.NotNull(result);
         Assert.Empty(result.Tools);
@@ -171,19 +183,19 @@ public class CompositeToolLoaderTests
 
         // Setup a loader with a different tool to populate the map
         var mockLoader = Substitute.For<IToolLoader>();
-        mockLoader.ListToolsHandler(Arg.Any<RequestContext<ListToolsRequestParams>>(), Arg.Any<CancellationToken>())
-            .Returns(new ListToolsResult { Tools = new List<Tool> { CreateTestTool("existing-tool") } });
+        mockLoader.ListToolsHandler(Arg.Any<AzMcpRequestContext<ListToolsRequestParams>>(), Arg.Any<CancellationToken>())
+                .Returns(new ListToolsResult { Tools = new List<Tool> { CreateTestTool("existing-tool") } });
 
         var toolLoaders = new List<IToolLoader> { mockLoader };
         var toolLoader = new CompositeToolLoader(toolLoaders, logger);
 
         // First populate the tool map by calling ListToolsHandler
         var listRequest = CreateListToolsRequest();
-        await toolLoader.ListToolsHandler(listRequest, CancellationToken.None);
+        await toolLoader.ListToolsHandler(Wrap(listRequest), CancellationToken.None);
 
         // Now try to call an unknown tool
         var callRequest = CreateCallToolRequest("unknown-tool");
-        var result = await toolLoader.CallToolHandler(callRequest, CancellationToken.None);
+        var result = await toolLoader.CallToolHandler(Wrap(callRequest), CancellationToken.None);
 
         Assert.NotNull(result);
         Assert.True(result.IsError);
@@ -207,10 +219,10 @@ public class CompositeToolLoaderTests
             IsError = false
         };
 
-        mockLoader.ListToolsHandler(Arg.Any<RequestContext<ListToolsRequestParams>>(), Arg.Any<CancellationToken>())
+        mockLoader.ListToolsHandler(Arg.Any<AzMcpRequestContext<ListToolsRequestParams>>(), Arg.Any<CancellationToken>())
             .Returns(new ListToolsResult { Tools = new List<Tool> { CreateTestTool("test-tool") } });
 
-        mockLoader.CallToolHandler(Arg.Any<RequestContext<CallToolRequestParams>>(), Arg.Any<CancellationToken>())
+        mockLoader.CallToolHandler(Arg.Any<AzMcpRequestContext<CallToolRequestParams>>(), Arg.Any<CancellationToken>())
             .Returns(expectedResult);
 
         var toolLoaders = new List<IToolLoader> { mockLoader };
@@ -218,18 +230,18 @@ public class CompositeToolLoaderTests
 
         // First populate the tool map
         var listRequest = CreateListToolsRequest();
-        await toolLoader.ListToolsHandler(listRequest, CancellationToken.None);
+        await toolLoader.ListToolsHandler(Wrap(listRequest), CancellationToken.None);
 
         // Now call the known tool
         var callRequest = CreateCallToolRequest("test-tool");
-        var result = await toolLoader.CallToolHandler(callRequest, CancellationToken.None);
+        var result = await toolLoader.CallToolHandler(Wrap(callRequest), CancellationToken.None);
 
         Assert.NotNull(result);
         Assert.False(result.IsError);
         Assert.Equal(expectedResult.Content, result.Content);
 
         // Verify the mock loader was called with the correct request
-        await mockLoader.Received(1).CallToolHandler(callRequest, Arg.Any<CancellationToken>());
+        await mockLoader.Received(1).CallToolHandler(Arg.Is<AzMcpRequestContext<CallToolRequestParams>>(c => c.Params == callRequest.Params), Arg.Any<CancellationToken>());
     }
 
     [Fact]
@@ -247,33 +259,33 @@ public class CompositeToolLoaderTests
             IsError = false
         };
 
-        mockLoader1.ListToolsHandler(Arg.Any<RequestContext<ListToolsRequestParams>>(), Arg.Any<CancellationToken>())
-            .Returns(new ListToolsResult { Tools = new List<Tool> { CreateTestTool("tool1") } });
+        mockLoader1.ListToolsHandler(Arg.Any<AzMcpRequestContext<ListToolsRequestParams>>(), Arg.Any<CancellationToken>())
+                .Returns(new ListToolsResult { Tools = new List<Tool> { CreateTestTool("tool1") } });
 
-        mockLoader2.ListToolsHandler(Arg.Any<RequestContext<ListToolsRequestParams>>(), Arg.Any<CancellationToken>())
-            .Returns(new ListToolsResult { Tools = new List<Tool> { CreateTestTool("tool2") } });
+        mockLoader2.ListToolsHandler(Arg.Any<AzMcpRequestContext<ListToolsRequestParams>>(), Arg.Any<CancellationToken>())
+                .Returns(new ListToolsResult { Tools = new List<Tool> { CreateTestTool("tool2") } });
 
-        mockLoader2.CallToolHandler(Arg.Any<RequestContext<CallToolRequestParams>>(), Arg.Any<CancellationToken>())
-            .Returns(expectedResult);
+        mockLoader2.CallToolHandler(Arg.Any<AzMcpRequestContext<CallToolRequestParams>>(), Arg.Any<CancellationToken>())
+                .Returns(expectedResult);
 
         var toolLoaders = new List<IToolLoader> { mockLoader1, mockLoader2 };
         var toolLoader = new CompositeToolLoader(toolLoaders, logger);
 
         // First populate the tool map
         var listRequest = CreateListToolsRequest();
-        await toolLoader.ListToolsHandler(listRequest, CancellationToken.None);
+        await toolLoader.ListToolsHandler(Wrap(listRequest), CancellationToken.None);
 
         // Call tool2 which should be handled by mockLoader2
         var callRequest = CreateCallToolRequest("tool2");
-        var result = await toolLoader.CallToolHandler(callRequest, CancellationToken.None);
+        var result = await toolLoader.CallToolHandler(Wrap(callRequest), CancellationToken.None);
 
         Assert.NotNull(result);
         Assert.False(result.IsError);
         Assert.Equal(expectedResult.Content, result.Content);
 
         // Verify only mockLoader2 was called for CallToolHandler
-        await mockLoader1.DidNotReceive().CallToolHandler(Arg.Any<RequestContext<CallToolRequestParams>>(), Arg.Any<CancellationToken>());
-        await mockLoader2.Received(1).CallToolHandler(callRequest, Arg.Any<CancellationToken>());
+        await mockLoader1.DidNotReceive().CallToolHandler(Arg.Any<AzMcpRequestContext<CallToolRequestParams>>(), Arg.Any<CancellationToken>());
+        await mockLoader2.Received(1).CallToolHandler(Arg.Is<AzMcpRequestContext<CallToolRequestParams>>(c => c.Params == callRequest.Params), Arg.Any<CancellationToken>());
     }
 
     [Fact]
@@ -291,7 +303,7 @@ public class CompositeToolLoaderTests
             Params = null
         };
 
-        var result = await toolLoader.CallToolHandler(request, CancellationToken.None);
+        var result = await toolLoader.CallToolHandler(Wrap(request), CancellationToken.None);
 
         Assert.NotNull(result);
         Assert.True(result.IsError);
@@ -308,14 +320,14 @@ public class CompositeToolLoaderTests
         var logger = serviceProvider.GetRequiredService<ILogger<CompositeToolLoader>>();
 
         var mockLoader = Substitute.For<IToolLoader>();
-        mockLoader.ListToolsHandler(Arg.Any<RequestContext<ListToolsRequestParams>>(), Arg.Any<CancellationToken>())
-            .Returns((ListToolsResult)null!);
+        mockLoader.ListToolsHandler(Arg.Any<AzMcpRequestContext<ListToolsRequestParams>>(), Arg.Any<CancellationToken>())
+                .Returns((ListToolsResult)null!);
 
         var toolLoaders = new List<IToolLoader> { mockLoader };
         var toolLoader = new CompositeToolLoader(toolLoaders, logger);
         var request = CreateCallToolRequest("test-tool");
 
-        var result = await toolLoader.CallToolHandler(request, CancellationToken.None);
+        var result = await toolLoader.CallToolHandler(Wrap(request), CancellationToken.None);
 
         Assert.NotNull(result);
         Assert.True(result.IsError);
@@ -331,14 +343,14 @@ public class CompositeToolLoaderTests
         var serviceProvider = CreateServiceProvider();
         var logger = serviceProvider.GetRequiredService<ILogger<CompositeToolLoader>>();
         var mockToolLoader = Substitute.For<IToolLoader>();
-        mockToolLoader.ListToolsHandler(Arg.Any<RequestContext<ListToolsRequestParams>>(), Arg.Any<CancellationToken>())
-            .Returns(new ListToolsResult { Tools = new List<Tool>() });
+        mockToolLoader.ListToolsHandler(Arg.Any<AzMcpRequestContext<ListToolsRequestParams>>(), Arg.Any<CancellationToken>())
+                .Returns(new ListToolsResult { Tools = new List<Tool>() });
 
         var toolLoaders = new List<IToolLoader> { mockToolLoader };
         var toolLoader = new CompositeToolLoader(toolLoaders, logger);
         var request = CreateListToolsRequest();
 
-        var result = await toolLoader.ListToolsHandler(request, CancellationToken.None);
+        var result = await toolLoader.ListToolsHandler(Wrap(request), CancellationToken.None);
 
         Assert.NotNull(result);
         Assert.NotNull(result.Tools);
@@ -354,23 +366,23 @@ public class CompositeToolLoaderTests
         // Setup a loader that has the tool we want to call
         var mockLoader = Substitute.For<IToolLoader>();
         var testTool = CreateTestTool("test-tool");
-        mockLoader.ListToolsHandler(Arg.Any<RequestContext<ListToolsRequestParams>>(), Arg.Any<CancellationToken>())
-            .Returns(new ListToolsResult { Tools = new List<Tool> { testTool } });
+        mockLoader.ListToolsHandler(Arg.Any<AzMcpRequestContext<ListToolsRequestParams>>(), Arg.Any<CancellationToken>())
+                .Returns(new ListToolsResult { Tools = new List<Tool> { testTool } });
 
         var expectedResult = new CallToolResult
         {
             Content = new List<ContentBlock> { new TextContentBlock { Text = "Tool executed successfully" } },
             IsError = false
         };
-        mockLoader.CallToolHandler(Arg.Any<RequestContext<CallToolRequestParams>>(), Arg.Any<CancellationToken>())
-            .Returns(expectedResult);
+        mockLoader.CallToolHandler(Arg.Any<AzMcpRequestContext<CallToolRequestParams>>(), Arg.Any<CancellationToken>())
+                .Returns(expectedResult);
 
         var toolLoaders = new List<IToolLoader> { mockLoader };
         var toolLoader = new CompositeToolLoader(toolLoaders, logger);
 
         // Call tool directly WITHOUT first calling ListToolsHandler
         var callRequest = CreateCallToolRequest("test-tool");
-        var result = await toolLoader.CallToolHandler(callRequest, CancellationToken.None);
+        var result = await toolLoader.CallToolHandler(Wrap(callRequest), CancellationToken.None);
 
         // Verify the tool was found and executed successfully
         Assert.NotNull(result);
@@ -381,10 +393,10 @@ public class CompositeToolLoaderTests
         Assert.Equal("Tool executed successfully", textContent.Text);
 
         // Verify that ListToolsHandler was called internally to populate the map
-        await mockLoader.Received(1).ListToolsHandler(Arg.Any<RequestContext<ListToolsRequestParams>>(), Arg.Any<CancellationToken>());
+        await mockLoader.Received(1).ListToolsHandler(Arg.Any<AzMcpRequestContext<ListToolsRequestParams>>(), Arg.Any<CancellationToken>());
 
         // Verify that CallToolHandler was called on the loader
-        await mockLoader.Received(1).CallToolHandler(callRequest, Arg.Any<CancellationToken>());
+        await mockLoader.Received(1).CallToolHandler(Arg.Is<AzMcpRequestContext<CallToolRequestParams>>(c => c.Params == callRequest.Params), Arg.Any<CancellationToken>());
     }
 
     [Fact]
@@ -396,15 +408,15 @@ public class CompositeToolLoaderTests
         // Setup a loader that has a different tool
         var mockLoader = Substitute.For<IToolLoader>();
         var testTool = CreateTestTool("different-tool");
-        mockLoader.ListToolsHandler(Arg.Any<RequestContext<ListToolsRequestParams>>(), Arg.Any<CancellationToken>())
-            .Returns(new ListToolsResult { Tools = new List<Tool> { testTool } });
+        mockLoader.ListToolsHandler(Arg.Any<AzMcpRequestContext<ListToolsRequestParams>>(), Arg.Any<CancellationToken>())
+                .Returns(new ListToolsResult { Tools = new List<Tool> { testTool } });
 
         var toolLoaders = new List<IToolLoader> { mockLoader };
         var toolLoader = new CompositeToolLoader(toolLoaders, logger);
 
         // Call tool directly WITHOUT first calling ListToolsHandler
         var callRequest = CreateCallToolRequest("unknown-tool");
-        var result = await toolLoader.CallToolHandler(callRequest, CancellationToken.None);
+        var result = await toolLoader.CallToolHandler(Wrap(callRequest), CancellationToken.None);
 
         // Verify the tool was not found
         Assert.NotNull(result);
@@ -415,10 +427,10 @@ public class CompositeToolLoaderTests
         Assert.Equal("The tool unknown-tool was not found", textContent.Text);
 
         // Verify that ListToolsHandler was called internally to populate the map
-        await mockLoader.Received(1).ListToolsHandler(Arg.Any<RequestContext<ListToolsRequestParams>>(), Arg.Any<CancellationToken>());
+        await mockLoader.Received(1).ListToolsHandler(Arg.Any<AzMcpRequestContext<ListToolsRequestParams>>(), Arg.Any<CancellationToken>());
 
         // Verify that CallToolHandler was NOT called since the tool was not found
-        await mockLoader.DidNotReceive().CallToolHandler(Arg.Any<RequestContext<CallToolRequestParams>>(), Arg.Any<CancellationToken>());
+        await mockLoader.DidNotReceive().CallToolHandler(Arg.Any<AzMcpRequestContext<CallToolRequestParams>>(), Arg.Any<CancellationToken>());
     }
 
     [Fact]
@@ -430,16 +442,16 @@ public class CompositeToolLoaderTests
         // Setup a loader that has the tool we want to call
         var mockLoader = Substitute.For<IToolLoader>();
         var testTool = CreateTestTool("test-tool");
-        mockLoader.ListToolsHandler(Arg.Any<RequestContext<ListToolsRequestParams>>(), Arg.Any<CancellationToken>())
-            .Returns(new ListToolsResult { Tools = new List<Tool> { testTool } });
+        mockLoader.ListToolsHandler(Arg.Any<AzMcpRequestContext<ListToolsRequestParams>>(), Arg.Any<CancellationToken>())
+                .Returns(new ListToolsResult { Tools = new List<Tool> { testTool } });
 
         var expectedResult = new CallToolResult
         {
             Content = new List<ContentBlock> { new TextContentBlock { Text = "Tool executed successfully" } },
             IsError = false
         };
-        mockLoader.CallToolHandler(Arg.Any<RequestContext<CallToolRequestParams>>(), Arg.Any<CancellationToken>())
-            .Returns(expectedResult);
+        mockLoader.CallToolHandler(Arg.Any<AzMcpRequestContext<CallToolRequestParams>>(), Arg.Any<CancellationToken>())
+                .Returns(expectedResult);
 
         var toolLoaders = new List<IToolLoader> { mockLoader };
         var toolLoader = new CompositeToolLoader(toolLoaders, logger);
@@ -451,7 +463,7 @@ public class CompositeToolLoaderTests
         for (int i = 0; i < concurrentCalls; i++)
         {
             var callRequest = CreateCallToolRequest("test-tool");
-            tasks.Add(toolLoader.CallToolHandler(callRequest, CancellationToken.None).AsTask());
+            tasks.Add(toolLoader.CallToolHandler(Wrap(callRequest), CancellationToken.None).AsTask());
         }
 
         var results = await Task.WhenAll(tasks);
@@ -468,10 +480,10 @@ public class CompositeToolLoaderTests
         }
 
         // Verify that ListToolsHandler was called exactly once (not once per concurrent call)
-        await mockLoader.Received(1).ListToolsHandler(Arg.Any<RequestContext<ListToolsRequestParams>>(), Arg.Any<CancellationToken>());
+        await mockLoader.Received(1).ListToolsHandler(Arg.Any<AzMcpRequestContext<ListToolsRequestParams>>(), Arg.Any<CancellationToken>());
 
         // Verify that CallToolHandler was called for each concurrent request
-        await mockLoader.Received(concurrentCalls).CallToolHandler(Arg.Any<RequestContext<CallToolRequestParams>>(), Arg.Any<CancellationToken>());
+        await mockLoader.Received(concurrentCalls).CallToolHandler(Arg.Any<AzMcpRequestContext<CallToolRequestParams>>(), Arg.Any<CancellationToken>());
     }
 
     [Fact]
@@ -490,19 +502,19 @@ public class CompositeToolLoaderTests
         };
 
         // Setup the mock loader to return the tool when ListToolsHandler is called
-        mockLoader.ListToolsHandler(Arg.Any<RequestContext<ListToolsRequestParams>>(), Arg.Any<CancellationToken>())
-            .Returns(new ListToolsResult { Tools = new List<Tool> { expectedTool } });
+        mockLoader.ListToolsHandler(Arg.Any<AzMcpRequestContext<ListToolsRequestParams>>(), Arg.Any<CancellationToken>())
+                .Returns(new ListToolsResult { Tools = new List<Tool> { expectedTool } });
 
         // Setup the mock loader to return a successful result when CallToolHandler is called
-        mockLoader.CallToolHandler(Arg.Any<RequestContext<CallToolRequestParams>>(), Arg.Any<CancellationToken>())
-            .Returns(expectedResult);
+        mockLoader.CallToolHandler(Arg.Any<AzMcpRequestContext<CallToolRequestParams>>(), Arg.Any<CancellationToken>())
+                .Returns(expectedResult);
 
         var toolLoaders = new List<IToolLoader> { mockLoader };
         var compositeToolLoader = new CompositeToolLoader(toolLoaders, logger);
 
         // Act - Call the tool directly without first calling ListToolsHandler
         var callRequest = CreateCallToolRequest("valid-tool");
-        var result = await compositeToolLoader.CallToolHandler(callRequest, CancellationToken.None);
+        var result = await compositeToolLoader.CallToolHandler(Wrap(callRequest), CancellationToken.None);
 
         // Assert
         Assert.NotNull(result);
@@ -514,10 +526,10 @@ public class CompositeToolLoaderTests
         Assert.Equal("Successfully executed valid-tool", textContent.Text);
 
         // Verify that the composite loader internally called ListToolsHandler to initialize the tool map
-        await mockLoader.Received(1).ListToolsHandler(Arg.Any<RequestContext<ListToolsRequestParams>>(), Arg.Any<CancellationToken>());
+        await mockLoader.Received(1).ListToolsHandler(Arg.Any<AzMcpRequestContext<ListToolsRequestParams>>(), Arg.Any<CancellationToken>());
 
         // Verify that the composite loader called CallToolHandler on the correct loader
-        await mockLoader.Received(1).CallToolHandler(callRequest, Arg.Any<CancellationToken>());
+        await mockLoader.Received(1).CallToolHandler(Arg.Any<AzMcpRequestContext<CallToolRequestParams>>(), Arg.Any<CancellationToken>());
     }
 
     [Fact]
@@ -527,14 +539,14 @@ public class CompositeToolLoaderTests
         var logger = serviceProvider.GetRequiredService<ILogger<CompositeToolLoader>>();
 
         var mockLoader = Substitute.For<IToolLoader>();
-        mockLoader.ListToolsHandler(Arg.Any<RequestContext<ListToolsRequestParams>>(), Arg.Any<CancellationToken>())
-            .Returns<ListToolsResult>(callInfo => throw new InvalidOperationException("Loader initialization failed"));
+        mockLoader.ListToolsHandler(Arg.Any<AzMcpRequestContext<ListToolsRequestParams>>(), Arg.Any<CancellationToken>())
+            .Returns<ListToolsResult>(_ => throw new InvalidOperationException("Loader initialization failed"));
 
         var toolLoaders = new List<IToolLoader> { mockLoader };
         var toolLoader = new CompositeToolLoader(toolLoaders, logger);
         var request = CreateCallToolRequest("test-tool");
 
-        var result = await toolLoader.CallToolHandler(request, CancellationToken.None);
+        var result = await toolLoader.CallToolHandler(Wrap(request), CancellationToken.None);
 
         Assert.NotNull(result);
         Assert.True(result.IsError);

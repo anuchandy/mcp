@@ -86,22 +86,24 @@ public static class AzureMcpServiceCollectionExtensions
 
         // Register MCP runtimes
         services.AddSingleton<IMcpRuntime, McpRuntime>();
-
-        // Register On-Behalf-Of authentication services if enabled
-        if (serviceStartOptions.EnableOnBehalfOfAuth)
+        
+        // Register appropriate request context factory based on OBO configuration
+        if (serviceStartOptions.IsOboParent())
         {
-            // Validation: OBO requires HTTP transport (this should be caught earlier in ServiceStartCommand)
-            if (!serviceStartOptions.EnableInsecureTransports)
-            {
-                throw new InvalidOperationException(
-                    "On-Behalf-Of authentication requires HTTP transport. " +
-                    "This configuration should have been validated earlier.");
-            }
+            services.AddSingleton<IAzMcpRequestContextFactory, OboParentRequestContextFactory>();
             
-            // Register OBO services for HTTP transport
+            // Register On-Behalf-Of authentication services for HTTP transport
             services.AddScoped<IOboCredentialFactory, OboCredentialFactory>();
             services.AddHttpContextAccessor();
             services.AddScoped<IAuthenticationContext, HttpAuthenticationContext>();
+        }
+        else if (serviceStartOptions.IsOboChild())
+        {
+            services.AddSingleton<IAzMcpRequestContextFactory, OboChildRequestContextFactory>();
+        }
+        else
+        {
+            services.AddSingleton<IAzMcpRequestContextFactory, DefaultRequestContextFactory>();
         }
         // When OBO is disabled, IAuthenticationContext is not registered.
         // BaseAzureService.GetCredential() will use GetService<IAuthenticationContext>() which returns null,
