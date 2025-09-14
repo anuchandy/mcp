@@ -1,6 +1,7 @@
 // Copyright (c) Microsoft Corporation.
 // Licensed under the MIT License.
 
+using System.Security.Claims;
 using Azure.Core;
 using Microsoft.Identity.Web;
 
@@ -66,6 +67,89 @@ public class AzOBOTokenCredentials : TokenCredential
         catch (Exception ex)
         {
             throw new InvalidOperationException($"Failed to acquire token via OBO flow: {ex.Message}", ex);
+        }
+    }
+
+    /// <summary>
+    /// Acquires an access token for the specified scopes and user using the On-Behalf-Of flow.
+    /// This overload is intended for broker services that need to acquire tokens on behalf of specific users.
+    /// </summary>
+    /// <param name="requestContext">The token request context containing scopes and other metadata.</param>
+    /// <param name="userPrincipal">The ClaimsPrincipal of the user to acquire the token for.</param>
+    /// <param name="cancellationToken">The cancellation token to observe.</param>
+    /// <returns>An AccessToken containing the token and expiration information.</returns>
+    /// <exception cref="ArgumentException">Thrown when no scopes are provided in the request context or userPrincipal is null.</exception>
+    /// <exception cref="InvalidOperationException">Thrown when token acquisition fails.</exception>
+    /// <remarks>
+    /// This method is designed for OBO Child scenarios where a broker service needs to acquire tokens
+    /// for specific users identified by their ClaimsPrincipal. This is typically used in multi-tenant
+    /// broker architectures where the broker handles token requests from child MCP servers.
+    /// The ClaimsPrincipal should contain the necessary claims (like 'oid', 'tid') from the user's JWT token.
+    /// </remarks>
+    public async ValueTask<AccessToken> GetTokenAsync(TokenRequestContext requestContext, ClaimsPrincipal userPrincipal, CancellationToken cancellationToken)
+    {
+        ArgumentNullException.ThrowIfNull(userPrincipal);
+
+        try
+        {
+            // Use the scopes from the request context - this makes the credential scope-aware
+            var scopes = requestContext.Scopes?.ToArray();
+            if (scopes == null || scopes.Length == 0)
+            {
+                // Default to Azure Resource Manager scope if no scopes provided
+                scopes = new[] { "https://management.azure.com/.default" };
+            }
+
+            // Acquire token using Microsoft.Identity.Web OBO flow for specific user
+            var accessToken = await _tokenAcquisition.GetAccessTokenForUserAsync(scopes, user: userPrincipal);
+
+            // Parse the JWT to get expiration time
+            var expiresOn = GetTokenExpiration(accessToken);
+
+            return new AccessToken(accessToken, expiresOn);
+        }
+        catch (Exception ex)
+        {
+            var userId = userPrincipal.GetObjectId() ?? "unknown";
+            throw new InvalidOperationException($"Failed to acquire token via OBO flow for user '{userId}': {ex.Message}", ex);
+        }
+    }
+
+    /// <summary>
+    /// Acquires an access token for the specified scopes and user using the On-Behalf-Of flow.
+    /// This overload deserializes a Base64-encoded ClaimsPrincipal and uses it for optimal token caching.
+    /// </summary>
+    /// <param name="requestContext">The token request context containing scopes and other metadata.</param>
+    /// <param name="serializedClaimsPrincipal">The Base64-encoded serialized ClaimsPrincipal from the authenticated user.</param>
+    /// <param name="cancellationToken">The cancellation token to observe.</param>
+    /// <returns>An AccessToken containing the token and expiration information.</returns>
+    /// <exception cref="ArgumentException">Thrown when no scopes are provided in the request context or serializedClaimsPrincipal is null/invalid.</exception>
+    /// <exception cref="InvalidOperationException">Thrown when token acquisition fails or ClaimsPrincipal deserialization fails.</exception>
+    /// <remarks>
+    /// This method is designed for OBO Child scenarios where the full ClaimsPrincipal has been serialized
+    /// by the parent process and passed to the child process for optimal token caching. The serialized
+    /// ClaimsPrincipal contains all claims from the user's JWT token, enabling Microsoft.Identity.Web
+    /// to perform more efficient token cache lookups compared to using just user object ID and tenant ID.
+    /// </remarks>
+    public async ValueTask<AccessToken> GetTokenAsync(TokenRequestContext requestContext, string serializedClaimsPrincipal, CancellationToken cancellationToken)
+    {
+        if (string.IsNullOrEmpty(serializedClaimsPrincipal))
+            throw new ArgumentException("Serialized ClaimsPrincipal cannot be null or empty", nameof(serializedClaimsPrincipal));
+
+        try
+        {
+            // Deserialize the ClaimsPrincipal from Base64
+            var bytes = Convert.FromBase64String(serializedClaimsPrincipal);
+            using var stream = new MemoryStream(bytes);
+            using var reader = new BinaryReader(stream);
+            var userPrincipal = new ClaimsPrincipal(reader);
+
+            // Use the ClaimsPrincipal overload for optimal token caching
+            return await GetTokenAsync(requestContext, userPrincipal, cancellationToken);
+        }
+        catch (Exception ex) when (ex is not InvalidOperationException)
+        {
+            throw new InvalidOperationException($"Failed to deserialize ClaimsPrincipal or acquire token: {ex.Message}", ex);
         }
     }
 

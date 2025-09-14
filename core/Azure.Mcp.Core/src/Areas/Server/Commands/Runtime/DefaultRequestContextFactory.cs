@@ -40,6 +40,7 @@ internal sealed class DefaultRequestContextFactory : IAzMcpRequestContextFactory
             tenantId: null,
             userObjectId: null,
             role: AzRuntimeMode.Default, // Standard mode doesn't have parent/child distinction
-            timestampUtc: DateTimeOffset.UtcNow);
+            timestampUtc: DateTimeOffset.UtcNow,
+            serializedClaimsPrincipal: null);
     }
 }

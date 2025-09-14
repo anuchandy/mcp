@@ -1,6 +1,7 @@
 // Copyright (c) Microsoft Corporation.
 // Licensed under the MIT License.
 
+using System.Security.Claims;
 using ModelContextProtocol.Protocol;
 
 namespace Azure.Mcp.Core.Areas.Server.Commands.Runtime;
@@ -22,7 +23,8 @@ public sealed class AzMcpRequestContext<TParams>
         string? tenantId,
         string? userObjectId,
         AzRuntimeMode role,
-        DateTimeOffset timestampUtc)
+        DateTimeOffset timestampUtc,
+        string? serializedClaimsPrincipal = null)
     {
         _inner = inner ?? throw new ArgumentNullException(nameof(inner));
         SessionId = sessionId ?? throw new ArgumentNullException(nameof(sessionId));
@@ -31,6 +33,7 @@ public sealed class AzMcpRequestContext<TParams>
         UserObjectId = userObjectId;
         Role = role;
         TimestampUtc = timestampUtc;
+        SerializedClaimsPrincipal = serializedClaimsPrincipal;
     }
 
     /// <summary>Underlying protocol server.</summary>
@@ -61,6 +64,36 @@ public sealed class AzMcpRequestContext<TParams>
 
     /// <summary>UTC timestamp when context was created.</summary>
     public DateTimeOffset TimestampUtc { get; }
+
+    /// <summary>
+    /// Serialized ClaimsPrincipal from the authenticated user (OBO Parent mode only).
+    /// This contains the full claims context for optimal token caching in child processes.
+    /// Stored as Base64-encoded string for JSON compatibility.
+    /// </summary>
+    public string? SerializedClaimsPrincipal { get; }
+
+    /// <summary>
+    /// Deserializes the ClaimsPrincipal from SerializedClaimsPrincipal if available.
+    /// </summary>
+    /// <returns>The deserialized ClaimsPrincipal, or null if not available.</returns>
+    public ClaimsPrincipal? GetClaimsPrincipal()
+    {
+        if (string.IsNullOrEmpty(SerializedClaimsPrincipal))
+            return null;
+
+        try
+        {
+            var bytes = Convert.FromBase64String(SerializedClaimsPrincipal);
+            using var stream = new MemoryStream(bytes);
+            using var reader = new BinaryReader(stream);
+            return new ClaimsPrincipal(reader);
+        }
+        catch
+        {
+            // If deserialization fails, return null to gracefully degrade
+            return null;
+        }
+    }
 }
 
 /// <summary>Runtime mode of the current azmcp process.</summary>

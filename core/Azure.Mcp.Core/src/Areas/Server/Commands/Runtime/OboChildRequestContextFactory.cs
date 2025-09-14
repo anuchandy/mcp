@@ -33,6 +33,7 @@ internal sealed class OboChildRequestContextFactory : IAzMcpRequestContextFactor
 
         string? tenantId = null;
         string? userObjectId = null;
+        string? serializedClaimsPrincipal = null;
 
         try
         {
@@ -49,15 +50,19 @@ internal sealed class OboChildRequestContextFactory : IAzMcpRequestContextFactor
                     {
                         userObjectId = kvp.Value.GetString();
                     }
-                    if (tenantId != null && userObjectId != null)
+                    else if (serializedClaimsPrincipal == null && string.Equals(kvp.Key, "serializedClaimsPrincipal", StringComparison.OrdinalIgnoreCase) && kvp.Value.ValueKind == System.Text.Json.JsonValueKind.String)
                     {
-                        break; // both found
+                        serializedClaimsPrincipal = kvp.Value.GetString();
+                    }
+                    if (tenantId != null && userObjectId != null && serializedClaimsPrincipal != null)
+                    {
+                        break; // all found
                     }
                 }
 
                 if (tenantId != null || userObjectId != null)
                 {
-                    _logger.LogDebug("Extracted identity from tool arguments (tenant: {TenantPresent}, user: {UserPresent}).", tenantId != null, userObjectId != null);
+                    _logger.LogDebug("Extracted identity from tool arguments (tenant: {TenantPresent}, user: {UserPresent}, serializedPrincipal: {PrincipalPresent}).", tenantId != null, userObjectId != null, serializedClaimsPrincipal != null);
                 }
             }
         }
@@ -73,6 +78,7 @@ internal sealed class OboChildRequestContextFactory : IAzMcpRequestContextFactor
             tenantId: tenantId,
             userObjectId: userObjectId,
             role: AzRuntimeMode.OboChild,
-            timestampUtc: DateTimeOffset.UtcNow);
+            timestampUtc: DateTimeOffset.UtcNow,
+            serializedClaimsPrincipal: serializedClaimsPrincipal);
     }
 }

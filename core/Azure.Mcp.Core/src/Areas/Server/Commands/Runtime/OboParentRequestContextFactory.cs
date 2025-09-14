@@ -35,6 +35,7 @@ internal sealed class OboParentRequestContextFactory : IAzMcpRequestContextFacto
 
         string? tenantId = null;
         string? userObjectId = null;
+        string? serializedClaimsPrincipal = null;
 
         try
         {
@@ -50,6 +51,21 @@ internal sealed class OboParentRequestContextFactory : IAzMcpRequestContextFacto
                                ?? principal.FindFirst("http://schemas.microsoft.com/identity/claims/objectidentifier")?.Value
                                ?? principal.FindFirst(ClaimTypes.NameIdentifier)?.Value
                                ?? principal.FindFirst("sub")?.Value;
+
+                // Serialize the full ClaimsPrincipal
+                try
+                {
+                    using var stream = new MemoryStream();
+                    using var writer = new BinaryWriter(stream);
+                    principal.WriteTo(writer);
+                    var bytes = stream.ToArray();
+                    serializedClaimsPrincipal = Convert.ToBase64String(bytes);
+                    _logger.LogDebug("Serialized ClaimsPrincipal ({ByteCount} bytes, {Base64Length} Base64 chars) for child process token caching.", bytes.Length, serializedClaimsPrincipal.Length);
+                }
+                catch (Exception serEx)
+                {
+                    _logger.LogDebug(serEx, "Failed to serialize ClaimsPrincipal; child processes will use minimal claims for token caching.");
+                }
 
                 if (tenantId != null || userObjectId != null)
                 {
@@ -77,6 +93,7 @@ internal sealed class OboParentRequestContextFactory : IAzMcpRequestContextFacto
             tenantId: tenantId,
             userObjectId: userObjectId,
             role: AzRuntimeMode.OboParent,
-            timestampUtc: DateTimeOffset.UtcNow);
+            timestampUtc: DateTimeOffset.UtcNow,
+            serializedClaimsPrincipal: serializedClaimsPrincipal);
     }
 }

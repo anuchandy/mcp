@@ -242,6 +242,10 @@ public sealed class ServerToolLoader(IMcpDiscoveryStrategy serverDiscoveryStrate
                 {
                     parameters["userObjectId"] = request.UserObjectId;
                 }
+                if (!string.IsNullOrWhiteSpace(request.SerializedClaimsPrincipal) && !parameters.ContainsKey("serializedClaimsPrincipal"))
+                {
+                    parameters["serializedClaimsPrincipal"] = request.SerializedClaimsPrincipal;
+                }
             }
             var toolCallResponse = await client.CallToolAsync(command, parameters, cancellationToken: cancellationToken);
             if (toolCallResponse.IsError is true)
