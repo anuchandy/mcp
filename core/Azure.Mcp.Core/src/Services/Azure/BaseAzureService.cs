@@ -26,6 +26,7 @@ public abstract class BaseAzureService(ITenantService? tenantService = null, ILo
     private readonly ITenantService? _tenantService = tenantService;
     private readonly ILoggerFactory? _loggerFactory = loggerFactory;
     private readonly IServiceProvider? _serviceProvider = serviceProvider;
+    private readonly IOboTokenCredentialFactory? _oboFactory = serviceProvider?.GetService<IOboTokenCredentialFactory>();
 
     protected ILoggerFactory LoggerFactory => _loggerFactory ?? Microsoft.Extensions.Logging.Abstractions.NullLoggerFactory.Instance;
 
@@ -68,9 +69,7 @@ public abstract class BaseAzureService(ITenantService? tenantService = null, ILo
 
     protected async Task<TokenCredential> GetCredential(string? tenant = null)
     {
-        // TODO: Direct TokenCredential resolution removed to eliminate security vulnerability
-        // OBO functionality temporarily disabled until factory pattern is implemented
-        
+        // Fallback to existing credential chain for backward compatibility when no user context
         var tenantId = string.IsNullOrEmpty(tenant) ? null : await ResolveTenantIdAsync(tenant);
         try
         {
@@ -81,6 +80,39 @@ public abstract class BaseAzureService(ITenantService? tenantService = null, ILo
             }
 
             // Fallback to default credential chain
+            ILogger<CustomChainedCredential>? logger = _loggerFactory?.CreateLogger<CustomChainedCredential>();
+            _credential = new CustomChainedCredential(tenantId, logger);
+            _lastTenantId = tenantId;
+            return _credential;
+        }
+        catch (Exception ex)
+        {
+            throw new Exception($"Failed to get credential: {ex.Message}", ex);
+        }
+    }
+
+    protected async Task<TokenCredential> GetCredential(McpUserContext userContext, string? tenant = null)
+    {
+        if (_oboFactory != null)
+        {
+            // If we have an OBO factory, handle OBO authentication scenarios
+            if (userContext.IsAuthenticated == false)
+            {
+                // If user context is not authenticated, throw authentication error
+                throw new UnauthorizedAccessException("User context is provided but user is not authenticated. OBO authentication requires an authenticated user.");
+            }
+            return _oboFactory.Get(userContext);
+        }
+        
+        var tenantId = string.IsNullOrEmpty(tenant) ? null : await ResolveTenantIdAsync(tenant);
+        try
+        {
+            // Return cached credential if it exists and tenant ID hasn't changed
+            if (_credential != null && _lastTenantId == tenantId)
+            {
+                return _credential;
+            }
+
             ILogger<CustomChainedCredential>? logger = _loggerFactory?.CreateLogger<CustomChainedCredential>();
             _credential = new CustomChainedCredential(tenantId, logger);
             _lastTenantId = tenantId;

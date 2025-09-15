@@ -26,12 +26,12 @@ public sealed class NamedPipeClientService
     /// <summary>
     /// Initializes a new instance of the <see cref="NamedPipeClientService"/> class.
     /// </summary>
-    /// <param name="parentProcessId">The process ID of the OBO Parent process hosting the broker service.</param>
+    /// <param name="pipeName">The name of the named pipe to connect to for broker communication.</param>
     /// <param name="logger">The logger for diagnostic information.</param>
-    public NamedPipeClientService(int parentProcessId, ILogger<NamedPipeClientService> logger)
+    public NamedPipeClientService(string pipeName, ILogger<NamedPipeClientService> logger)
     {
         _logger = logger ?? throw new ArgumentNullException(nameof(logger));
-        _pipeName = $"azmcp_broker_{parentProcessId}";
+        _pipeName = pipeName ?? throw new ArgumentNullException(nameof(pipeName));
         _connectionTimeout = TimeSpan.FromSeconds(10);
         _maxRetryAttempts = 3;
     }
@@ -39,18 +39,18 @@ public sealed class NamedPipeClientService
     /// <summary>
     /// Initializes a new instance of the <see cref="NamedPipeClientService"/> class with custom settings.
     /// </summary>
-    /// <param name="parentProcessId">The process ID of the OBO Parent process hosting the broker service.</param>
+    /// <param name="pipeName">The name of the named pipe to connect to for broker communication.</param>
     /// <param name="connectionTimeout">The timeout for establishing pipe connections.</param>
     /// <param name="maxRetryAttempts">The maximum number of retry attempts for failed requests.</param>
     /// <param name="logger">The logger for diagnostic information.</param>
     public NamedPipeClientService(
-        int parentProcessId, 
+        string pipeName, 
         TimeSpan connectionTimeout, 
         int maxRetryAttempts, 
         ILogger<NamedPipeClientService> logger)
     {
         _logger = logger ?? throw new ArgumentNullException(nameof(logger));
-        _pipeName = $"azmcp_broker_{parentProcessId}";
+        _pipeName = pipeName ?? throw new ArgumentNullException(nameof(pipeName));
         _connectionTimeout = connectionTimeout;
         _maxRetryAttempts = Math.Max(1, maxRetryAttempts);
     }

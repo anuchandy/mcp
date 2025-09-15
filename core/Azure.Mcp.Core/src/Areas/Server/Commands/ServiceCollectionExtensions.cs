@@ -98,8 +98,8 @@ public static class AzureMcpServiceCollectionExtensions
             services.AddHttpContextAccessor();
             services.AddScoped<IAuthenticationContext, HttpAuthenticationContext>();
             
-            // TODO: TokenCredential registration removed to eliminate security vulnerability
-            // Will be replaced with factory pattern in upcoming phases
+            // Register OBO Token Credential Factory for parent processes
+            services.AddSingleton<IOboTokenCredentialFactory, OboTokenCredentialFactory>();
             
             // Register broker service infrastructure for inter-process token communication
             // Named pipes are supported on Windows, Linux, and macOS
@@ -114,8 +114,12 @@ public static class AzureMcpServiceCollectionExtensions
         {
             services.AddSingleton<IAzMcpRequestContextFactory, OboChildRequestContextFactory>();
             
-            // TODO: TokenCredential registration removed to eliminate security vulnerability  
-            // Will be replaced with factory pattern in upcoming phases
+            // Register OBO Proxy Token Credential Factory for child processes
+            // Named pipes are supported on Windows, Linux, and macOS
+            if (OperatingSystem.IsWindows() || OperatingSystem.IsLinux() || OperatingSystem.IsMacOS())
+            {
+                services.AddSingleton<IOboTokenCredentialFactory, OboProxyTokenCredentialFactory>();
+            }
         }
         else
         {
