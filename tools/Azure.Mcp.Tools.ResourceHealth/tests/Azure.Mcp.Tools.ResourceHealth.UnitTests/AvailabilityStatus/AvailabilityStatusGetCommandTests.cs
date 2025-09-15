@@ -2,6 +2,7 @@
 // Licensed under the MIT License.
 
 using System.Text.Json;
+using Azure.Mcp.Core.Areas.Server.Commands.Runtime;
 using Azure.Mcp.Core.Models.Command;
 using Azure.Mcp.Core.Options;
 using Azure.Mcp.Tools.ResourceHealth.Commands.AvailabilityStatus;
@@ -45,12 +46,12 @@ public class AvailabilityStatusGetCommandTests
             DetailedStatus = "Virtual machine is running normally"
         };
 
-        _resourceHealthService.GetAvailabilityStatusAsync(resourceId, Arg.Any<RetryPolicyOptions>())
+        _resourceHealthService.GetAvailabilityStatusAsync(McpUserContext.Empty, resourceId, Arg.Any<RetryPolicyOptions>())
             .Returns(expectedStatus);
 
         var command = new AvailabilityStatusGetCommand(_logger);
         var args = command.GetCommand().Parse(["--resourceId", resourceId, "--subscription", subscriptionId]);
-        var context = new CommandContext(_serviceProvider);
+        var context = new CommandContext(_serviceProvider, McpUserContext.Empty);
         var response = await command.ExecuteAsync(context, args);
 
         Assert.NotNull(response);
@@ -78,13 +79,13 @@ public class AvailabilityStatusGetCommandTests
         var subscriptionId = "12345678-1234-1234-1234-123456789012";
         var expectedError = "Test error. To mitigate this issue, please refer to the troubleshooting guidelines here at https://aka.ms/azmcp/troubleshooting.";
 
-        _resourceHealthService.GetAvailabilityStatusAsync(resourceId, Arg.Any<RetryPolicyOptions>())
+        _resourceHealthService.GetAvailabilityStatusAsync(McpUserContext.Empty,resourceId, Arg.Any<RetryPolicyOptions>())
             .ThrowsAsync(new Exception("Test error"));
 
         var command = new AvailabilityStatusGetCommand(_logger);
 
         var args = command.GetCommand().Parse(["--resourceId", resourceId, "--subscription", subscriptionId]);
-        var context = new CommandContext(_serviceProvider);
+        var context = new CommandContext(_serviceProvider, McpUserContext.Empty);
 
         var response = await command.ExecuteAsync(context, args);
 
@@ -114,7 +115,7 @@ public class AvailabilityStatusGetCommandTests
 
         var args = command.GetCommand().Parse([.. argsList]);
 
-        var context = new CommandContext(_serviceProvider);
+        var context = new CommandContext(_serviceProvider, McpUserContext.Empty);
         var response = await command.ExecuteAsync(context, args);
 
         Assert.NotNull(response);

@@ -68,6 +68,7 @@ public sealed class QueuePeekCommand(ILogger<QueuePeekCommand> logger) : Subscri
         {
             var service = context.GetService<IServiceBusService>();
             var messages = await service.PeekQueueMessages(
+                context.UserContext,
                 options.Namespace!,
                 options.Name!,
                 options.MaxMessages ?? 1,

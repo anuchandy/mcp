@@ -66,6 +66,7 @@ public sealed class SubscriptionDetailsCommand(ILogger<SubscriptionDetailsComman
         {
             var service = context.GetService<IServiceBusService>();
             var details = await service.GetSubscriptionDetails(
+                context.UserContext,
                 options.Namespace!,
                 options.TopicName!,
                 options.SubscriptionName!,

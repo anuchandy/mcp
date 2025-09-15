@@ -43,6 +43,7 @@ public sealed class TableListCommand(ILogger<TableListCommand> logger) : BaseDat
             if (UseClusterUri(options))
             {
                 tableNames = await kusto.ListTables(
+                    context.UserContext,
                     options.ClusterUri!,
                     options.Database!,
                     options.Tenant,
@@ -52,6 +53,7 @@ public sealed class TableListCommand(ILogger<TableListCommand> logger) : BaseDat
             else
             {
                 tableNames = await kusto.ListTables(
+                    context.UserContext,
                     options.Subscription!,
                     options.ClusterName!,
                     options.Database!,

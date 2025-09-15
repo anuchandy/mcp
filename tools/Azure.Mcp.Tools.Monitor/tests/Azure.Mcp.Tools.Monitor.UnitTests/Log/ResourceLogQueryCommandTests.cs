@@ -3,6 +3,7 @@
 
 using System.CommandLine;
 using System.Text.Json.Nodes;
+using Azure.Mcp.Core.Areas.Server.Commands.Runtime;
 using Azure.Mcp.Core.Models.Command;
 using Azure.Mcp.Core.Options;
 using Azure.Mcp.Tools.Monitor.Commands.Log;
@@ -42,7 +43,7 @@ public sealed class ResourceLogQueryCommandTests
         _serviceProvider = collection.BuildServiceProvider();
 
         _command = new(_logger);
-        _context = new(_serviceProvider);
+        _context = new CommandContext(_serviceProvider, McpUserContext.Empty);
         _commandDefinition = _command.GetCommand();
     }
 
@@ -63,6 +64,7 @@ public sealed class ResourceLogQueryCommandTests
                 JsonNode.Parse(@"{""TimeGenerated"": ""2023-01-01T12:01:00Z"", ""Message"": ""Another resource log entry""}") ?? JsonNode.Parse("{}") ?? new JsonObject()
             };
             _monitorService.QueryResourceLogs(
+                Arg.Any<McpUserContext>(),
                 _knownSubscription,
                 _knownResourceId,
                 _knownQuery,
@@ -101,6 +103,7 @@ public sealed class ResourceLogQueryCommandTests
             JsonNode.Parse($@"{{""TimeGenerated"": ""2023-01-01T12:02:00Z"", ""ResourceId"": ""{_knownResourceId}"", ""Level"": ""Error""}}") ?? new JsonObject()
         };
         _monitorService.QueryResourceLogs(
+            Arg.Any<McpUserContext>(),
             _knownSubscription,
             _knownResourceId,
             _knownQuery,
@@ -122,6 +125,7 @@ public sealed class ResourceLogQueryCommandTests
 
         // Verify the mock was called
         await _monitorService.Received(1).QueryResourceLogs(
+            Arg.Any<McpUserContext>(),
             _knownSubscription,
             _knownResourceId,
             _knownQuery,
@@ -138,6 +142,7 @@ public sealed class ResourceLogQueryCommandTests
         // Arrange
         var mockResults = new List<JsonNode> { JsonNode.Parse(@"{""result"": ""data""}") ?? new JsonObject() };
         _monitorService.QueryResourceLogs(
+            Arg.Any<McpUserContext>(),
             _knownSubscription,
             _knownResourceId,
             _knownQuery,
@@ -156,6 +161,7 @@ public sealed class ResourceLogQueryCommandTests
         // Assert
         Assert.Equal(200, response.Status);
         await _monitorService.Received(1).QueryResourceLogs(
+            Arg.Any<McpUserContext>(),
             _knownSubscription,
             _knownResourceId,
             _knownQuery,
@@ -172,6 +178,7 @@ public sealed class ResourceLogQueryCommandTests
         // Arrange
         var mockResults = new List<JsonNode> { JsonNode.Parse(@"{""result"": ""data""}") ?? new JsonObject() };
         _monitorService.QueryResourceLogs(
+            Arg.Any<McpUserContext>(),
             _knownSubscription,
             _knownResourceId,
             _knownQuery,
@@ -190,6 +197,7 @@ public sealed class ResourceLogQueryCommandTests
         // Assert
         Assert.Equal(200, response.Status);
         await _monitorService.Received(1).QueryResourceLogs(
+            Arg.Any<McpUserContext>(),
             _knownSubscription,
             _knownResourceId,
             _knownQuery,
@@ -205,6 +213,7 @@ public sealed class ResourceLogQueryCommandTests
     {
         // Arrange
         _monitorService.QueryResourceLogs(
+            Arg.Any<McpUserContext>(),
             _knownSubscription,
             _knownResourceId,
             _knownQuery,
@@ -235,6 +244,7 @@ public sealed class ResourceLogQueryCommandTests
         var table = "VMEvents";
         var mockResults = new List<JsonNode> { JsonNode.Parse(@"{""result"": ""vm data""}") ?? new JsonObject() };
         _monitorService.QueryResourceLogs(
+            Arg.Any<McpUserContext>(),
             _knownSubscription,
             complexResourceId,
             query,
@@ -253,6 +263,7 @@ public sealed class ResourceLogQueryCommandTests
         // Assert
         Assert.Equal(200, response.Status);
         await _monitorService.Received(1).QueryResourceLogs(
+            Arg.Any<McpUserContext>(),
             _knownSubscription,
             complexResourceId,
             query,

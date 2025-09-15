@@ -39,6 +39,7 @@ public sealed class ContainerListCommand(ILogger<ContainerListCommand> logger) :
         {
             var cosmosService = context.GetService<ICosmosService>();
             var containers = await cosmosService.ListContainers(
+                context.UserContext,
                 options.Account!,
                 options.Database!,
                 options.Subscription!,

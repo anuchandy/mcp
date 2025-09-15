@@ -4,6 +4,7 @@
 using System.Runtime.InteropServices;
 using System.Text.Json;
 using System.Text.Json.Serialization;
+using Azure.Mcp.Core.Areas.Server.Commands.Runtime;
 using Azure.Mcp.Core.Models.Command;
 using Azure.Mcp.Core.Services.ProcessExecution;
 using Azure.Mcp.Tests;
@@ -43,7 +44,7 @@ public sealed class AzCommandTests
             var command = new AzCommand(_logger);
 
             var args = command.GetCommand().Parse("--command \"group list\"");
-            var context = new CommandContext(_serviceProvider);
+            var context = new CommandContext(_serviceProvider, McpUserContext.Empty);
 
             var expectedOutput = """{"value":[{"id":"/subscriptions/12345678-1234-1234-1234-123456789012/resourceGroups/test-rg","name":"test-rg","type":"Microsoft.Resources/resourceGroups","location":"eastus","properties":{"provisioningState":"Succeeded"}}]}""";
             var expectedJson = JsonDocument.Parse(expectedOutput).RootElement.Clone();
@@ -88,7 +89,7 @@ public sealed class AzCommandTests
         var command = new AzCommand(_logger);
 
         var args = command.GetCommand().Parse("--command \"group invalid-command\"");
-        var context = new CommandContext(_serviceProvider);
+        var context = new CommandContext(_serviceProvider, McpUserContext.Empty);
 
         var errorMessage = "Error: az group: 'invalid-command' is not an az command.";
 
@@ -115,7 +116,7 @@ public sealed class AzCommandTests
         var command = new AzCommand(_logger);
 
         var args = command.GetCommand().Parse("--command \"group list\"");
-        var context = new CommandContext(_serviceProvider);
+        var context = new CommandContext(_serviceProvider, McpUserContext.Empty);
 
         var exceptionMessage = "Azure CLI executable not found";
 
@@ -143,7 +144,7 @@ public sealed class AzCommandTests
         var command = new AzCommand(_logger);
 
         var args = command.GetCommand().Parse(""); // No command specified
-        var context = new CommandContext(_serviceProvider);
+        var context = new CommandContext(_serviceProvider, McpUserContext.Empty);
 
         // Act
         var response = await command.ExecuteAsync(context, args);
@@ -160,7 +161,7 @@ public sealed class AzCommandTests
         var command = new AzCommand(_logger);
 
         var args = command.GetCommand().Parse("--command \"group list --query name\"");
-        var context = new CommandContext(_serviceProvider);
+        var context = new CommandContext(_serviceProvider, McpUserContext.Empty);
 
         var nonJsonOutput = "test-rg1\ntest-rg2";
 

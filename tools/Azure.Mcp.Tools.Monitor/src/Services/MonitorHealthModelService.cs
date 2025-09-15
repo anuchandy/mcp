@@ -3,6 +3,7 @@
 
 using System.Text.Json.Nodes;
 using Azure.Core;
+using Azure.Mcp.Core.Areas.Server.Commands.Runtime;
 using Azure.Mcp.Core.Options;
 using Azure.Mcp.Core.Services.Azure;
 using Azure.Mcp.Core.Services.Azure.Tenant;
@@ -27,6 +28,7 @@ public class MonitorHealthModelService(ITenantService tenantService, IHttpClient
     /// <summary>
     /// Retrieves the health information for a specific entity in a health model.
     /// </summary>
+    /// <param name="context">User context for authentication and authorization</param>
     /// <param name="entity">The identifier of the entity whose health is being queried.</param>
     /// <param name="healthModelName">The name of the health model to query.</param>
     /// <param name="resourceGroupName">The name of the resource group containing the health model.</param>
@@ -38,6 +40,7 @@ public class MonitorHealthModelService(ITenantService tenantService, IHttpClient
     /// <exception cref="ArgumentException">Thrown when required parameters are missing or invalid.</exception>
     /// <exception cref="Exception">Thrown when parsing the health response fails.</exception>
     public async Task<JsonNode> GetEntityHealth(
+        McpUserContext context,
         string entity,
         string healthModelName,
         string resourceGroupName,

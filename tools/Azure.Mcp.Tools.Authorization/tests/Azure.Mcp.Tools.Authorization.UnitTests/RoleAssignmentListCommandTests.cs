@@ -3,6 +3,7 @@
 
 using System.Text.Json;
 using System.Text.Json.Serialization;
+using Azure.Mcp.Core.Areas.Server.Commands.Runtime;
 using Azure.Mcp.Core.Models.Command;
 using Azure.Mcp.Core.Options;
 using Azure.Mcp.Tools.Authorization.Commands;
@@ -69,6 +70,7 @@ public class RoleAssignmentListCommandTests
             }
         };
         _authorizationService.ListRoleAssignments(
+                Arg.Any<McpUserContext>(),
                 Arg.Is(scope),
                 Arg.Any<string>(),
                 Arg.Any<RetryPolicyOptions>())
@@ -78,7 +80,7 @@ public class RoleAssignmentListCommandTests
             "--subscription", subscriptionId,
             "--scope", scope,
         ]);
-        var context = new CommandContext(_serviceProvider);
+        var context = new CommandContext(_serviceProvider, McpUserContext.Empty);
 
         // Act
         var response = await command.ExecuteAsync(context, args);
@@ -100,7 +102,7 @@ public class RoleAssignmentListCommandTests
         // Arrange
         var subscriptionId = "00000000-0000-0000-0000-000000000001";
         var scope = $"/subscriptions/{subscriptionId}/resourceGroups/rg1";
-        _authorizationService.ListRoleAssignments(scope, null, null)
+        _authorizationService.ListRoleAssignments(McpUserContext.Empty, scope, null, null)
             .Returns([]);
 
         var command = new RoleAssignmentListCommand(_logger);
@@ -108,7 +110,7 @@ public class RoleAssignmentListCommandTests
             "--subscription", subscriptionId,
             "--scope", scope
         ]);
-        var context = new CommandContext(_serviceProvider);
+        var context = new CommandContext(_serviceProvider, McpUserContext.Empty);
 
         // Act
         var response = await command.ExecuteAsync(context, args);
@@ -126,7 +128,7 @@ public class RoleAssignmentListCommandTests
         var subscriptionId = "00000000-0000-0000-0000-000000000001";
         var scope = $"/subscriptions/{subscriptionId}/resourceGroups/rg1";
 
-        _authorizationService.ListRoleAssignments(scope, null, Arg.Any<RetryPolicyOptions>())
+        _authorizationService.ListRoleAssignments(Arg.Any<McpUserContext>(), scope, null, Arg.Any<RetryPolicyOptions>())
             .ThrowsAsync(new Exception(expectedError));
 
         var command = new RoleAssignmentListCommand(_logger);
@@ -134,7 +136,7 @@ public class RoleAssignmentListCommandTests
             "--subscription", subscriptionId,
             "--scope", scope
         ]);
-        var context = new CommandContext(_serviceProvider);
+        var context = new CommandContext(_serviceProvider, McpUserContext.Empty);
 
         // Act
         var response = await command.ExecuteAsync(context, args);

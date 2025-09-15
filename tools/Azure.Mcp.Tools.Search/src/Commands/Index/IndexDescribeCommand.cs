@@ -64,6 +64,7 @@ public sealed class IndexDescribeCommand(ILogger<IndexDescribeCommand> logger) :
             var searchService = context.GetService<ISearchService>();
 
             var indexDefinition = await searchService.DescribeIndex(
+                context.UserContext,
                 options.Service!,
                 options.Index!,
                 options.RetryPolicy);

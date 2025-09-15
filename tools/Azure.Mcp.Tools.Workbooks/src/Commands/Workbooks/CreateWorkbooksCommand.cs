@@ -65,6 +65,7 @@ public sealed class CreateWorkbooksCommand(ILogger<CreateWorkbooksCommand> logge
         {
             var workbooksService = context.GetService<IWorkbooksService>();
             var createdWorkbook = await workbooksService.CreateWorkbook(
+                context.UserContext,
                 options.Subscription!,
                 options.ResourceGroup!,
                 options.DisplayName!,

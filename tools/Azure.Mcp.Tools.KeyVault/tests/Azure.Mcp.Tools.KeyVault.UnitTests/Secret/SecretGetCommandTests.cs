@@ -4,6 +4,7 @@
 using System.CommandLine;
 using System.Text.Json;
 using System.Text.Json.Serialization;
+using Azure.Mcp.Core.Areas.Server.Commands.Runtime;
 using Azure.Mcp.Core.Models.Command;
 using Azure.Mcp.Core.Options;
 using Azure.Mcp.Tools.KeyVault.Commands.Secret;
@@ -42,7 +43,7 @@ public class SecretGetCommandTests
 
         _serviceProvider = collection.BuildServiceProvider();
         _command = new(_logger);
-        _context = new(_serviceProvider);
+        _context = new CommandContext(_serviceProvider, McpUserContext.Empty);
         _commandDefinition = _command.GetCommand();
 
         _knownKeyVaultSecret = new KeyVaultSecret(_knownSecretName, _knownSecretValue);
@@ -53,6 +54,7 @@ public class SecretGetCommandTests
     {
         // Arrange
         _keyVaultService.GetSecret(
+            Arg.Any<McpUserContext>(),
             Arg.Is(_knownVaultName),
             Arg.Is(_knownSecretName),
             Arg.Is(_knownSubscriptionId),
@@ -108,6 +110,7 @@ public class SecretGetCommandTests
         var expectedError = "Test error";
 
         _keyVaultService.GetSecret(
+            Arg.Any<McpUserContext>(),
             Arg.Any<string>(),
             Arg.Any<string>(),
             Arg.Any<string>(),

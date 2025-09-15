@@ -3,6 +3,7 @@
 
 using System.CommandLine;
 using System.Text.Json;
+using Azure.Mcp.Core.Areas.Server.Commands.Runtime;
 using Azure.Mcp.Core.Models.Command;
 using Azure.Mcp.Tools.Quota.Commands.Usage;
 using Azure.Mcp.Tools.Quota.Services;
@@ -66,6 +67,7 @@ public sealed class CheckCommandTests
         };
 
         _quotaService.GetAzureQuotaAsync(
+                Arg.Any<McpUserContext>(),
                 Arg.Is<List<string>>(list =>
                     list.Count == 2 &&
                     list.Contains("Microsoft.App") &&
@@ -80,7 +82,7 @@ public sealed class CheckCommandTests
             "--resource-types", resourceTypes
         ]);
 
-        var context = new CommandContext(_serviceProvider);
+        var context = new CommandContext(_serviceProvider, McpUserContext.Empty);
 
         // Act
         var result = await _command.ExecuteAsync(context, args);
@@ -92,6 +94,7 @@ public sealed class CheckCommandTests
 
         // Verify the service was called with the correct parameters
         await _quotaService.Received(1).GetAzureQuotaAsync(
+            Arg.Any<McpUserContext>(),
             Arg.Is<List<string>>(list =>
                 list.Count == 2 &&
                 list.Contains("Microsoft.App") &&
@@ -136,6 +139,7 @@ public sealed class CheckCommandTests
         var resourceTypes = "";
 
         _quotaService.GetAzureQuotaAsync(
+                Arg.Any<McpUserContext>(),
                 Arg.Any<List<string>>(),
                 subscriptionId,
                 region)
@@ -147,7 +151,7 @@ public sealed class CheckCommandTests
             "--resource-types", resourceTypes
         ]);
 
-        var context = new CommandContext(_serviceProvider);
+        var context = new CommandContext(_serviceProvider, McpUserContext.Empty);
 
         // Act
         var result = await _command.ExecuteAsync(context, args);
@@ -167,6 +171,7 @@ public sealed class CheckCommandTests
         var expectedException = new Exception("Service error occurred");
 
         _quotaService.GetAzureQuotaAsync(
+                Arg.Any<McpUserContext>(),
                 Arg.Any<List<string>>(),
                 subscriptionId,
                 region)
@@ -178,7 +183,7 @@ public sealed class CheckCommandTests
             "--resource-types", resourceTypes
         ]);
 
-        var context = new CommandContext(_serviceProvider);
+        var context = new CommandContext(_serviceProvider, McpUserContext.Empty);
 
         // Act
         var result = await _command.ExecuteAsync(context, args);
@@ -205,6 +210,7 @@ public sealed class CheckCommandTests
         };
 
         _quotaService.GetAzureQuotaAsync(
+                Arg.Any<McpUserContext>(),
                 Arg.Is<List<string>>(list =>
                     list.Count == 3 &&
                     list.Contains("Microsoft.Web/sites") &&
@@ -220,7 +226,7 @@ public sealed class CheckCommandTests
             "--resource-types", resourceTypes
         ]);
 
-        var context = new CommandContext(_serviceProvider);
+        var context = new CommandContext(_serviceProvider, McpUserContext.Empty);
 
         // Act
         var result = await _command.ExecuteAsync(context, args);
@@ -231,6 +237,7 @@ public sealed class CheckCommandTests
 
         // Verify the service was called with correctly parsed resource types
         await _quotaService.Received(1).GetAzureQuotaAsync(
+            Arg.Any<McpUserContext>(),
             Arg.Is<List<string>>(list =>
                 list.Count == 3 &&
                 list.Contains("Microsoft.Web/sites") &&
@@ -249,6 +256,7 @@ public sealed class CheckCommandTests
         var resourceTypes = "Microsoft.App";
 
         _quotaService.GetAzureQuotaAsync(
+                Arg.Any<McpUserContext>(),
                 Arg.Any<List<string>>(),
                 subscriptionId,
                 region)
@@ -260,7 +268,7 @@ public sealed class CheckCommandTests
             "--resource-types", resourceTypes
         ]);
 
-        var context = new CommandContext(_serviceProvider);
+        var context = new CommandContext(_serviceProvider, McpUserContext.Empty);
 
         // Act
         var result = await _command.ExecuteAsync(context, args);
@@ -285,7 +293,7 @@ public sealed class CheckCommandTests
             "--resource-types", resourceTypes
         ]);
 
-        var context = new CommandContext(_serviceProvider);
+        var context = new CommandContext(_serviceProvider, McpUserContext.Empty);
 
         // Act
         var result = await _command.ExecuteAsync(context, args);
@@ -311,6 +319,7 @@ public sealed class CheckCommandTests
         };
 
         _quotaService.GetAzureQuotaAsync(
+                Arg.Any<McpUserContext>(),
                 Arg.Is<List<string>>(list =>
                     list.Count == 3 &&
                     list.Contains("MICROSOFT.APP") &&
@@ -326,7 +335,7 @@ public sealed class CheckCommandTests
             "--resource-types", resourceTypes
         ]);
 
-        var context = new CommandContext(_serviceProvider);
+        var context = new CommandContext(_serviceProvider, McpUserContext.Empty);
 
         // Act
         var result = await _command.ExecuteAsync(context, args);
@@ -338,6 +347,7 @@ public sealed class CheckCommandTests
 
         // Verify the service was called with the correct casing preserved
         await _quotaService.Received(1).GetAzureQuotaAsync(
+            Arg.Any<McpUserContext>(),
             Arg.Is<List<string>>(list =>
                 list.Count == 3 &&
                 list.Contains("MICROSOFT.APP") &&
@@ -367,6 +377,7 @@ public sealed class CheckCommandTests
         };
 
         _quotaService.GetAzureQuotaAsync(
+                Arg.Any<McpUserContext>(),
                 Arg.Is<List<string>>(list =>
                     list.Count == 1 &&
                     list.Contains("Microsoft.UnsupportedProvider/resourceType")),
@@ -380,7 +391,7 @@ public sealed class CheckCommandTests
             "--resource-types", resourceTypes
         ]);
 
-        var context = new CommandContext(_serviceProvider);
+        var context = new CommandContext(_serviceProvider, McpUserContext.Empty);
 
         // Act
         var result = await _command.ExecuteAsync(context, args);
@@ -392,6 +403,7 @@ public sealed class CheckCommandTests
 
         // Verify the service was called with the correct parameters
         await _quotaService.Received(1).GetAzureQuotaAsync(
+            Arg.Any<McpUserContext>(),
             Arg.Is<List<string>>(list =>
                 list.Count == 1 &&
                 list.Contains("Microsoft.UnsupportedProvider/resourceType")),
@@ -443,6 +455,7 @@ public sealed class CheckCommandTests
         }
 
         _quotaService.GetAzureQuotaAsync(
+                Arg.Any<McpUserContext>(),
                 Arg.Is<List<string>>(list => list.Count == 50),
                 subscriptionId,
                 region)
@@ -454,7 +467,7 @@ public sealed class CheckCommandTests
             "--resource-types", resourceTypes
         ]);
 
-        var context = new CommandContext(_serviceProvider);
+        var context = new CommandContext(_serviceProvider, McpUserContext.Empty);
 
         // Act
         var result = await _command.ExecuteAsync(context, args);
@@ -466,6 +479,7 @@ public sealed class CheckCommandTests
 
         // Verify the service was called with all 50 resource types
         await _quotaService.Received(1).GetAzureQuotaAsync(
+            Arg.Any<McpUserContext>(),
             Arg.Is<List<string>>(list => list.Count == 50),
             subscriptionId,
             region);
@@ -504,6 +518,7 @@ public sealed class CheckCommandTests
         };
 
         _quotaService.GetAzureQuotaAsync(
+                Arg.Any<McpUserContext>(),
                 Arg.Is<List<string>>(list =>
                     list.Count == 1 &&
                     list.Contains("Microsoft.Storage/storageAccounts")),
@@ -517,7 +532,7 @@ public sealed class CheckCommandTests
             "--resource-types", resourceTypes
         ]);
 
-        var context = new CommandContext(_serviceProvider);
+        var context = new CommandContext(_serviceProvider, McpUserContext.Empty);
 
         // Act
         var result = await _command.ExecuteAsync(context, args);
@@ -529,6 +544,7 @@ public sealed class CheckCommandTests
 
         // Verify the service was called with the correct parameters
         await _quotaService.Received(1).GetAzureQuotaAsync(
+            Arg.Any<McpUserContext>(),
             Arg.Is<List<string>>(list =>
                 list.Count == 1 &&
                 list.Contains("Microsoft.Storage/storageAccounts")),

@@ -2,6 +2,7 @@
 // Licensed under the MIT License.
 
 using System.CommandLine;
+using Azure.Mcp.Core.Areas.Server.Commands.Runtime;
 using Azure.Mcp.Core.Models.Command;
 using Azure.Mcp.Tools.Aks.Commands.Cluster;
 using Azure.Mcp.Tools.Aks.Services;
@@ -29,7 +30,7 @@ public class ClusterGetCommandTests
         var collection = new ServiceCollection().AddSingleton(_aksService);
         _serviceProvider = collection.BuildServiceProvider();
         _command = new(_logger);
-        _context = new(_serviceProvider);
+        _context = new CommandContext(_serviceProvider, McpUserContext.Empty);
         _commandDefinition = _command.GetCommand();
     }
 
@@ -62,6 +63,7 @@ public class ClusterGetCommandTests
             };
 
             _aksService.GetCluster(
+                Arg.Any<McpUserContext>(),
                 Arg.Any<string>(),
                 Arg.Any<string>(),
                 Arg.Any<string>(),
@@ -102,7 +104,7 @@ public class ClusterGetCommandTests
             ProvisioningState = "Succeeded"
         };
 
-        _aksService.GetCluster("test-subscription", "test-cluster", "test-rg", null, Arg.Any<Core.Options.RetryPolicyOptions>())
+        _aksService.GetCluster(Arg.Any<McpUserContext>(), "test-subscription", "test-cluster", "test-rg", null, Arg.Any<Core.Options.RetryPolicyOptions>())
             .Returns(expectedCluster);
 
         var parseResult = _commandDefinition.Parse(["--subscription", "test-subscription", "--resource-group", "test-rg", "--cluster", "test-cluster"]);
@@ -120,7 +122,7 @@ public class ClusterGetCommandTests
     public async Task ExecuteAsync_ReturnsNullWhenClusterNotFound()
     {
         // Arrange
-        _aksService.GetCluster("test-subscription", "nonexistent-cluster", "test-rg", null, Arg.Any<Core.Options.RetryPolicyOptions>())
+        _aksService.GetCluster(Arg.Any<McpUserContext>(), "test-subscription", "nonexistent-cluster", "test-rg", null, Arg.Any<Core.Options.RetryPolicyOptions>())
             .Returns((Models.Cluster?)null);
 
         var parseResult = _commandDefinition.Parse(["--subscription", "test-subscription", "--resource-group", "test-rg", "--cluster", "nonexistent-cluster"]);
@@ -138,7 +140,7 @@ public class ClusterGetCommandTests
     public async Task ExecuteAsync_HandlesServiceErrors()
     {
         // Arrange
-        _aksService.GetCluster(Arg.Any<string>(), Arg.Any<string>(), Arg.Any<string>(), Arg.Any<string>(), Arg.Any<Core.Options.RetryPolicyOptions>())
+        _aksService.GetCluster(Arg.Any<McpUserContext>(), Arg.Any<string>(), Arg.Any<string>(), Arg.Any<string>(), Arg.Any<string>(), Arg.Any<Core.Options.RetryPolicyOptions>())
             .Returns(Task.FromException<Models.Cluster?>(new Exception("Test error")));
 
         var parseResult = _commandDefinition.Parse(["--subscription", "test-subscription", "--resource-group", "test-rg", "--cluster", "test-cluster"]);
@@ -157,7 +159,7 @@ public class ClusterGetCommandTests
     {
         // Arrange
         var notFoundException = new RequestFailedException(404, "Not Found");
-        _aksService.GetCluster(Arg.Any<string>(), Arg.Any<string>(), Arg.Any<string>(), Arg.Any<string>(), Arg.Any<Core.Options.RetryPolicyOptions>())
+        _aksService.GetCluster(Arg.Any<McpUserContext>(), Arg.Any<string>(), Arg.Any<string>(), Arg.Any<string>(), Arg.Any<string>(), Arg.Any<Core.Options.RetryPolicyOptions>())
             .Returns(Task.FromException<Models.Cluster?>(notFoundException));
 
         var parseResult = _commandDefinition.Parse(["--subscription", "test-subscription", "--resource-group", "test-rg", "--cluster", "test-cluster"]);
@@ -175,7 +177,7 @@ public class ClusterGetCommandTests
     {
         // Arrange
         var forbiddenException = new RequestFailedException(403, "Forbidden");
-        _aksService.GetCluster(Arg.Any<string>(), Arg.Any<string>(), Arg.Any<string>(), Arg.Any<string>(), Arg.Any<Core.Options.RetryPolicyOptions>())
+        _aksService.GetCluster(Arg.Any<McpUserContext>(), Arg.Any<string>(), Arg.Any<string>(), Arg.Any<string>(), Arg.Any<string>(), Arg.Any<Core.Options.RetryPolicyOptions>())
             .Returns(Task.FromException<Models.Cluster?>(forbiddenException));
 
         var parseResult = _commandDefinition.Parse(["--subscription", "test-subscription", "--resource-group", "test-rg", "--cluster", "test-cluster"]);

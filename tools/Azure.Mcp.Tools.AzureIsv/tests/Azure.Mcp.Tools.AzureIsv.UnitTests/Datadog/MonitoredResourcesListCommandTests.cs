@@ -2,6 +2,7 @@
 // Licensed under the MIT License.
 
 using System.Text.Json.Serialization;
+using Azure.Mcp.Core.Areas.Server.Commands.Runtime;
 using Azure.Mcp.Core.Models.Command;
 using Azure.Mcp.Tools.AzureIsv.Commands.Datadog;
 using Azure.Mcp.Tools.AzureIsv.Services;
@@ -38,12 +39,12 @@ public class MonitoredResourcesListCommandTests
             "/subscriptions/1234/resourceGroups/rg-demo/providers/Microsoft.Datadog/monitors/app-demo-1",
             "/subscriptions/1234/resourceGroups/rg-demo/providers/Microsoft.Datadog/monitors/vm-demo-2"
         };
-        _datadogService.ListMonitoredResources(Arg.Is("rg1"), Arg.Is("sub123"), Arg.Is("datadog1"))
+        _datadogService.ListMonitoredResources(Arg.Any<McpUserContext>(), Arg.Is("rg1"), Arg.Is("sub123"), Arg.Is("datadog1"))
             .Returns(expectedResources);
 
         var command = new MonitoredResourcesListCommand(_logger);
         var args = command.GetCommand().Parse($"--subscription sub123 --resource-group rg1 --datadog-resource datadog1");
-        var context = new CommandContext(_serviceProvider);
+        var context = new CommandContext(_serviceProvider, McpUserContext.Empty);
 
         // Act
         var response = await command.ExecuteAsync(context, args);
@@ -57,12 +58,12 @@ public class MonitoredResourcesListCommandTests
     public async Task ExecuteAsync_ReturnsEmpty_WhenNoResources()
     {
         // Arrange
-        _datadogService.ListMonitoredResources("rg1", "sub123", "datadog1")
+        _datadogService.ListMonitoredResources(Arg.Any<McpUserContext>(), "rg1", "sub123", "datadog1")
             .Returns(new List<string>());
 
         var command = new MonitoredResourcesListCommand(_logger);
         var args = command.GetCommand().Parse($"--subscription sub123 --resource-group rg1 --datadog-resource datadog1");
-        var context = new CommandContext(_serviceProvider);
+        var context = new CommandContext(_serviceProvider, McpUserContext.Empty);
 
         // Act
         var response = await command.ExecuteAsync(context, args);
@@ -76,12 +77,12 @@ public class MonitoredResourcesListCommandTests
     {
         // Arrange
         var expectedError = "Missing required arguments: datadog-resource";
-        _datadogService.ListMonitoredResources("rg1", "sub123", "datadog1")
+        _datadogService.ListMonitoredResources(Arg.Any<McpUserContext>(), "rg1", "sub123", "datadog1")
             .ThrowsAsync(new Exception(expectedError));
 
         var command = new MonitoredResourcesListCommand(_logger);
         var args = command.GetCommand().Parse($"--subscription sub123 --resource-group rg1 --datadog-resource datadog1");
-        var context = new CommandContext(_serviceProvider);
+        var context = new CommandContext(_serviceProvider, McpUserContext.Empty);
 
         // Act
         var response = await command.ExecuteAsync(context, args);

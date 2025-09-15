@@ -3,6 +3,7 @@
 
 using System.Text.Json;
 using System.Text.Json.Serialization;
+using Azure.Mcp.Core.Areas.Server.Commands.Runtime;
 using Azure.Mcp.Core.Models.Command;
 using Azure.Mcp.Core.Options;
 using Azure.Mcp.Tools.Search.Commands.Service;
@@ -37,13 +38,13 @@ public class ServiceListCommandTests
     {
         // Arrange
         var expectedServices = new List<string> { "service1", "service2" };
-        _searchService.ListServices(Arg.Any<string>(), Arg.Any<string>(), Arg.Any<RetryPolicyOptions>())
+        _searchService.ListServices(Arg.Any<McpUserContext>(), Arg.Any<string>(), Arg.Any<string>(), Arg.Any<RetryPolicyOptions>())
             .Returns(expectedServices);
 
         var command = new ServiceListCommand(_logger);
 
         var args = command.GetCommand().Parse("--subscription sub123");
-        var context = new CommandContext(_serviceProvider);
+        var context = new CommandContext(_serviceProvider, McpUserContext.Empty);
 
         // Act
         var response = await command.ExecuteAsync(context, args);
@@ -63,13 +64,13 @@ public class ServiceListCommandTests
     public async Task ExecuteAsync_ReturnsNull_WhenNoServices()
     {
         // Arrange
-        _searchService.ListServices(Arg.Any<string>(), Arg.Any<string>(), Arg.Any<RetryPolicyOptions>())
+        _searchService.ListServices(Arg.Any<McpUserContext>(), Arg.Any<string>(), Arg.Any<string>(), Arg.Any<RetryPolicyOptions>())
             .Returns(new List<string>());
 
         var command = new ServiceListCommand(_logger);
 
         var args = command.GetCommand().Parse("--subscription sub123");
-        var context = new CommandContext(_serviceProvider);
+        var context = new CommandContext(_serviceProvider, McpUserContext.Empty);
 
         // Act
         var response = await command.ExecuteAsync(context, args);
@@ -86,13 +87,13 @@ public class ServiceListCommandTests
         var expectedError = "Test error";
         var subscriptionId = "sub123";
 
-        _searchService.ListServices(Arg.Any<string>(), Arg.Any<string>(), Arg.Any<RetryPolicyOptions>())
+        _searchService.ListServices(Arg.Any<McpUserContext>(), Arg.Any<string>(), Arg.Any<string>(), Arg.Any<RetryPolicyOptions>())
             .ThrowsAsync(new Exception(expectedError));
 
         var command = new ServiceListCommand(_logger);
 
         var args = command.GetCommand().Parse($"--subscription {subscriptionId}");
-        var context = new CommandContext(_serviceProvider);
+        var context = new CommandContext(_serviceProvider, McpUserContext.Empty);
 
         // Act
         var response = await command.ExecuteAsync(context, args);

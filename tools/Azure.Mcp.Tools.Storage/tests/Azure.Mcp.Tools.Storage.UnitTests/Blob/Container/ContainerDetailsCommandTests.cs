@@ -4,6 +4,7 @@
 using System.CommandLine;
 using System.Text.Json;
 using System.Text.Json.Serialization;
+using Azure.Mcp.Core.Areas.Server.Commands.Runtime;
 using Azure.Mcp.Core.Models.Command;
 using Azure.Mcp.Core.Options;
 using Azure.Mcp.Tools.Storage.Commands.Blob.Container;
@@ -37,7 +38,7 @@ public class ContainerDetailsCommandTests
         var collection = new ServiceCollection().AddSingleton(_storageService);
         _serviceProvider = collection.BuildServiceProvider();
         _command = new(_logger);
-        _context = new(_serviceProvider);
+        _context = new CommandContext(_serviceProvider, McpUserContext.Empty);
         _commandDefinition = _command.GetCommand();
     }
 
@@ -92,7 +93,7 @@ public class ContainerDetailsCommandTests
             System.Reflection.BindingFlags.Instance | System.Reflection.BindingFlags.Public
             | System.Reflection.BindingFlags.NonPublic)?.SetValue(expectedProperties, true);
 
-        _storageService.GetContainerDetails(Arg.Is(_knownAccount), Arg.Is(_knownContainer),
+        _storageService.GetContainerDetails(Arg.Any<McpUserContext>(), Arg.Is(_knownAccount), Arg.Is(_knownContainer),
             Arg.Is(_knownSubscription), Arg.Any<string>(), Arg.Any<RetryPolicyOptions>())
             .Returns(expectedProperties);
 
@@ -135,7 +136,7 @@ public class ContainerDetailsCommandTests
     {
         // Arrange
         var expectedError = "Test error";
-        _storageService.GetContainerDetails(Arg.Is(_knownAccount), Arg.Is(_knownContainer),
+        _storageService.GetContainerDetails(Arg.Any<McpUserContext>(), Arg.Is(_knownAccount), Arg.Is(_knownContainer),
             Arg.Is(_knownSubscription), Arg.Any<string>(), Arg.Any<RetryPolicyOptions>())
             .ThrowsAsync(new Exception(expectedError));
 

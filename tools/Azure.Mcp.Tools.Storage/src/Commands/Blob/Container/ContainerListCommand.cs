@@ -38,6 +38,7 @@ public sealed class ContainerListCommand(ILogger<ContainerListCommand> logger) :
         {
             var storageService = context.GetService<IStorageService>();
             var containers = await storageService.ListContainers(
+                context.UserContext,
                 options.Account!,
                 options.Subscription!,
                 options.Tenant,

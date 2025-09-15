@@ -109,7 +109,8 @@ public sealed class CommandFactoryToolLoader(
                 IsError = true,
             };
         }
-        var commandContext = new CommandContext(_serviceProvider, Activity.Current);
+        var userContext = McpUserContext.FromRequestContext(request);
+        var commandContext = new CommandContext(_serviceProvider, userContext, Activity.Current);
 
         var realCommand = command.GetCommand();
         ParseResult? commandOptions = null;

@@ -2,6 +2,7 @@
 // Licensed under the MIT License.
 
 using System.CommandLine;
+using Azure.Mcp.Core.Areas.Server.Commands.Runtime;
 using Azure.Mcp.Core.Models.Command;
 using Azure.Mcp.Core.Options;
 using Azure.Mcp.Tools.KeyVault.Commands.Certificate;
@@ -38,7 +39,7 @@ public class CertificateImportCommandTests
         services.AddSingleton(_keyVaultService);
         _serviceProvider = services.BuildServiceProvider();
         _command = new(_logger);
-        _context = new(_serviceProvider);
+        _context = new CommandContext(_serviceProvider, McpUserContext.Empty);
         _commandDefinition = _command.GetCommand();
     }
 
@@ -47,6 +48,7 @@ public class CertificateImportCommandTests
     {
         // Arrange
         _keyVaultService.ImportCertificate(
+            Arg.Any<McpUserContext>(),
             _knownVault,
             _knownCertName,
             _fakePfxBase64,
@@ -67,6 +69,7 @@ public class CertificateImportCommandTests
 
         // Assert
         await _keyVaultService.Received(1).ImportCertificate(
+            Arg.Any<McpUserContext>(),
             _knownVault,
             _knownCertName,
             _fakePfxBase64,
@@ -99,6 +102,7 @@ public class CertificateImportCommandTests
         {
             // Service will throw to avoid constructing a KeyVaultCertificateWithPolicy instance; this still proves validation passed
             _keyVaultService.ImportCertificate(
+                Arg.Any<McpUserContext>(),
                 _knownVault,
                 _knownCertName,
                 _fakePfxBase64,
@@ -117,6 +121,7 @@ public class CertificateImportCommandTests
         {
             Assert.NotEqual(400, response.Status); // could be 500 due to forced exception, but not a validation failure
             await _keyVaultService.Received(1).ImportCertificate(
+                Arg.Any<McpUserContext>(),
                 _knownVault,
                 _knownCertName,
                 _fakePfxBase64,
@@ -136,6 +141,7 @@ public class CertificateImportCommandTests
     {
         var expected = "boom";
         _keyVaultService.ImportCertificate(
+            Arg.Any<McpUserContext>(),
             Arg.Any<string>(),
             Arg.Any<string>(),
             Arg.Any<string>(),
@@ -164,6 +170,7 @@ public class CertificateImportCommandTests
         var pem = "-----BEGIN CERTIFICATE-----\nABCDEF123456\n-----END CERTIFICATE-----";
 
         _keyVaultService.ImportCertificate(
+            Arg.Any<McpUserContext>(),
             _knownVault,
             _knownCertName,
             pem,
@@ -184,6 +191,7 @@ public class CertificateImportCommandTests
 
         // Assert - ensure the PEM (with header) was passed through untouched
         await _keyVaultService.Received(1).ImportCertificate(
+            Arg.Any<McpUserContext>(),
             _knownVault,
             _knownCertName,
             pem,
@@ -200,6 +208,7 @@ public class CertificateImportCommandTests
         var password = "P@ssw0rd!";
 
         _keyVaultService.ImportCertificate(
+            Arg.Any<McpUserContext>(),
             _knownVault,
             _knownCertName,
             _fakePfxBase64,
@@ -219,6 +228,7 @@ public class CertificateImportCommandTests
         var response = await _command.ExecuteAsync(_context, args);
 
         await _keyVaultService.Received(1).ImportCertificate(
+            Arg.Any<McpUserContext>(),
             _knownVault,
             _knownCertName,
             _fakePfxBase64,
@@ -238,6 +248,7 @@ public class CertificateImportCommandTests
         {
             await File.WriteAllBytesAsync(tempPath, new byte[] { 1, 2, 3, 4 }, TestContext.Current.CancellationToken);
             _keyVaultService.ImportCertificate(
+                Arg.Any<McpUserContext>(),
                 _knownVault,
                 _knownCertName,
                 tempPath,
@@ -255,6 +266,7 @@ public class CertificateImportCommandTests
             var response = await _command.ExecuteAsync(_context, args);
             // Assert - ensure the raw path was passed through
             await _keyVaultService.Received(1).ImportCertificate(
+                Arg.Any<McpUserContext>(),
                 _knownVault,
                 _knownCertName,
                 tempPath,
@@ -281,6 +293,7 @@ public class CertificateImportCommandTests
         var errorMessage = $"Error importing certificate '{_knownCertName}' into vault {_knownVault}: The provided certificate-data is neither a file path, raw PEM, nor base64 encoded content.";
 
         _keyVaultService.ImportCertificate(
+            Arg.Any<McpUserContext>(),
             _knownVault,
             _knownCertName,
             invalidData,
@@ -310,6 +323,7 @@ public class CertificateImportCommandTests
         var mismatchMessage = $"Error importing certificate '{_knownCertName}' into vault {_knownVault}: Invalid password or certificate data.";
 
         _keyVaultService.ImportCertificate(
+            Arg.Any<McpUserContext>(),
             _knownVault,
             _knownCertName,
             _fakePfxBase64,

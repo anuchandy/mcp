@@ -2,6 +2,7 @@
 // Licensed under the MIT License.
 
 using System.Text.Json;
+using Azure.Mcp.Core.Areas.Server.Commands.Runtime;
 using Azure.Mcp.Core.Models.Command;
 using Azure.Mcp.Core.Options;
 using Azure.Mcp.Tools.LoadTesting.Commands.LoadTestResource;
@@ -46,7 +47,7 @@ public class TestResourceListCommandTests
     public async Task ExecuteAsync_ReturnsLoadTests_FromResourceGroup()
     {
         var expectedLoadTests = new List<TestResource> { new TestResource { Id = "Id1", Name = "loadTest1" }, new TestResource { Id = "Id2", Name = "loadTest2" } };
-        _service.GetLoadTestResourcesAsync(Arg.Is("sub123"), Arg.Is("resourceGroup123"), Arg.Is((string?)null), Arg.Is("tenant123"), Arg.Any<RetryPolicyOptions>())
+        _service.GetLoadTestResourcesAsync(Arg.Any<McpUserContext>(), Arg.Is("sub123"), Arg.Is("resourceGroup123"), Arg.Is((string?)null), Arg.Is("tenant123"), Arg.Any<RetryPolicyOptions>())
             .Returns(expectedLoadTests);
 
         var command = new TestResourceListCommand(_logger);
@@ -55,7 +56,7 @@ public class TestResourceListCommandTests
             "--resource-group", "resourceGroup123",
             "--tenant", "tenant123"
         ]);
-        var context = new CommandContext(_serviceProvider);
+        var context = new CommandContext(_serviceProvider, McpUserContext.Empty);
         var response = await command.ExecuteAsync(context, args);
         Assert.NotNull(response);
         Assert.NotNull(response.Results);
@@ -75,7 +76,7 @@ public class TestResourceListCommandTests
     public async Task ExecuteAsync_ReturnsLoadTests_FromTestResource()
     {
         var expectedLoadTests = new List<TestResource> { new TestResource { Id = "Id1", Name = "loadTest1" } };
-        _service.GetLoadTestResourcesAsync(Arg.Is("sub123"), Arg.Is("resourceGroup123"), Arg.Is("testResourceName"), Arg.Is("tenant123"), Arg.Any<RetryPolicyOptions>())
+        _service.GetLoadTestResourcesAsync(Arg.Any<McpUserContext>(), Arg.Is("sub123"), Arg.Is("resourceGroup123"), Arg.Is("testResourceName"), Arg.Is("tenant123"), Arg.Any<RetryPolicyOptions>())
             .Returns(expectedLoadTests);
 
         var command = new TestResourceListCommand(_logger);
@@ -85,7 +86,7 @@ public class TestResourceListCommandTests
             "--test-resource-name", "testResourceName",
             "--tenant", "tenant123"
         ]);
-        var context = new CommandContext(_serviceProvider);
+        var context = new CommandContext(_serviceProvider, McpUserContext.Empty);
         var response = await command.ExecuteAsync(context, args);
         Assert.NotNull(response);
         Assert.NotNull(response.Results);
@@ -102,7 +103,7 @@ public class TestResourceListCommandTests
     [Fact]
     public async Task ExecuteAsync_ReturnsLoadTests_WhenLoadTestsNotExist()
     {
-        _service.GetLoadTestResourcesAsync(Arg.Is("sub123"), Arg.Is("resourceGroup123"), Arg.Is("loadTestName"), Arg.Is("tenant123"), Arg.Any<RetryPolicyOptions>())
+        _service.GetLoadTestResourcesAsync(Arg.Any<McpUserContext>(),Arg.Is("sub123"), Arg.Is("resourceGroup123"), Arg.Is("loadTestName"), Arg.Is("tenant123"), Arg.Any<RetryPolicyOptions>())
              .Returns(new List<TestResource>());
 
         var command = new TestResourceListCommand(_logger);
@@ -112,7 +113,7 @@ public class TestResourceListCommandTests
             "--test-resource-name", "loadTestName",
             "--tenant", "tenant123"
         ]);
-        var context = new CommandContext(_serviceProvider);
+        var context = new CommandContext(_serviceProvider, McpUserContext.Empty);
         var response = await command.ExecuteAsync(context, args);
         Assert.NotNull(response);
 
@@ -125,10 +126,10 @@ public class TestResourceListCommandTests
     [Fact]
     public async Task ExecuteAsync_HandlesServiceErrors()
     {
-        _service.GetLoadTestResourcesAsync(Arg.Is("sub123"), Arg.Is("resourceGroup123"), Arg.Is("loadTestName"), Arg.Is("tenant123"), Arg.Any<RetryPolicyOptions>())
+        _service.GetLoadTestResourcesAsync(Arg.Any<McpUserContext>(), Arg.Is("sub123"), Arg.Is("resourceGroup123"), Arg.Is("loadTestName"), Arg.Is("tenant123"), Arg.Any<RetryPolicyOptions>())
             .Returns(Task.FromException<List<TestResource>>(new Exception("Test error")));
 
-        var context = new CommandContext(_serviceProvider);
+        var context = new CommandContext(_serviceProvider, McpUserContext.Empty);
         var parseResult = _command.GetCommand().Parse([
             "--subscription", "sub123",
             "--resource-group", "resourceGroup123",

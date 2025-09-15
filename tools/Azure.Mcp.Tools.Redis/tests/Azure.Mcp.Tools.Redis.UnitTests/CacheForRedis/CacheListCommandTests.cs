@@ -3,6 +3,7 @@
 
 using System.Text.Json;
 using Azure.Mcp.Core.Models;
+using Azure.Mcp.Core.Areas.Server.Commands.Runtime;
 using Azure.Mcp.Core.Models.Command;
 using Azure.Mcp.Core.Options;
 using Azure.Mcp.Tools.Redis.Commands.CacheForRedis;
@@ -37,12 +38,12 @@ public class CacheListCommandTests
     public async Task ExecuteAsync_ReturnsCaches_WhenCachesExist()
     {
         var expectedCaches = new CacheModel[] { new() { Name = "cache1" }, new() { Name = "cache2" } };
-        _redisService.ListCachesAsync("sub123", Arg.Any<string>(), Arg.Any<AuthMethod>(), Arg.Any<RetryPolicyOptions>())
+        _redisService.ListCachesAsync(Arg.Any<McpUserContext>(), "sub123", Arg.Any<string>(), Arg.Any<AuthMethod>(), Arg.Any<RetryPolicyOptions>())
             .Returns(expectedCaches);
 
         var command = new CacheListCommand(_logger);
         var args = command.GetCommand().Parse(["--subscription", "sub123"]);
-        var context = new CommandContext(_serviceProvider);
+        var context = new CommandContext(_serviceProvider, McpUserContext.Empty);
         var response = await command.ExecuteAsync(context, args);
 
         Assert.NotNull(response);
@@ -66,11 +67,11 @@ public class CacheListCommandTests
     [Fact]
     public async Task ExecuteAsync_ReturnsNull_WhenNoCaches()
     {
-        _redisService.ListCachesAsync("sub123").Returns([]);
+        _redisService.ListCachesAsync(Arg.Any<McpUserContext>(), "sub123").Returns([]);
 
         var command = new CacheListCommand(_logger);
         var args = command.GetCommand().Parse(["--subscription", "sub123"]);
-        var context = new CommandContext(_serviceProvider);
+        var context = new CommandContext(_serviceProvider, McpUserContext.Empty);
         var response = await command.ExecuteAsync(context, args);
 
         Assert.NotNull(response);
@@ -81,13 +82,13 @@ public class CacheListCommandTests
     public async Task ExecuteAsync_HandlesException()
     {
         var expectedError = "Test error. To mitigate this issue, please refer to the troubleshooting guidelines here at https://aka.ms/azmcp/troubleshooting.";
-        _redisService.ListCachesAsync("sub123", Arg.Any<string>(), Arg.Any<AuthMethod>(), Arg.Any<RetryPolicyOptions>())
+        _redisService.ListCachesAsync(Arg.Any<McpUserContext>(), "sub123", Arg.Any<string>(), Arg.Any<AuthMethod>(), Arg.Any<RetryPolicyOptions>())
             .ThrowsAsync(new Exception("Test error"));
 
         var command = new CacheListCommand(_logger);
 
         var args = command.GetCommand().Parse(["--subscription", "sub123"]);
-        var context = new CommandContext(_serviceProvider);
+        var context = new CommandContext(_serviceProvider, McpUserContext.Empty);
 
         var response = await command.ExecuteAsync(context, args);
 
@@ -110,7 +111,7 @@ public class CacheListCommandTests
 
         var args = command.GetCommand().Parse([.. argsList]);
 
-        var context = new CommandContext(_serviceProvider);
+        var context = new CommandContext(_serviceProvider, McpUserContext.Empty);
         var response = await command.ExecuteAsync(context, args);
 
         Assert.NotNull(response);

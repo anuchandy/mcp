@@ -4,6 +4,7 @@
 using System.Text.Json;
 using System.Text.Json.Serialization;
 using Azure.Mcp.Core.Models;
+using Azure.Mcp.Core.Areas.Server.Commands.Runtime;
 using Azure.Mcp.Core.Models.Command;
 using Azure.Mcp.Core.Options;
 using Azure.Mcp.Tools.Kusto.Commands;
@@ -45,6 +46,7 @@ public sealed class SampleCommandTests
         if (useClusterUri)
         {
             _kusto.QueryItems(
+                Arg.Any<McpUserContext>(),
                 "https://mycluster.kusto.windows.net",
                 "db1",
                 "table1 | sample 10",
@@ -54,6 +56,7 @@ public sealed class SampleCommandTests
         else
         {
             _kusto.QueryItems(
+                Arg.Any<McpUserContext>(),
                 "sub1", "mycluster", "db1", "table1 | sample 10",
                 Arg.Any<string>(), Arg.Any<AuthMethod?>(), Arg.Any<RetryPolicyOptions>())
                 .Returns(expectedJson);
@@ -61,7 +64,7 @@ public sealed class SampleCommandTests
         var command = new SampleCommand(_logger);
 
         var args = command.GetCommand().Parse(cliArgs);
-        var context = new CommandContext(_serviceProvider);
+        var context = new CommandContext(_serviceProvider, McpUserContext.Empty);
 
         // Act
         var response = await command.ExecuteAsync(context, args);
@@ -86,6 +89,7 @@ public sealed class SampleCommandTests
         if (useClusterUri)
         {
             _kusto.QueryItems(
+                Arg.Any<McpUserContext>(),
                 "https://mycluster.kusto.windows.net",
                 "db1",
                 "table1 | sample 10",
@@ -95,6 +99,7 @@ public sealed class SampleCommandTests
         else
         {
             _kusto.QueryItems(
+                Arg.Any<McpUserContext>(),
                 "sub1", "mycluster", "db1", "table1 | sample 10",
                 Arg.Any<string>(), Arg.Any<AuthMethod?>(), Arg.Any<RetryPolicyOptions>())
                 .Returns(new List<JsonElement>());
@@ -102,7 +107,7 @@ public sealed class SampleCommandTests
         var command = new SampleCommand(_logger);
 
         var args = command.GetCommand().Parse(cliArgs);
-        var context = new CommandContext(_serviceProvider);
+        var context = new CommandContext(_serviceProvider, McpUserContext.Empty);
 
         var response = await command.ExecuteAsync(context, args);
         Assert.NotNull(response);
@@ -134,7 +139,7 @@ public sealed class SampleCommandTests
     //     var command = new SampleCommand(_logger);
 
     //     var args = command.GetCommand().Parse(cliArgs);
-    //     var context = new CommandContext(_serviceProvider);
+    //     var context = new CommandContext(_serviceProvider, McpUserContext.Empty);
 
     //     var response = await command.ExecuteAsync(context, args);
     //     Assert.NotNull(response);
@@ -148,7 +153,7 @@ public sealed class SampleCommandTests
         var command = new SampleCommand(_logger);
 
         var args = command.GetCommand().Parse("");
-        var context = new CommandContext(_serviceProvider);
+        var context = new CommandContext(_serviceProvider, McpUserContext.Empty);
 
         var response = await command.ExecuteAsync(context, args);
         Assert.NotNull(response);

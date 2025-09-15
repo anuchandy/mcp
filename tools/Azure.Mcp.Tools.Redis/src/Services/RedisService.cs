@@ -1,6 +1,7 @@
 // Copyright (c) Microsoft Corporation.
 // Licensed under the MIT License.
 
+using Azure.Mcp.Core.Areas.Server.Commands.Runtime;
 using Azure.Mcp.Core.Models.Identity;
 using Azure.Mcp.Core.Options;
 using Azure.Mcp.Core.Services.Azure;
@@ -19,6 +20,7 @@ public class RedisService(ISubscriptionService _subscriptionService, IResourceGr
     : BaseAzureService(tenantService), IRedisService
 {
     public async Task<IEnumerable<Cache>> ListCachesAsync(
+        McpUserContext userContext,
         string subscription,
         string? tenant = null,
         AuthMethod? authMethod = null,
@@ -115,6 +117,7 @@ public class RedisService(ISubscriptionService _subscriptionService, IResourceGr
     }
 
     public async Task<IEnumerable<AccessPolicyAssignment>> ListAccessPolicyAssignmentsAsync(
+        McpUserContext userContext,
         string cacheName,
         string resourceGroupName,
         string subscription,
@@ -157,6 +160,7 @@ public class RedisService(ISubscriptionService _subscriptionService, IResourceGr
     }
 
     public async Task<IEnumerable<Cluster>> ListClustersAsync(
+        McpUserContext userContext,
         string subscription,
         string? tenant = null,
         AuthMethod? authMethod = null,
@@ -222,6 +226,7 @@ public class RedisService(ISubscriptionService _subscriptionService, IResourceGr
     }
 
     public async Task<IEnumerable<Database>> ListDatabasesAsync(
+        McpUserContext userContext,
         string clusterName,
         string resourceGroupName,
         string subscription,

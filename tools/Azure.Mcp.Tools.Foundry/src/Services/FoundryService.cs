@@ -3,6 +3,7 @@
 
 using System.Text;
 using Azure.AI.Projects;
+using Azure.Mcp.Core.Areas.Server.Commands.Runtime;
 using Azure.Mcp.Core.Options;
 using Azure.Mcp.Core.Services.Azure;
 using Azure.Mcp.Core.Services.Azure.Tenant;
@@ -20,6 +21,7 @@ public class FoundryService(IHttpClientService httpClientService, ITenantService
 {
     private readonly IHttpClientService _httpClientService = httpClientService ?? throw new ArgumentNullException(nameof(httpClientService));
     public async Task<List<ModelInformation>> ListModels(
+        McpUserContext userContext,
         bool searchForFreePlayground = false,
         string publisherName = "",
         string licenseName = "",
@@ -132,7 +134,7 @@ public class FoundryService(IHttpClientService httpClientService, ITenantService
         return modelsList;
     }
 
-    public async Task<List<Deployment>> ListDeployments(string endpoint, string? tenantId = null, RetryPolicyOptions? retryPolicy = null)
+    public async Task<List<Deployment>> ListDeployments(McpUserContext userContext, string endpoint, string? tenantId = null, RetryPolicyOptions? retryPolicy = null)
     {
         ValidateRequiredParameters(endpoint);
 
@@ -155,7 +157,7 @@ public class FoundryService(IHttpClientService httpClientService, ITenantService
         }
     }
 
-    public async Task<ModelDeploymentResult> DeployModel(string deploymentName, string modelName, string modelFormat,
+    public async Task<ModelDeploymentResult> DeployModel(McpUserContext userContext, string deploymentName, string modelName, string modelFormat,
         string azureAiServicesName, string resourceGroup, string subscriptionId, string? modelVersion = null, string? modelSource = null,
         string? skuName = null, int? skuCapacity = null, string? scaleType = null, int? scaleCapacity = null, RetryPolicyOptions? retryPolicy = null)
     {
@@ -238,7 +240,7 @@ public class FoundryService(IHttpClientService httpClientService, ITenantService
         }
     }
 
-    public async Task<List<KnowledgeIndexInformation>> ListKnowledgeIndexes(string endpoint, string? tenantId = null, RetryPolicyOptions? retryPolicy = null)
+    public async Task<List<KnowledgeIndexInformation>> ListKnowledgeIndexes(McpUserContext userContext, string endpoint, string? tenantId = null, RetryPolicyOptions? retryPolicy = null)
     {
         ValidateRequiredParameters(endpoint);
 

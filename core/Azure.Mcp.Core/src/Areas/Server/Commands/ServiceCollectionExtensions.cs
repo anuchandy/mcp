@@ -2,6 +2,7 @@
 // Licensed under the MIT License.
 
 using System.Reflection;
+using System.Runtime.Versioning;
 using System.Text;
 using Azure.Core;
 using Azure.Mcp.Core.Areas.Server.Commands.Discovery;
@@ -97,12 +98,24 @@ public static class AzureMcpServiceCollectionExtensions
             services.AddHttpContextAccessor();
             services.AddScoped<IAuthenticationContext, HttpAuthenticationContext>();
             
-            // Register scope-aware TokenCredential for OBO Parent mode
-            services.AddScoped<TokenCredential, AzOBOTokenCredentials>();
+            // TODO: TokenCredential registration removed to eliminate security vulnerability
+            // Will be replaced with factory pattern in upcoming phases
+            
+            // Register broker service infrastructure for inter-process token communication
+            // Named pipes are supported on Windows, Linux, and macOS
+            if (OperatingSystem.IsWindows() || OperatingSystem.IsLinux() || OperatingSystem.IsMacOS())
+            {
+                services.AddSingleton<IBrokerService, BrokerService>();
+                services.AddSingleton<NamedPipeServerService>();
+                services.AddHostedService<BrokerHostedService>();
+            }
         }
         else if (serviceStartOptions.IsOboChild())
         {
             services.AddSingleton<IAzMcpRequestContextFactory, OboChildRequestContextFactory>();
+            
+            // TODO: TokenCredential registration removed to eliminate security vulnerability  
+            // Will be replaced with factory pattern in upcoming phases
         }
         else
         {

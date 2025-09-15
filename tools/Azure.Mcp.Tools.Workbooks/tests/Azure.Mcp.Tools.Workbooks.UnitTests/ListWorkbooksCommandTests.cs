@@ -2,6 +2,7 @@
 // Licensed under the MIT License.
 
 using System.Text.Json;
+using Azure.Mcp.Core.Areas.Server.Commands.Runtime;
 using Azure.Mcp.Core.Models.Command;
 using Azure.Mcp.Core.Options;
 using Azure.Mcp.Tools.Workbooks.Commands.Workbooks;
@@ -103,6 +104,7 @@ public class ListWorkbooksCommandTests
         };
 
         _service.ListWorkbooks(
+            Arg.Any<McpUserContext>(),
             Arg.Any<string>(),
             Arg.Any<string>(),
             Arg.Any<WorkbookFilters?>(),
@@ -116,7 +118,7 @@ public class ListWorkbooksCommandTests
             "--tenant", "tenant123"
                 ]);
 
-        var context = new CommandContext(_serviceProvider);
+        var context = new CommandContext(_serviceProvider, McpUserContext.Empty);
 
         // Act
         var response = await _command.ExecuteAsync(context, args);
@@ -149,6 +151,7 @@ public class ListWorkbooksCommandTests
     {
         // Arrange
         _service.ListWorkbooks(
+            Arg.Any<McpUserContext>(),
             Arg.Is("sub123"),
             Arg.Is("rg123"),
             Arg.Any<WorkbookFilters?>(),
@@ -162,7 +165,7 @@ public class ListWorkbooksCommandTests
             "--tenant", "tenant123"
         ]);
 
-        var context = new CommandContext(_serviceProvider);
+        var context = new CommandContext(_serviceProvider, McpUserContext.Empty);
 
         // Act
         var response = await _command.ExecuteAsync(context, args);
@@ -178,6 +181,7 @@ public class ListWorkbooksCommandTests
     {
         // Arrange
         _service.ListWorkbooks(
+            Arg.Any<McpUserContext>(),
             Arg.Is("sub123"),
             Arg.Is("rg123"),
             Arg.Any<WorkbookFilters?>(),
@@ -191,7 +195,7 @@ public class ListWorkbooksCommandTests
             "--tenant", "tenant123"
         ]);
 
-        var context = new CommandContext(_serviceProvider);
+        var context = new CommandContext(_serviceProvider, McpUserContext.Empty);
 
         // Act
         var response = await _command.ExecuteAsync(context, args);
@@ -207,6 +211,7 @@ public class ListWorkbooksCommandTests
     {
         // Arrange
         _service.ListWorkbooks(
+            Arg.Any<McpUserContext>(),
             Arg.Is("sub123"),
             Arg.Is("rg123"),
             Arg.Any<WorkbookFilters?>(),
@@ -220,7 +225,7 @@ public class ListWorkbooksCommandTests
             "--tenant", "tenant123"
         ]);
 
-        var context = new CommandContext(_serviceProvider);
+        var context = new CommandContext(_serviceProvider, McpUserContext.Empty);
 
         // Act
         var response = await _command.ExecuteAsync(context, args);
@@ -237,6 +242,7 @@ public class ListWorkbooksCommandTests
         // Arrange
         var expectedWorkbooks = new List<WorkbookInfo>();
         _service.ListWorkbooks(
+            Arg.Any<McpUserContext>(),
             Arg.Any<string>(),
             Arg.Any<string>(),
             Arg.Any<WorkbookFilters?>(),
@@ -250,13 +256,14 @@ public class ListWorkbooksCommandTests
             "--tenant", "test-tenant"
         ]);
 
-        var context = new CommandContext(_serviceProvider);
+        var context = new CommandContext(_serviceProvider, McpUserContext.Empty);
 
         // Act
         await _command.ExecuteAsync(context, args);
 
         // Assert
         await _service.Received(1).ListWorkbooks(
+            Arg.Any<McpUserContext>(),
             Arg.Is("test-subscription"),
             Arg.Is("test-resource-group"),
             Arg.Any<WorkbookFilters?>(),
@@ -270,6 +277,7 @@ public class ListWorkbooksCommandTests
         // Arrange
         var expectedWorkbooks = new List<WorkbookInfo>();
         _service.ListWorkbooks(
+            Arg.Any<McpUserContext>(),
             Arg.Any<string>(),
             Arg.Any<string>(),
             Arg.Any<WorkbookFilters?>(),
@@ -282,13 +290,14 @@ public class ListWorkbooksCommandTests
             "--resource-group", "test-resource-group"
         ]);
 
-        var context = new CommandContext(_serviceProvider);
+        var context = new CommandContext(_serviceProvider, McpUserContext.Empty);
 
         // Act
         await _command.ExecuteAsync(context, args);
 
         // Assert
         await _service.Received(1).ListWorkbooks(
+            Arg.Any<McpUserContext>(),
             Arg.Is("test-subscription"),
             Arg.Is("test-resource-group"),
             Arg.Any<WorkbookFilters?>(),
@@ -302,6 +311,7 @@ public class ListWorkbooksCommandTests
         // Arrange
         var expectedWorkbooks = new List<WorkbookInfo>();
         _service.ListWorkbooks(
+            Arg.Any<McpUserContext>(),
             Arg.Any<string>(),
             Arg.Any<string>(),
             Arg.Any<WorkbookFilters?>(),
@@ -315,13 +325,14 @@ public class ListWorkbooksCommandTests
             "--auth-method", "1"
         ]);
 
-        var context = new CommandContext(_serviceProvider);
+        var context = new CommandContext(_serviceProvider, McpUserContext.Empty);
 
         // Act
         await _command.ExecuteAsync(context, args);
 
         // Assert
         await _service.Received(1).ListWorkbooks(
+            Arg.Any<McpUserContext>(),
             Arg.Is("test-subscription"),
             Arg.Is("test-resource-group"),
             Arg.Any<WorkbookFilters?>(),
@@ -340,7 +351,7 @@ public class ListWorkbooksCommandTests
             "--resource-group", invalidResourceGroup
         ]);
 
-        var context = new CommandContext(_serviceProvider);
+        var context = new CommandContext(_serviceProvider, McpUserContext.Empty);
 
         // Act
         var response = await _command.ExecuteAsync(context, args);
@@ -385,6 +396,7 @@ public class ListWorkbooksCommandTests
         };
 
         _service.ListWorkbooks(
+            Arg.Any<McpUserContext>(),
             Arg.Any<string>(),
             Arg.Any<string>(),
             Arg.Any<WorkbookFilters?>(),
@@ -397,7 +409,7 @@ public class ListWorkbooksCommandTests
             "--resource-group", "rg123"
         ]);
 
-        var context = new CommandContext(_serviceProvider);
+        var context = new CommandContext(_serviceProvider, McpUserContext.Empty);
 
         // Act
         var response = await _command.ExecuteAsync(context, args);
@@ -442,6 +454,7 @@ public class ListWorkbooksCommandTests
         };
 
         _service.ListWorkbooks(
+            Arg.Any<McpUserContext>(),
             Arg.Is("sub123"),
             Arg.Is("rg123"),
             Arg.Is<WorkbookFilters?>(f => f != null && f.Kind == "shared"),
@@ -456,7 +469,7 @@ public class ListWorkbooksCommandTests
         ]);
 
         // Act
-        var context = new CommandContext(_serviceProvider);
+        var context = new CommandContext(_serviceProvider, McpUserContext.Empty);
         var response = await _command.ExecuteAsync(context, args);
 
         // Assert
@@ -465,6 +478,7 @@ public class ListWorkbooksCommandTests
         Assert.Equal(200, response.Status);
 
         await _service.Received(1).ListWorkbooks(
+            Arg.Any<McpUserContext>(),
             "sub123",
             "rg123",
             Arg.Is<WorkbookFilters?>(f => f != null && f.Kind == "shared"),
@@ -495,6 +509,7 @@ public class ListWorkbooksCommandTests
         };
 
         _service.ListWorkbooks(
+            Arg.Any<McpUserContext>(),
             Arg.Is("sub123"),
             Arg.Is("rg123"),
             Arg.Is<WorkbookFilters?>(f => f != null && f.Category == "sentinel"),
@@ -509,7 +524,7 @@ public class ListWorkbooksCommandTests
         ]);
 
         // Act
-        var context = new CommandContext(_serviceProvider);
+        var context = new CommandContext(_serviceProvider, McpUserContext.Empty);
         var response = await _command.ExecuteAsync(context, args);
 
         // Assert
@@ -518,6 +533,7 @@ public class ListWorkbooksCommandTests
         Assert.Equal(200, response.Status);
 
         await _service.Received(1).ListWorkbooks(
+            Arg.Any<McpUserContext>(),
             "sub123",
             "rg123",
             Arg.Is<WorkbookFilters?>(f => f != null && f.Category == "sentinel"),
@@ -549,6 +565,7 @@ public class ListWorkbooksCommandTests
         };
 
         _service.ListWorkbooks(
+            Arg.Any<McpUserContext>(),
             Arg.Is("sub123"),
             Arg.Is("rg123"),
             Arg.Is<WorkbookFilters?>(f => f != null && f.SourceId == sourceId),
@@ -563,7 +580,7 @@ public class ListWorkbooksCommandTests
         ]);
 
         // Act
-        var context = new CommandContext(_serviceProvider);
+        var context = new CommandContext(_serviceProvider, McpUserContext.Empty);
         var response = await _command.ExecuteAsync(context, args);
 
         // Assert
@@ -572,6 +589,7 @@ public class ListWorkbooksCommandTests
         Assert.Equal(200, response.Status);
 
         await _service.Received(1).ListWorkbooks(
+            Arg.Any<McpUserContext>(),
             "sub123",
             "rg123",
             Arg.Is<WorkbookFilters?>(f => f != null && f.SourceId == sourceId),
@@ -603,6 +621,7 @@ public class ListWorkbooksCommandTests
         };
 
         _service.ListWorkbooks(
+            Arg.Any<McpUserContext>(),
             Arg.Is("sub123"),
             Arg.Is("rg123"),
             Arg.Is<WorkbookFilters?>(f => f != null && f.Kind == "shared" && f.Category == "sentinel" && f.SourceId == sourceId),
@@ -619,7 +638,7 @@ public class ListWorkbooksCommandTests
         ]);
 
         // Act
-        var context = new CommandContext(_serviceProvider);
+        var context = new CommandContext(_serviceProvider, McpUserContext.Empty);
         var response = await _command.ExecuteAsync(context, args);
 
         // Assert
@@ -628,6 +647,7 @@ public class ListWorkbooksCommandTests
         Assert.Equal(200, response.Status);
 
         await _service.Received(1).ListWorkbooks(
+            Arg.Any<McpUserContext>(),
             "sub123",
             "rg123",
             Arg.Is<WorkbookFilters?>(f => f != null && f.Kind == "shared" && f.Category == "sentinel" && f.SourceId == sourceId),
@@ -659,6 +679,7 @@ public class ListWorkbooksCommandTests
         };
 
         _service.ListWorkbooks(
+            Arg.Any<McpUserContext>(),
             Arg.Is("sub123"),
             Arg.Is("rg123"),
             Arg.Is<WorkbookFilters?>(f => f != null && f.Kind == "shared" && f.Category == "sentinel" && f.SourceId == sourceId),
@@ -675,7 +696,7 @@ public class ListWorkbooksCommandTests
         ]);
 
         // Act
-        var context = new CommandContext(_serviceProvider);
+        var context = new CommandContext(_serviceProvider, McpUserContext.Empty);
         var response = await _command.ExecuteAsync(context, args);
 
         // Assert
@@ -684,6 +705,7 @@ public class ListWorkbooksCommandTests
         Assert.Equal(200, response.Status);
 
         await _service.Received(1).ListWorkbooks(
+            Arg.Any<McpUserContext>(),
             "sub123",
             "rg123",
             Arg.Is<WorkbookFilters?>(f => f != null && f.Kind == "shared" && f.Category == "sentinel" && f.SourceId == sourceId),
@@ -714,6 +736,7 @@ public class ListWorkbooksCommandTests
         };
 
         _service.ListWorkbooks(
+            Arg.Any<McpUserContext>(),
             Arg.Is("sub123"),
             Arg.Is("rg123"),
             Arg.Is<WorkbookFilters?>(f => f != null && !f.HasFilters),
@@ -727,7 +750,7 @@ public class ListWorkbooksCommandTests
         ]);
 
         // Act
-        var context = new CommandContext(_serviceProvider);
+        var context = new CommandContext(_serviceProvider, McpUserContext.Empty);
         var response = await _command.ExecuteAsync(context, args);
 
         // Assert
@@ -736,6 +759,7 @@ public class ListWorkbooksCommandTests
         Assert.Equal(200, response.Status);
 
         await _service.Received(1).ListWorkbooks(
+            Arg.Any<McpUserContext>(),
             "sub123",
             "rg123",
             Arg.Is<WorkbookFilters?>(f => f != null && !f.HasFilters),
@@ -751,6 +775,7 @@ public class ListWorkbooksCommandTests
         // Arrange
         var expectedWorkbooks = new List<WorkbookInfo>();
         _service.ListWorkbooks(
+            Arg.Any<McpUserContext>(),
             Arg.Any<string>(),
             Arg.Any<string>(),
             Arg.Is<WorkbookFilters?>(f => f != null && f.Kind == kind),
@@ -765,7 +790,7 @@ public class ListWorkbooksCommandTests
         ]);
 
         // Act
-        var context = new CommandContext(_serviceProvider);
+        var context = new CommandContext(_serviceProvider, McpUserContext.Empty);
         var response = await _command.ExecuteAsync(context, args);
 
         // Assert
@@ -773,6 +798,7 @@ public class ListWorkbooksCommandTests
         Assert.Equal(200, response.Status);
 
         await _service.Received(1).ListWorkbooks(
+            Arg.Any<McpUserContext>(),
             "sub123",
             "rg123",
             Arg.Is<WorkbookFilters?>(f => f != null && f.Kind == kind),
@@ -790,6 +816,7 @@ public class ListWorkbooksCommandTests
         // Arrange
         var expectedWorkbooks = new List<WorkbookInfo>();
         _service.ListWorkbooks(
+            Arg.Any<McpUserContext>(),
             Arg.Any<string>(),
             Arg.Any<string>(),
             Arg.Is<WorkbookFilters?>(f => f != null && f.Category == category),
@@ -804,7 +831,7 @@ public class ListWorkbooksCommandTests
         ]);
 
         // Act
-        var context = new CommandContext(_serviceProvider);
+        var context = new CommandContext(_serviceProvider, McpUserContext.Empty);
         var response = await _command.ExecuteAsync(context, args);
 
         // Assert
@@ -812,6 +839,7 @@ public class ListWorkbooksCommandTests
         Assert.Equal(200, response.Status);
 
         await _service.Received(1).ListWorkbooks(
+            Arg.Any<McpUserContext>(),
             "sub123",
             "rg123",
             Arg.Is<WorkbookFilters?>(f => f != null && f.Category == category),

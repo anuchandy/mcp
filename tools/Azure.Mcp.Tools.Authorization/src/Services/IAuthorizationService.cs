@@ -1,6 +1,7 @@
 // Copyright (c) Microsoft Corporation.
 // Licensed under the MIT License.
 
+using Azure.Mcp.Core.Areas.Server.Commands.Runtime;
 using Azure.Mcp.Core.Options;
 using Azure.Mcp.Tools.Authorization.Models;
 
@@ -16,6 +17,7 @@ public interface IAuthorizationService
     /// <param name="retryPolicy">Optional retry policy for the operation.</param>
     /// <returns>List of role assignments in the format "Role Definition ID: Principal ID"</returns>
     Task<List<RoleAssignment>> ListRoleAssignments(
+        McpUserContext userContext,
         string? scope,
         string? tenantId = null,
         RetryPolicyOptions? retryPolicy = null);

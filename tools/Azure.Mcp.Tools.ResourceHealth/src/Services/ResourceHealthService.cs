@@ -2,6 +2,7 @@
 // Licensed under the MIT License.
 
 using Azure.Core;
+using Azure.Mcp.Core.Areas.Server.Commands.Runtime;
 using Azure.Mcp.Core.Options;
 using Azure.Mcp.Core.Services.Azure;
 using Azure.Mcp.Core.Services.Azure.Subscription;
@@ -17,6 +18,7 @@ public class ResourceHealthService(ISubscriptionService subscriptionService, ITe
     private readonly ISubscriptionService _subscriptionService = subscriptionService ?? throw new ArgumentNullException(nameof(subscriptionService));
 
     public async Task<AvailabilityStatus> GetAvailabilityStatusAsync(
+        McpUserContext userContext,
         string resourceId,
         RetryPolicyOptions? retryPolicy = null)
     {
@@ -61,6 +63,7 @@ public class ResourceHealthService(ISubscriptionService subscriptionService, ITe
     }
 
     public async Task<List<AvailabilityStatus>> ListAvailabilityStatusesAsync(
+        McpUserContext userContext,
         string subscription,
         string? resourceGroup = null,
         string? tenant = null,

@@ -2,6 +2,7 @@
 // Licensed under the MIT License.
 
 using System.Text.Json;
+using Azure.Mcp.Core.Areas.Server.Commands.Runtime;
 using Azure.Mcp.Core.Models.Command;
 using Azure.Mcp.Core.Options;
 using Azure.Mcp.Tools.LoadTesting.Commands.LoadTestRun;
@@ -51,6 +52,7 @@ public class TestRunListCommandTests
             new TestRun { TestId = "testId2", TestRunId = "testRunId2" }
         };
         _service.GetLoadTestRunsFromTestIdAsync(
+            Arg.Any<McpUserContext>(),
             Arg.Is("sub123"), Arg.Is("testResourceName"), Arg.Is("testId"), Arg.Is("resourceGroup123"), Arg.Is("tenant123"), Arg.Any<RetryPolicyOptions>())
             .Returns(expected);
 
@@ -62,7 +64,7 @@ public class TestRunListCommandTests
             "--test-id", "testId",
             "--tenant", "tenant123"
         ]);
-        var context = new CommandContext(_serviceProvider);
+        var context = new CommandContext(_serviceProvider, McpUserContext.Empty);
         var response = await command.ExecuteAsync(context, args);
         Assert.NotNull(response);
         Assert.NotNull(response.Results);
@@ -83,6 +85,7 @@ public class TestRunListCommandTests
     {
         var expected = new List<TestRun>();
         _service.GetLoadTestRunsFromTestIdAsync(
+            Arg.Any<McpUserContext>(),
             Arg.Is("sub123"), Arg.Is("testResourceName"), Arg.Is("testId"), Arg.Is("resourceGroup123"), Arg.Is("tenant123"), Arg.Any<RetryPolicyOptions>())
             .Returns(expected);
 
@@ -93,7 +96,7 @@ public class TestRunListCommandTests
             "--load-test-name", "loadTestName",
             "--tenant", "tenant123"
         ]);
-        var context = new CommandContext(_serviceProvider);
+        var context = new CommandContext(_serviceProvider, McpUserContext.Empty);
         var response = await command.ExecuteAsync(context, args);
         Assert.Equal(400, response.Status);
     }
@@ -102,6 +105,7 @@ public class TestRunListCommandTests
     public async Task ExecuteAsync_HandlesServiceErrors()
     {
         _service.GetLoadTestRunsFromTestIdAsync(
+            Arg.Any<McpUserContext>(),
             Arg.Is("sub123"), Arg.Is("testResourceName"), Arg.Is("testId"), Arg.Is("resourceGroup123"), Arg.Is("tenant123"), Arg.Any<RetryPolicyOptions>())
             .Returns(Task.FromException<List<TestRun>>(new Exception("Test error")));
 
@@ -113,7 +117,7 @@ public class TestRunListCommandTests
             "--test-id", "testId",
             "--tenant", "tenant123"
         ]);
-        var context = new CommandContext(_serviceProvider);
+        var context = new CommandContext(_serviceProvider, McpUserContext.Empty);
         var response = await command.ExecuteAsync(context, args);
         Assert.Equal(500, response.Status);
         Assert.Contains("Test error", response.Message);

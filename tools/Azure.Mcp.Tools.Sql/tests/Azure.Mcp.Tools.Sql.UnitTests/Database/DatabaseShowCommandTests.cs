@@ -2,6 +2,7 @@
 // Licensed under the MIT License.
 
 using System.CommandLine;
+using Azure.Mcp.Core.Areas.Server.Commands.Runtime;
 using Azure.Mcp.Core.Models.Command;
 using Azure.Mcp.Core.Options;
 using Azure.Mcp.Tools.Sql.Commands.Database;
@@ -34,7 +35,7 @@ public class DatabaseShowCommandTests
         _serviceProvider = collection.BuildServiceProvider();
 
         _command = new(_logger);
-        _context = new(_serviceProvider);
+        _context = new CommandContext(_serviceProvider, McpUserContext.Empty);
         _commandDefinition = _command.GetCommand();
     }
 
@@ -71,6 +72,7 @@ public class DatabaseShowCommandTests
         );
 
         _sqlService.GetDatabaseAsync(
+            Arg.Any<McpUserContext>(),
             Arg.Is("server1"),
             Arg.Is("testdb"),
             Arg.Is("rg"),
@@ -96,6 +98,7 @@ public class DatabaseShowCommandTests
     {
         // Arrange
         _sqlService.GetDatabaseAsync(
+                Arg.Any<McpUserContext>(),
                 Arg.Any<string>(),
                 Arg.Any<string>(),
                 Arg.Any<string>(),
@@ -120,6 +123,7 @@ public class DatabaseShowCommandTests
     {
         // Arrange
         _sqlService.GetDatabaseAsync(
+                Arg.Any<McpUserContext>(),
                 Arg.Any<string>(),
                 Arg.Any<string>(),
                 Arg.Any<string>(),
@@ -144,6 +148,7 @@ public class DatabaseShowCommandTests
         // Arrange
         var requestException = new RequestFailedException(404, "Database not found");
         _sqlService.GetDatabaseAsync(
+                Arg.Any<McpUserContext>(),
                 Arg.Any<string>(),
                 Arg.Any<string>(),
                 Arg.Any<string>(),

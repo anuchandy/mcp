@@ -3,6 +3,7 @@
 
 using System.Reflection;
 using System.Runtime.InteropServices;
+using Azure.Mcp.Core.Areas.Server.Commands.Runtime;
 using Azure.Mcp.Core.Models.Command;
 using Azure.Mcp.Core.Services.Azure.Subscription;
 using Azure.Mcp.Core.Services.ProcessExecution;
@@ -48,7 +49,7 @@ public sealed class AzqrCommandTests
 
         var mockSubscriptionId = "12345678-1234-1234-1234-123456789012";
         var args = command.GetCommand().Parse($"--subscription {mockSubscriptionId}");
-        var context = new CommandContext(_serviceProvider);
+        var context = new CommandContext(_serviceProvider, McpUserContext.Empty);
 
         var expectedOutput = "Scan completed successfully";
         var reportFilePath = Path.Combine(Path.GetTempPath(), $"azqr-report-{mockSubscriptionId}-{fixedDateTime:yyyyMMdd-HHmmss}");
@@ -116,7 +117,7 @@ public sealed class AzqrCommandTests
         var command = new AzqrCommand(_logger);
 
         var args = command.GetCommand().Parse(""); // No subscription specified
-        var context = new CommandContext(_serviceProvider);
+        var context = new CommandContext(_serviceProvider, McpUserContext.Empty);
 
         // Act
         var response = await command.ExecuteAsync(context, args);

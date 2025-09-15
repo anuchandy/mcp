@@ -3,6 +3,7 @@
 
 using System.CommandLine;
 using System.Text.Json;
+using Azure.Mcp.Core.Areas.Server.Commands.Runtime;
 using Azure.Mcp.Core.Models.Command;
 using Azure.Mcp.Core.Options;
 using Azure.Mcp.Tools.AppConfig.Commands.KeyValue;
@@ -37,7 +38,7 @@ public class KeyValueShowCommandTests
         _serviceProvider = new ServiceCollection()
             .AddSingleton(_appConfigService)
             .BuildServiceProvider();
-        _context = new(_serviceProvider);
+        _context = new CommandContext(_serviceProvider, McpUserContext.Empty);
     }
 
     [Fact]
@@ -53,6 +54,7 @@ public class KeyValueShowCommandTests
             Locked = false
         };
         _appConfigService.GetKeyValue(
+            Arg.Any<McpUserContext>(),
             Arg.Any<string>(),
             Arg.Any<string>(),
             Arg.Any<string>(),
@@ -100,6 +102,7 @@ public class KeyValueShowCommandTests
             Locked = false
         };
         _appConfigService.GetKeyValue(
+            Arg.Any<McpUserContext>(),
             Arg.Any<string>(),
             Arg.Any<string>(),
             Arg.Any<string>(),
@@ -137,6 +140,7 @@ public class KeyValueShowCommandTests
     {
         // Arrange
         _appConfigService.GetKeyValue(
+            Arg.Any<McpUserContext>(),
             Arg.Any<string>(),
             Arg.Any<string>(),
             Arg.Any<string>(),

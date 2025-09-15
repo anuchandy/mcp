@@ -3,6 +3,7 @@
 
 using System.CommandLine;
 using System.Text.Json.Serialization;
+using Azure.Mcp.Core.Areas.Server.Commands.Runtime;
 using Azure.Mcp.Core.Models.Command;
 using Azure.Mcp.Core.Options;
 using Azure.Mcp.Tools.Storage.Commands.Blob;
@@ -38,7 +39,7 @@ public class BlobDetailsCommandTests
 
         _serviceProvider = collection.BuildServiceProvider();
         _command = new(_logger);
-        _context = new(_serviceProvider);
+        _context = new CommandContext(_serviceProvider, McpUserContext.Empty);
         _commandDefinition = _command.GetCommand();
     }
 
@@ -58,7 +59,7 @@ public class BlobDetailsCommandTests
         SetProperty(expectedProperties, "ContentType", "text/plain");
         SetProperty(expectedProperties, "BlobType", BlobType.Block);
 
-        _storageService.GetBlobDetails(Arg.Is(_knownAccount), Arg.Is(_knownContainer),
+        _storageService.GetBlobDetails(Arg.Any<McpUserContext>(), Arg.Is(_knownAccount), Arg.Is(_knownContainer),
             Arg.Is(_knownBlob), Arg.Is(_knownSubscription), Arg.Any<string>(), Arg.Any<RetryPolicyOptions>())
             .Returns(expectedProperties);
 
@@ -97,7 +98,7 @@ public class BlobDetailsCommandTests
         // Arrange
         var expectedError = "Blob not found";
 
-        _storageService.GetBlobDetails(Arg.Is(_knownAccount), Arg.Is(_knownContainer),
+        _storageService.GetBlobDetails(Arg.Any<McpUserContext>(), Arg.Is(_knownAccount), Arg.Is(_knownContainer),
             Arg.Is(_knownBlob), Arg.Is(_knownSubscription), null, Arg.Any<RetryPolicyOptions>())
             .ThrowsAsync(new Exception(expectedError));
 

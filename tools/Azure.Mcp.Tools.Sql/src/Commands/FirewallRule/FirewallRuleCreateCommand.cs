@@ -65,6 +65,7 @@ public sealed class FirewallRuleCreateCommand(ILogger<FirewallRuleCreateCommand>
             var sqlService = context.GetService<ISqlService>();
 
             var firewallRule = await sqlService.CreateFirewallRuleAsync(
+                context.UserContext,
                 options.Server!,
                 options.ResourceGroup!,
                 options.Subscription!,

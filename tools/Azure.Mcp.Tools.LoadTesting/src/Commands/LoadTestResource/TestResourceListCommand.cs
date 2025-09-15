@@ -39,6 +39,7 @@ public sealed class TestResourceListCommand(ILogger<TestResourceListCommand> log
             var service = context.GetService<ILoadTestingService>();
             // Call service operation(s)
             var results = await service.GetLoadTestResourcesAsync(
+                context.UserContext,
                 options.Subscription!,
                 options.ResourceGroup,
                 options.TestResourceName,

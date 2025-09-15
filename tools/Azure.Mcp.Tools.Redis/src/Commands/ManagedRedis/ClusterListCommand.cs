@@ -42,6 +42,7 @@ public sealed class ClusterListCommand(ILogger<ClusterListCommand> logger) : Sub
         {
             var redisService = context.GetService<IRedisService>() ?? throw new InvalidOperationException("Redis service is not available.");
             var clusters = await redisService.ListClustersAsync(
+                context.UserContext,
                 options.Subscription!,
                 options.Tenant,
                 options.AuthMethod,

@@ -3,6 +3,7 @@
 
 using System.CommandLine;
 using System.Text.Json;
+using Azure.Mcp.Core.Areas.Server.Commands.Runtime;
 using Azure.Mcp.Core.Models.Command;
 using Azure.Mcp.Core.Options;
 using Azure.Mcp.Tools.Monitor.Commands;
@@ -40,7 +41,7 @@ public sealed class TableListCommandTests
         _serviceProvider = collection.BuildServiceProvider();
 
         _command = new(_logger);
-        _context = new(_serviceProvider);
+        _context = new CommandContext(_serviceProvider, McpUserContext.Empty);
         _commandDefinition = _command.GetCommand();
     }
 
@@ -61,6 +62,7 @@ public sealed class TableListCommandTests
                 "AppDependencies"
             };
             _monitorService.ListTables(
+                Arg.Any<McpUserContext>(),
                 Arg.Any<string>(),
                 Arg.Any<string>(),
                 Arg.Any<string>(),
@@ -98,6 +100,7 @@ public sealed class TableListCommandTests
             "AppMetrics"
         };
         _monitorService.ListTables(
+            Arg.Any<McpUserContext>(),
             Arg.Any<string>(),
             Arg.Any<string>(),
             Arg.Any<string>(),
@@ -121,6 +124,7 @@ public sealed class TableListCommandTests
 
         // Verify the mock was called
         await _monitorService.Received(1).ListTables(
+            Arg.Any<McpUserContext>(),
             Arg.Any<string>(),
             Arg.Any<string>(),
             Arg.Any<string>(),
@@ -145,6 +149,7 @@ public sealed class TableListCommandTests
         // Arrange
         var expectedTables = new List<string> { "CustomTable1", "CustomTable2" };
         _monitorService.ListTables(
+            Arg.Any<McpUserContext>(),
             _knownSubscription,
             _knownResourceGroupName,
             _knownWorkspace,
@@ -166,6 +171,7 @@ public sealed class TableListCommandTests
         // Assert
         Assert.Equal(200, response.Status);
         await _monitorService.Received(1).ListTables(
+            Arg.Any<McpUserContext>(),
             _knownSubscription,
             _knownResourceGroupName,
             _knownWorkspace,
@@ -179,6 +185,7 @@ public sealed class TableListCommandTests
     {
         // Arrange
         _monitorService.ListTables(
+            Arg.Any<McpUserContext>(),
             Arg.Any<string>(),
             Arg.Any<string>(),
             Arg.Any<string>(),
@@ -206,6 +213,7 @@ public sealed class TableListCommandTests
     {
         // Arrange
         _monitorService.ListTables(
+            Arg.Any<McpUserContext>(),
             Arg.Any<string>(),
             Arg.Any<string>(),
             Arg.Any<string>(),

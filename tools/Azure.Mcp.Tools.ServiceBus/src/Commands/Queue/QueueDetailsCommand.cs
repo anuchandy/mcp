@@ -63,6 +63,7 @@ public sealed class QueueDetailsCommand(ILogger<QueueDetailsCommand> logger) : S
         {
             var service = context.GetService<IServiceBusService>();
             var details = await service.GetQueueDetails(
+                context.UserContext,
                 options.Namespace!,
                 options.Name!,
                 options.Tenant,

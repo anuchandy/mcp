@@ -1,6 +1,7 @@
 // Copyright (c) Microsoft Corporation.
 // Licensed under the MIT License.
 
+using Azure.Mcp.Core.Areas.Server.Commands.Runtime;
 using Azure.Mcp.Core.Options;
 using Azure.Mcp.Tools.Sql.Models;
 
@@ -20,6 +21,7 @@ public interface ISqlService
     /// <returns>The SQL database information</returns>
     /// <exception cref="KeyNotFoundException">Thrown when the database is not found</exception>
     Task<SqlDatabase> GetDatabaseAsync(
+        McpUserContext userContext,
         string serverName,
         string databaseName,
         string resourceGroup,
@@ -37,6 +39,7 @@ public interface ISqlService
     /// <param name="cancellationToken">Cancellation token</param>
     /// <returns>A list of SQL databases</returns>
     Task<List<SqlDatabase>> ListDatabasesAsync(
+        McpUserContext userContext,
         string serverName,
         string resourceGroup,
         string subscription,
@@ -53,6 +56,7 @@ public interface ISqlService
     /// <param name="cancellationToken">Cancellation token</param>
     /// <returns>A list of SQL server Entra administrators</returns>
     Task<List<SqlServerEntraAdministrator>> GetEntraAdministratorsAsync(
+        McpUserContext userContext,
         string serverName,
         string resourceGroup,
         string subscription,
@@ -69,6 +73,7 @@ public interface ISqlService
     /// <param name="cancellationToken">Cancellation token</param>
     /// <returns>A list of SQL elastic pools</returns>
     Task<List<SqlElasticPool>> GetElasticPoolsAsync(
+        McpUserContext userContext,
         string serverName,
         string resourceGroup,
         string subscription,
@@ -85,6 +90,7 @@ public interface ISqlService
     /// <param name="cancellationToken">Cancellation token</param>
     /// <returns>A list of SQL server firewall rules</returns>
     Task<List<SqlServerFirewallRule>> ListFirewallRulesAsync(
+        McpUserContext userContext,
         string serverName,
         string resourceGroup,
         string subscription,
@@ -104,6 +110,7 @@ public interface ISqlService
     /// <param name="cancellationToken">Cancellation token</param>
     /// <returns>The created SQL server firewall rule</returns>
     Task<SqlServerFirewallRule> CreateFirewallRuleAsync(
+        McpUserContext userContext,
         string serverName,
         string resourceGroup,
         string subscription,
@@ -124,6 +131,7 @@ public interface ISqlService
     /// <param name="cancellationToken">Cancellation token</param>
     /// <returns>True if the firewall rule was successfully deleted</returns>
     Task<bool> DeleteFirewallRuleAsync(
+        McpUserContext userContext,
         string serverName,
         string resourceGroup,
         string subscription,

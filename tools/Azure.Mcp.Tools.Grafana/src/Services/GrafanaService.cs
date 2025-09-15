@@ -2,6 +2,7 @@
 // Licensed under the MIT License.
 // cSpell:ignore Grafanas
 
+using Azure.Mcp.Core.Areas.Server.Commands.Runtime;
 using Azure.Mcp.Core.Models.Identity;
 using Azure.Mcp.Core.Options;
 using Azure.Mcp.Core.Services.Azure;
@@ -15,6 +16,7 @@ public class GrafanaService(ISubscriptionService _subscriptionService, ITenantSe
     : BaseAzureService(tenantService), IGrafanaService
 {
     public async Task<IEnumerable<Models.Workspace.Workspace>> ListWorkspacesAsync(
+        McpUserContext userContext,
         string subscription,
         string? tenant = null,
         RetryPolicyOptions? retryPolicy = null)

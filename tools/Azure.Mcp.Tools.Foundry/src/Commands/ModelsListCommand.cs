@@ -69,6 +69,7 @@ public sealed class ModelsListCommand : GlobalCommand<ModelsListOptions>
         {
             var service = context.GetService<IFoundryService>();
             var models = await service.ListModels(
+                context.UserContext,
                 options.SearchForFreePlayground ?? false,
                 options.PublisherName ?? "",
                 options.LicenseName ?? "",

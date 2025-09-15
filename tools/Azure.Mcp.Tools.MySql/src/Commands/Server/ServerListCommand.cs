@@ -33,7 +33,7 @@ public sealed class ServerListCommand(ILogger<ServerListCommand> logger) : BaseM
         try
         {
             IMySqlService mysqlService = context.GetService<IMySqlService>() ?? throw new InvalidOperationException("MySQL service is not available.");
-            List<string> servers = await mysqlService.ListServersAsync(options.Subscription!, options.ResourceGroup!, options.User!);
+            List<string> servers = await mysqlService.ListServersAsync(context.UserContext, options.Subscription!, options.ResourceGroup!, options.User!);
             context.Response.Results = servers?.Count > 0 ?
                 ResponseResult.Create(
                     new ServerListCommandResult(servers),

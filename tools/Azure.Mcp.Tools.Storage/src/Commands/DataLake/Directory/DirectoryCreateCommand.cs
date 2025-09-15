@@ -60,6 +60,7 @@ public sealed class DirectoryCreateCommand(ILogger<DirectoryCreateCommand> logge
             var storageService = context.GetService<IStorageService>();
 
             var directory = await storageService.CreateDirectory(
+                context.UserContext,
                 options.Account!,
                 options.DirectoryPath!,
                 options.Subscription!,

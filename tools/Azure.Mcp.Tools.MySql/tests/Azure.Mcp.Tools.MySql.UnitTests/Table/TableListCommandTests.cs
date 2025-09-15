@@ -3,6 +3,7 @@
 
 using System.Text.Json;
 using System.Text.Json.Serialization;
+using Azure.Mcp.Core.Areas.Server.Commands.Runtime;
 using Azure.Mcp.Core.Models.Command;
 using Azure.Mcp.Tools.MySql.Commands.Table;
 using Azure.Mcp.Tools.MySql.Services;
@@ -35,7 +36,7 @@ public class TableListCommandTests
     public async Task ExecuteAsync_ReturnsTables_WhenSuccessful()
     {
         var expectedTables = new List<string> { "users", "products", "orders" };
-        _mysqlService.GetTablesAsync("sub123", "rg1", "user1", "server1", "db1").Returns(expectedTables);
+        _mysqlService.GetTablesAsync(McpUserContext.Empty, "sub123", "rg1", "user1", "server1", "db1").Returns(expectedTables);
 
         var command = new TableListCommand(_logger);
         var args = command.GetCommand().Parse([
@@ -45,7 +46,7 @@ public class TableListCommandTests
             "--server", "server1",
             "--database", "db1"
         ]);
-        var context = new CommandContext(_serviceProvider);
+        var context = new CommandContext(_serviceProvider, McpUserContext.Empty);
 
         var response = await command.ExecuteAsync(context, args);
 
@@ -63,7 +64,7 @@ public class TableListCommandTests
     [Fact]
     public async Task ExecuteAsync_ReturnsError_WhenServiceThrows()
     {
-        _mysqlService.GetTablesAsync("sub123", "rg1", "user1", "server1", "db1")
+        _mysqlService.GetTablesAsync(McpUserContext.Empty, "sub123", "rg1", "user1", "server1", "db1")
             .ThrowsAsync(new UnauthorizedAccessException("Access denied"));
 
         var command = new TableListCommand(_logger);
@@ -74,7 +75,7 @@ public class TableListCommandTests
             "--server", "server1",
             "--database", "db1"
         ]);
-        var context = new CommandContext(_serviceProvider);
+        var context = new CommandContext(_serviceProvider, McpUserContext.Empty);
 
         var response = await command.ExecuteAsync(context, args);
 

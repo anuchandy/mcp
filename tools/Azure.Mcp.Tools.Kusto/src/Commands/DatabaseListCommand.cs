@@ -44,6 +44,7 @@ public sealed class DatabaseListCommand(ILogger<DatabaseListCommand> logger) : B
             if (UseClusterUri(options))
             {
                 databasesNames = await kusto.ListDatabases(
+                    context.UserContext,
                     options.ClusterUri!,
                     options.Tenant,
                     options.AuthMethod,
@@ -52,6 +53,7 @@ public sealed class DatabaseListCommand(ILogger<DatabaseListCommand> logger) : B
             else
             {
                 databasesNames = await kusto.ListDatabases(
+                    context.UserContext,
                     options.Subscription!,
                     options.ClusterName!,
                     options.Tenant,

@@ -41,6 +41,7 @@ public sealed class DatabaseListCommand(ILogger<DatabaseListCommand> logger) : B
         {
             var redisService = context.GetService<IRedisService>() ?? throw new InvalidOperationException("Redis service is not available.");
             var databases = await redisService.ListDatabasesAsync(
+                context.UserContext,
                 options.Cluster!,
                 options.ResourceGroup!,
                 options.Subscription!,

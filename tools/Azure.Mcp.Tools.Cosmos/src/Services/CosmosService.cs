@@ -1,6 +1,7 @@
 // Copyright (c) Microsoft Corporation.
 // Licensed under the MIT License.
 
+using Azure.Mcp.Core.Areas.Server.Commands.Runtime;
 using Azure.Mcp.Core.Options;
 using Azure.Mcp.Core.Services.Azure;
 using Azure.Mcp.Core.Services.Azure.Subscription;
@@ -153,7 +154,7 @@ public class CosmosService(ISubscriptionService subscriptionService, ITenantServ
         throw new Exception($"Failed to create Cosmos client for account '{accountName}' with any authentication method");
     }
 
-    public async Task<List<string>> GetCosmosAccounts(string subscription, string? tenant = null, RetryPolicyOptions? retryPolicy = null)
+    public async Task<List<string>> GetCosmosAccounts(McpUserContext userContext, string subscription, string? tenant = null, RetryPolicyOptions? retryPolicy = null)
     {
         ValidateRequiredParameters(subscription);
 
@@ -178,6 +179,7 @@ public class CosmosService(ISubscriptionService subscriptionService, ITenantServ
     }
 
     public async Task<List<string>> ListDatabases(
+        McpUserContext userContext,
         string accountName,
         string subscription,
         AuthMethod authMethod = AuthMethod.Credential,
@@ -231,6 +233,7 @@ public class CosmosService(ISubscriptionService subscriptionService, ITenantServ
     }
 
     public async Task<List<string>> ListContainers(
+        McpUserContext userContext,
         string accountName,
         string databaseName,
         string subscription,
@@ -286,6 +289,7 @@ public class CosmosService(ISubscriptionService subscriptionService, ITenantServ
     }
 
     public async Task<List<JsonElement>> QueryItems(
+        McpUserContext userContext,
         string accountName,
         string databaseName,
         string containerName,

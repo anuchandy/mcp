@@ -3,6 +3,7 @@
 
 using Azure.Core;
 using Azure.Core.Pipeline;
+using Azure.Mcp.Core.Areas.Server.Commands.Runtime;
 using Azure.Mcp.Core.Options;
 using Azure.Mcp.Core.Services.Azure;
 using Azure.Mcp.Core.Services.Azure.Tenant;
@@ -40,6 +41,7 @@ public class MarketplaceService(ITenantService tenantService)
     /// <exception cref="ArgumentException">Thrown when required parameters are missing or invalid.</exception>
     /// <exception cref="Exception">Thrown when parsing the product response fails.</exception>
     public async Task<ProductDetails> GetProduct(
+        McpUserContext userContext,
         string productId,
         string subscription,
         bool? includeStopSoldPlans = null,

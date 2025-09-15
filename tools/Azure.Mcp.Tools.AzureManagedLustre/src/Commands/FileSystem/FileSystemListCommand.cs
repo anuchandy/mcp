@@ -44,6 +44,7 @@ public sealed class FileSystemListCommand(ILogger<FileSystemListCommand> logger)
         {
             var svc = context.GetService<IAzureManagedLustreService>();
             var fileSystems = await svc.ListFileSystemsAsync(
+                context.UserContext,
                 options.Subscription!,
                 options.ResourceGroup,
                 options.Tenant,

@@ -40,6 +40,7 @@ public sealed class KeyValueUnlockCommand(ILogger<KeyValueUnlockCommand> logger)
         {
             var appConfigService = context.GetService<IAppConfigService>();
             await appConfigService.UnlockKeyValue(
+                context.UserContext,
                 options.Account!,
                 options.Key!,
                 options.Subscription!,

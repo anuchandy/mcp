@@ -1,6 +1,7 @@
 // Copyright (c) Microsoft Corporation.
 // Licensed under the MIT License.
 
+using Azure.Mcp.Core.Areas.Server.Commands.Runtime;
 using Azure.Mcp.Core.Options;
 using Azure.Mcp.Core.Services.Azure;
 using Azure.Mcp.Tools.ServiceBus.Models;
@@ -12,6 +13,7 @@ namespace Azure.Mcp.Tools.ServiceBus.Services;
 public class ServiceBusService : BaseAzureService, IServiceBusService
 {
     public async Task<QueueDetails> GetQueueDetails(
+        McpUserContext userContext,
         string namespaceName,
         string queueName,
         string? tenantId = null,
@@ -48,6 +50,7 @@ public class ServiceBusService : BaseAzureService, IServiceBusService
     }
 
     public async Task<SubscriptionDetails> GetSubscriptionDetails(
+        McpUserContext userContext,
         string namespaceName,
         string topicName,
         string subscriptionName,
@@ -79,6 +82,7 @@ public class ServiceBusService : BaseAzureService, IServiceBusService
     }
 
     public async Task<TopicDetails> GetTopicDetails(
+        McpUserContext userContext,
         string namespaceName,
         string topicName,
         string? tenantId = null,
@@ -105,6 +109,7 @@ public class ServiceBusService : BaseAzureService, IServiceBusService
     }
 
     public async Task<List<ServiceBusReceivedMessage>> PeekQueueMessages(
+        McpUserContext userContext,
         string namespaceName,
         string queueName,
         int maxMessages,
@@ -123,6 +128,7 @@ public class ServiceBusService : BaseAzureService, IServiceBusService
     }
 
     public async Task<List<ServiceBusReceivedMessage>> PeekSubscriptionMessages(
+        McpUserContext userContext,
         string namespaceName,
         string topicName,
         string subscriptionName,

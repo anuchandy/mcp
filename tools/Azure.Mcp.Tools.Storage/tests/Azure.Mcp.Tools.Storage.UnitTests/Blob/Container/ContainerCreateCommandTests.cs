@@ -4,6 +4,7 @@
 using System.CommandLine;
 using System.Text.Json;
 using System.Text.Json.Serialization;
+using Azure.Mcp.Core.Areas.Server.Commands.Runtime;
 using Azure.Mcp.Core.Models.Command;
 using Azure.Mcp.Core.Options;
 using Azure.Mcp.Tools.Storage.Commands.Blob.Container;
@@ -37,7 +38,7 @@ public class ContainerCreateCommandTests
         var collection = new ServiceCollection().AddSingleton(_storageService);
         _serviceProvider = collection.BuildServiceProvider();
         _command = new(_logger);
-        _context = new(_serviceProvider);
+        _context = new CommandContext(_serviceProvider, McpUserContext.Empty);
         _commandDefinition = _command.GetCommand();
     }
 
@@ -61,7 +62,7 @@ public class ContainerCreateCommandTests
         if (shouldSucceed)
         {
             var expectedProperties = CreateMockBlobContainerProperties();
-            _storageService.CreateContainer(Arg.Any<string>(), Arg.Any<string>(), Arg.Any<string>(),
+            _storageService.CreateContainer(Arg.Any<McpUserContext>(), Arg.Any<string>(), Arg.Any<string>(), Arg.Any<string>(),
                 Arg.Any<string>(), Arg.Any<RetryPolicyOptions>())
                 .Returns(expectedProperties);
         }
@@ -87,7 +88,7 @@ public class ContainerCreateCommandTests
     {
         // Arrange
         var expectedProperties = CreateMockBlobContainerProperties();
-        _storageService.CreateContainer(Arg.Is(_knownAccount), Arg.Is(_knownContainer),
+        _storageService.CreateContainer(Arg.Any<McpUserContext>(), Arg.Is(_knownAccount), Arg.Is(_knownContainer),
             Arg.Is(_knownSubscription), Arg.Any<string>(), Arg.Any<RetryPolicyOptions>())
             .Returns(expectedProperties);
 
@@ -119,7 +120,7 @@ public class ContainerCreateCommandTests
     {
         // Arrange
         var expectedError = "Test error";
-        _storageService.CreateContainer(Arg.Is(_knownAccount), Arg.Is(_knownContainer),
+        _storageService.CreateContainer(Arg.Any<McpUserContext>(), Arg.Is(_knownAccount), Arg.Is(_knownContainer),
             Arg.Is(_knownSubscription), Arg.Any<string>(), Arg.Any<RetryPolicyOptions>())
             .ThrowsAsync(new Exception(expectedError));
 
@@ -143,7 +144,7 @@ public class ContainerCreateCommandTests
     {
         // Arrange
         var conflictException = new RequestFailedException(409, "Container already exists");
-        _storageService.CreateContainer(Arg.Is(_knownAccount), Arg.Is(_knownContainer),
+        _storageService.CreateContainer(Arg.Any<McpUserContext>(), Arg.Is(_knownAccount), Arg.Is(_knownContainer),
             Arg.Is(_knownSubscription), Arg.Any<string>(), Arg.Any<RetryPolicyOptions>())
             .ThrowsAsync(conflictException);
 

@@ -3,6 +3,7 @@
 
 using System.CommandLine;
 using System.Text.Json;
+using Azure.Mcp.Core.Areas.Server.Commands.Runtime;
 using Azure.Mcp.Core.Models.Command;
 using Azure.Mcp.Tools.Quota.Commands.Region;
 using Azure.Mcp.Tools.Quota.Services;
@@ -53,6 +54,7 @@ public sealed class AvailabilityListCommandTests
         };
 
         _quotaService.GetAvailableRegionsForResourceTypesAsync(
+                Arg.Any<McpUserContext>(),
                 Arg.Is<string[]>(array =>
                     array.Length == 2 &&
                     array.Contains("Microsoft.Web/sites") &&
@@ -68,7 +70,7 @@ public sealed class AvailabilityListCommandTests
             "--resource-types", resourceTypes
         ]);
 
-        var context = new CommandContext(_serviceProvider);
+        var context = new CommandContext(_serviceProvider, McpUserContext.Empty);
 
         // Act
         var result = await _command.ExecuteAsync(context, args);
@@ -80,6 +82,7 @@ public sealed class AvailabilityListCommandTests
 
         // Verify the service was called with the correct parameters
         await _quotaService.Received(1).GetAvailableRegionsForResourceTypesAsync(
+            Arg.Any<McpUserContext>(),
             Arg.Is<string[]>(array =>
                 array.Length == 2 &&
                 array.Contains("Microsoft.Web/sites") &&
@@ -127,6 +130,7 @@ public sealed class AvailabilityListCommandTests
         };
 
         _quotaService.GetAvailableRegionsForResourceTypesAsync(
+                Arg.Any<McpUserContext>(),
                 Arg.Is<string[]>(array =>
                     array.Length == 1 &&
                     array.Contains("Microsoft.CognitiveServices/accounts")),
@@ -143,7 +147,7 @@ public sealed class AvailabilityListCommandTests
             "--cognitive-service-deployment-sku-name", cognitiveServiceDeploymentSkuName
         ]);
 
-        var context = new CommandContext(_serviceProvider);
+        var context = new CommandContext(_serviceProvider, McpUserContext.Empty);
 
         // Act
         var result = await _command.ExecuteAsync(context, args);
@@ -155,6 +159,7 @@ public sealed class AvailabilityListCommandTests
 
         // Verify the service was called with the correct parameters
         await _quotaService.Received(1).GetAvailableRegionsForResourceTypesAsync(
+            Arg.Any<McpUserContext>(),
             Arg.Is<string[]>(array =>
                 array.Length == 1 &&
                 array.Contains("Microsoft.CognitiveServices/accounts")),
@@ -194,7 +199,7 @@ public sealed class AvailabilityListCommandTests
             "--resource-types", resourceTypes
         ]);
 
-        var context = new CommandContext(_serviceProvider);
+        var context = new CommandContext(_serviceProvider, McpUserContext.Empty);
 
         // Act
         var result = await _command.ExecuteAsync(context, args);
@@ -206,6 +211,7 @@ public sealed class AvailabilityListCommandTests
 
         // Verify the service was not called
         await _quotaService.DidNotReceive().GetAvailableRegionsForResourceTypesAsync(
+            Arg.Any<McpUserContext>(),
             Arg.Any<string[]>(),
             Arg.Any<string>(),
             Arg.Any<string?>(),
@@ -222,6 +228,7 @@ public sealed class AvailabilityListCommandTests
         var expectedException = new Exception("Service error occurred");
 
         _quotaService.GetAvailableRegionsForResourceTypesAsync(
+                Arg.Any<McpUserContext>(),
                 Arg.Any<string[]>(),
                 subscriptionId,
                 Arg.Any<string?>(),
@@ -234,7 +241,7 @@ public sealed class AvailabilityListCommandTests
             "--resource-types", resourceTypes
         ]);
 
-        var context = new CommandContext(_serviceProvider);
+        var context = new CommandContext(_serviceProvider, McpUserContext.Empty);
 
         // Act
         var result = await _command.ExecuteAsync(context, args);
@@ -255,6 +262,7 @@ public sealed class AvailabilityListCommandTests
         var expectedRegions = new List<string> { "eastus", "westus2" };
 
         _quotaService.GetAvailableRegionsForResourceTypesAsync(
+                Arg.Any<McpUserContext>(),
                 Arg.Is<string[]>(array =>
                     array.Length == 3 &&
                     array.Contains("Microsoft.Web/sites") &&
@@ -271,7 +279,7 @@ public sealed class AvailabilityListCommandTests
             "--resource-types", resourceTypes
         ]);
 
-        var context = new CommandContext(_serviceProvider);
+        var context = new CommandContext(_serviceProvider, McpUserContext.Empty);
 
         // Act
         var result = await _command.ExecuteAsync(context, args);
@@ -282,6 +290,7 @@ public sealed class AvailabilityListCommandTests
 
         // Verify the service was called with correctly parsed resource types
         await _quotaService.Received(1).GetAvailableRegionsForResourceTypesAsync(
+            Arg.Any<McpUserContext>(),
             Arg.Is<string[]>(array =>
                 array.Length == 3 &&
                 array.Contains("Microsoft.Web/sites") &&
@@ -301,6 +310,7 @@ public sealed class AvailabilityListCommandTests
         var resourceTypes = "Microsoft.Web/sites";
 
         _quotaService.GetAvailableRegionsForResourceTypesAsync(
+                Arg.Any<McpUserContext>(),
                 Arg.Any<string[]>(),
                 subscriptionId,
                 Arg.Any<string?>(),
@@ -313,7 +323,7 @@ public sealed class AvailabilityListCommandTests
             "--resource-types", resourceTypes
         ]);
 
-        var context = new CommandContext(_serviceProvider);
+        var context = new CommandContext(_serviceProvider, McpUserContext.Empty);
 
         // Act
         var result = await _command.ExecuteAsync(context, args);
@@ -337,6 +347,7 @@ public sealed class AvailabilityListCommandTests
         var expectedRegions = new List<string> { "eastus" };
 
         _quotaService.GetAvailableRegionsForResourceTypesAsync(
+                Arg.Any<McpUserContext>(),
                 Arg.Any<string[]>(),
                 subscriptionId,
                 cognitiveServiceModelName,
@@ -352,7 +363,7 @@ public sealed class AvailabilityListCommandTests
             "--cognitive-service-deployment-sku-name", cognitiveServiceDeploymentSkuName
         ]);
 
-        var context = new CommandContext(_serviceProvider);
+        var context = new CommandContext(_serviceProvider, McpUserContext.Empty);
 
         // Act
         var result = await _command.ExecuteAsync(context, args);
@@ -363,6 +374,7 @@ public sealed class AvailabilityListCommandTests
 
         // Verify the service was called with all cognitive service parameters
         await _quotaService.Received(1).GetAvailableRegionsForResourceTypesAsync(
+            Arg.Any<McpUserContext>(),
             Arg.Is<string[]>(array =>
                 array.Length == 1 &&
                 array.Contains("Microsoft.CognitiveServices/accounts")),
@@ -384,7 +396,7 @@ public sealed class AvailabilityListCommandTests
             "--resource-types", resourceTypes
         ]);
 
-        var context = new CommandContext(_serviceProvider);
+        var context = new CommandContext(_serviceProvider, McpUserContext.Empty);
 
         // Act
         var result = await _command.ExecuteAsync(context, args);
@@ -396,6 +408,7 @@ public sealed class AvailabilityListCommandTests
 
         // Verify the service was not called
         await _quotaService.DidNotReceive().GetAvailableRegionsForResourceTypesAsync(
+            Arg.Any<McpUserContext>(),
             Arg.Any<string[]>(),
             Arg.Any<string>(),
             Arg.Any<string?>(),
@@ -413,6 +426,7 @@ public sealed class AvailabilityListCommandTests
         var expectedRegions = new List<string> { "eastus", "westus2" };
 
         _quotaService.GetAvailableRegionsForResourceTypesAsync(
+                Arg.Any<McpUserContext>(),
                 Arg.Is<string[]>(array =>
                     array.Length == 3 &&
                     array.Contains("microsoft.web/SITES") &&
@@ -429,7 +443,7 @@ public sealed class AvailabilityListCommandTests
             "--resource-types", resourceTypes
         ]);
 
-        var context = new CommandContext(_serviceProvider);
+        var context = new CommandContext(_serviceProvider, McpUserContext.Empty);
 
         // Act
         var result = await _command.ExecuteAsync(context, args);
@@ -440,6 +454,7 @@ public sealed class AvailabilityListCommandTests
 
         // Verify the service was called with resource types preserving original casing
         await _quotaService.Received(1).GetAvailableRegionsForResourceTypesAsync(
+            Arg.Any<McpUserContext>(),
             Arg.Is<string[]>(array =>
                 array.Length == 3 &&
                 array.Contains("microsoft.web/SITES") &&
@@ -475,6 +490,7 @@ public sealed class AvailabilityListCommandTests
         };
 
         _quotaService.GetAvailableRegionsForResourceTypesAsync(
+                Arg.Any<McpUserContext>(),
                 Arg.Is<string[]>(array => array.Length == 50),
                 subscriptionId,
                 Arg.Any<string?>(),
@@ -487,7 +503,7 @@ public sealed class AvailabilityListCommandTests
             "--resource-types", resourceTypes
         ]);
 
-        var context = new CommandContext(_serviceProvider);
+        var context = new CommandContext(_serviceProvider, McpUserContext.Empty);
 
         // Act
         var result = await _command.ExecuteAsync(context, args);
@@ -499,6 +515,7 @@ public sealed class AvailabilityListCommandTests
 
         // Verify the service was called with all 50 resource types
         await _quotaService.Received(1).GetAvailableRegionsForResourceTypesAsync(
+            Arg.Any<McpUserContext>(),
             Arg.Is<string[]>(array => array.Length == 50),
             subscriptionId,
             null,

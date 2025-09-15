@@ -1,6 +1,7 @@
 // Copyright (c) Microsoft Corporation.
 // Licensed under the MIT License.
 
+using Azure.Mcp.Core.Areas.Server.Commands.Runtime;
 using Azure.Mcp.Core.Options;
 using Azure.Mcp.Core.Services.Azure;
 using Azure.Security.KeyVault.Certificates;
@@ -12,6 +13,7 @@ namespace Azure.Mcp.Tools.KeyVault.Services;
 public sealed class KeyVaultService : BaseAzureService, IKeyVaultService
 {
     public async Task<List<string>> ListKeys(
+        McpUserContext userContext,
         string vaultName,
         bool includeManagedKeys,
         string subscriptionId,
@@ -40,6 +42,7 @@ public sealed class KeyVaultService : BaseAzureService, IKeyVaultService
     }
 
     public async Task<KeyVaultKey> GetKey(
+        McpUserContext userContext,
         string vaultName,
         string keyName,
         string subscriptionId,
@@ -62,6 +65,7 @@ public sealed class KeyVaultService : BaseAzureService, IKeyVaultService
     }
 
     public async Task<KeyVaultKey> CreateKey(
+        McpUserContext userContext,
         string vaultName,
         string keyName,
         string keyType,
@@ -86,6 +90,7 @@ public sealed class KeyVaultService : BaseAzureService, IKeyVaultService
     }
 
     public async Task<List<string>> ListSecrets(
+        McpUserContext userContext,
         string vaultName,
         string subscriptionId,
         string? tenantId = null,
@@ -113,6 +118,7 @@ public sealed class KeyVaultService : BaseAzureService, IKeyVaultService
     }
 
     public async Task<KeyVaultSecret> CreateSecret(
+        McpUserContext userContext,
         string vaultName,
         string secretName,
         string secretValue,
@@ -136,6 +142,7 @@ public sealed class KeyVaultService : BaseAzureService, IKeyVaultService
     }
 
     public async Task<KeyVaultSecret> GetSecret(
+        McpUserContext userContext,
         string vaultName,
         string secretName,
         string subscriptionId,
@@ -159,6 +166,7 @@ public sealed class KeyVaultService : BaseAzureService, IKeyVaultService
     }
 
     public async Task<List<string>> ListCertificates(
+        McpUserContext userContext,
         string vaultName,
         string subscriptionId,
         string? tenantId = null,
@@ -186,6 +194,7 @@ public sealed class KeyVaultService : BaseAzureService, IKeyVaultService
     }
 
     public async Task<KeyVaultCertificateWithPolicy> GetCertificate(
+        McpUserContext userContext,
         string vaultName,
         string certificateName,
         string subscriptionId,
@@ -208,6 +217,7 @@ public sealed class KeyVaultService : BaseAzureService, IKeyVaultService
     }
 
     public async Task<CertificateOperation> CreateCertificate(
+        McpUserContext userContext,
         string vaultName,
         string certificateName,
         string subscriptionId,
@@ -230,6 +240,7 @@ public sealed class KeyVaultService : BaseAzureService, IKeyVaultService
     }
 
     public async Task<KeyVaultCertificateWithPolicy> ImportCertificate(
+        McpUserContext userContext,
         string vaultName,
         string certificateName,
         string certificateData,

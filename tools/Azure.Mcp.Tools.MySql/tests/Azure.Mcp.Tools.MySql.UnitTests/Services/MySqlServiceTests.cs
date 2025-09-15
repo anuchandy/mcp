@@ -1,6 +1,7 @@
 // Copyright (c) Microsoft Corporation.
 // Licensed under the MIT License.
 
+using Azure.Mcp.Core.Areas.Server.Commands.Runtime;
 using Azure.Mcp.Core.Services.Azure.ResourceGroup;
 using Azure.Mcp.Core.Services.Azure.Tenant;
 using Azure.Mcp.Tools.MySql.Services;
@@ -48,7 +49,7 @@ public class MySqlServiceTests
         _resourceGroupService.GetResourceGroupResource("sub123", "rg1").ThrowsAsync(exception);
 
         var thrownException = await Assert.ThrowsAsync<InvalidOperationException>(() =>
-            _mysqlService.ListServersAsync("sub123", "rg1", "user1"));
+            _mysqlService.ListServersAsync(McpUserContext.Empty, "sub123", "rg1", "user1"));
 
         Assert.Equal(exception, thrownException);
     }

@@ -41,6 +41,7 @@ public sealed class EntraAdminListCommand(ILogger<EntraAdminListCommand> logger)
             var sqlService = context.GetService<ISqlService>();
 
             var administrators = await sqlService.GetEntraAdministratorsAsync(
+                context.UserContext,
                 options.Server!,
                 options.ResourceGroup!,
                 options.Subscription!,

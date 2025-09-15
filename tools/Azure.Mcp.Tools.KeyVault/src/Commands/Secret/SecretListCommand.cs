@@ -54,6 +54,7 @@ public sealed class SecretListCommand(ILogger<SecretListCommand> logger) : Subsc
         {
             var keyVaultService = context.GetService<IKeyVaultService>();
             var secrets = await keyVaultService.ListSecrets(
+                context.UserContext,
                 options.VaultName!,
                 options.Subscription!,
                 options.Tenant,

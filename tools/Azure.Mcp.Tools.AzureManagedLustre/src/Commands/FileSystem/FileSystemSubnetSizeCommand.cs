@@ -87,6 +87,7 @@ public sealed class FileSystemSubnetSizeCommand(ILogger<FileSystemSubnetSizeComm
         {
             var svc = context.GetService<IAzureManagedLustreService>();
             var result = await svc.GetRequiredAmlFSSubnetsSize(
+                context.UserContext,
                 options.Subscription!,
                 options.Sku!, options.Size,
                 options.Tenant,

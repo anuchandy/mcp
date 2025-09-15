@@ -2,6 +2,7 @@
 // Licensed under the MIT License.
 
 using System.CommandLine;
+using Azure.Mcp.Core.Areas.Server.Commands.Runtime;
 using Azure.Mcp.Core.Models.Command;
 using Azure.Mcp.Tools.Sql.Commands.FirewallRule;
 using Azure.Mcp.Tools.Sql.Models;
@@ -32,7 +33,7 @@ public class FirewallRuleCreateCommandTests
         _serviceProvider = collection.BuildServiceProvider();
 
         _command = new(_logger);
-        _context = new(_serviceProvider);
+        _context = new CommandContext(_serviceProvider, McpUserContext.Empty);
         _commandDefinition = _command.GetCommand();
     }
 
@@ -67,6 +68,7 @@ public class FirewallRuleCreateCommandTests
                 "192.168.1.255");
 
             _service.CreateFirewallRuleAsync(
+                Arg.Any<McpUserContext>(),
                 Arg.Any<string>(),
                 Arg.Any<string>(),
                 Arg.Any<string>(),
@@ -78,7 +80,7 @@ public class FirewallRuleCreateCommandTests
                 .Returns(expectedFirewallRule);
         }
 
-        var context = new CommandContext(_serviceProvider);
+        var context = new CommandContext(_serviceProvider, McpUserContext.Empty);
         var parseResult = _commandDefinition.Parse(args);
 
         // Act
@@ -108,6 +110,7 @@ public class FirewallRuleCreateCommandTests
             "192.168.1.255");
 
         _service.CreateFirewallRuleAsync(
+            Arg.Any<McpUserContext>(),
             "testserver",
             "testrg",
             "testsub",
@@ -118,7 +121,7 @@ public class FirewallRuleCreateCommandTests
             Arg.Any<CancellationToken>())
             .Returns(expectedFirewallRule);
 
-        var context = new CommandContext(_serviceProvider);
+        var context = new CommandContext(_serviceProvider, McpUserContext.Empty);
         var parseResult = _commandDefinition.Parse("--subscription testsub --resource-group testrg --server testserver --firewall-rule-name TestRule --start-ip-address 192.168.1.1 --end-ip-address 192.168.1.255");
 
         // Act
@@ -135,6 +138,7 @@ public class FirewallRuleCreateCommandTests
     {
         // Arrange
         _service.CreateFirewallRuleAsync(
+            Arg.Any<McpUserContext>(),
             Arg.Any<string>(),
             Arg.Any<string>(),
             Arg.Any<string>(),
@@ -145,7 +149,7 @@ public class FirewallRuleCreateCommandTests
             Arg.Any<CancellationToken>())
             .Returns(Task.FromException<SqlServerFirewallRule>(new Exception("Test error")));
 
-        var context = new CommandContext(_serviceProvider);
+        var context = new CommandContext(_serviceProvider, McpUserContext.Empty);
         var parseResult = _commandDefinition.Parse("--subscription testsub --resource-group testrg --server testserver --firewall-rule-name TestRule --start-ip-address 192.168.1.1 --end-ip-address 192.168.1.255");
 
         // Act
@@ -163,6 +167,7 @@ public class FirewallRuleCreateCommandTests
         // Arrange
         var requestException = new RequestFailedException(404, "Server not found");
         _service.CreateFirewallRuleAsync(
+            Arg.Any<McpUserContext>(),
             Arg.Any<string>(),
             Arg.Any<string>(),
             Arg.Any<string>(),
@@ -173,7 +178,7 @@ public class FirewallRuleCreateCommandTests
             Arg.Any<CancellationToken>())
             .Returns(Task.FromException<SqlServerFirewallRule>(requestException));
 
-        var context = new CommandContext(_serviceProvider);
+        var context = new CommandContext(_serviceProvider, McpUserContext.Empty);
         var parseResult = _commandDefinition.Parse("--subscription testsub --resource-group testrg --server testserver --firewall-rule-name TestRule --start-ip-address 192.168.1.1 --end-ip-address 192.168.1.255");
 
         // Act
@@ -190,6 +195,7 @@ public class FirewallRuleCreateCommandTests
         // Arrange
         var requestException = new RequestFailedException(403, "Access denied");
         _service.CreateFirewallRuleAsync(
+            Arg.Any<McpUserContext>(),
             Arg.Any<string>(),
             Arg.Any<string>(),
             Arg.Any<string>(),
@@ -200,7 +206,7 @@ public class FirewallRuleCreateCommandTests
             Arg.Any<CancellationToken>())
             .Returns(Task.FromException<SqlServerFirewallRule>(requestException));
 
-        var context = new CommandContext(_serviceProvider);
+        var context = new CommandContext(_serviceProvider, McpUserContext.Empty);
         var parseResult = _commandDefinition.Parse("--subscription testsub --resource-group testrg --server testserver --firewall-rule-name TestRule --start-ip-address 192.168.1.1 --end-ip-address 192.168.1.255");
 
         // Act
@@ -217,6 +223,7 @@ public class FirewallRuleCreateCommandTests
         // Arrange
         var requestException = new RequestFailedException(409, "Conflict - rule already exists");
         _service.CreateFirewallRuleAsync(
+            Arg.Any<McpUserContext>(),
             Arg.Any<string>(),
             Arg.Any<string>(),
             Arg.Any<string>(),
@@ -227,7 +234,7 @@ public class FirewallRuleCreateCommandTests
             Arg.Any<CancellationToken>())
             .Returns(Task.FromException<SqlServerFirewallRule>(requestException));
 
-        var context = new CommandContext(_serviceProvider);
+        var context = new CommandContext(_serviceProvider, McpUserContext.Empty);
         var parseResult = _commandDefinition.Parse("--subscription testsub --resource-group testrg --server testserver --firewall-rule-name TestRule --start-ip-address 192.168.1.1 --end-ip-address 192.168.1.255");
 
         // Act
@@ -244,6 +251,7 @@ public class FirewallRuleCreateCommandTests
         // Arrange
         var argumentException = new ArgumentException("Invalid IP address format");
         _service.CreateFirewallRuleAsync(
+            Arg.Any<McpUserContext>(),
             Arg.Any<string>(),
             Arg.Any<string>(),
             Arg.Any<string>(),
@@ -254,7 +262,7 @@ public class FirewallRuleCreateCommandTests
             Arg.Any<CancellationToken>())
             .Returns(Task.FromException<SqlServerFirewallRule>(argumentException));
 
-        var context = new CommandContext(_serviceProvider);
+        var context = new CommandContext(_serviceProvider, McpUserContext.Empty);
         var parseResult = _commandDefinition.Parse("--subscription testsub --resource-group testrg --server testserver --firewall-rule-name TestRule --start-ip-address invalid --end-ip-address invalid");
 
         // Act
@@ -284,6 +292,7 @@ public class FirewallRuleCreateCommandTests
             endIp);
 
         _service.CreateFirewallRuleAsync(
+            Arg.Any<McpUserContext>(),
             Arg.Any<string>(),
             Arg.Any<string>(),
             Arg.Any<string>(),
@@ -294,7 +303,7 @@ public class FirewallRuleCreateCommandTests
             Arg.Any<CancellationToken>())
             .Returns(expectedFirewallRule);
 
-        var context = new CommandContext(_serviceProvider);
+        var context = new CommandContext(_serviceProvider, McpUserContext.Empty);
         var parseResult = _commandDefinition.Parse($"--subscription {subscription} --resource-group {resourceGroup} --server {serverName} --firewall-rule-name {ruleName} --start-ip-address {startIp} --end-ip-address {endIp}");
 
         // Act
@@ -302,6 +311,7 @@ public class FirewallRuleCreateCommandTests
 
         // Assert
         await _service.Received(1).CreateFirewallRuleAsync(
+            Arg.Any<McpUserContext>(),
             serverName,
             resourceGroup,
             subscription,
@@ -324,6 +334,7 @@ public class FirewallRuleCreateCommandTests
             "192.168.1.255");
 
         _service.CreateFirewallRuleAsync(
+            Arg.Any<McpUserContext>(),
             Arg.Any<string>(),
             Arg.Any<string>(),
             Arg.Any<string>(),
@@ -334,7 +345,7 @@ public class FirewallRuleCreateCommandTests
             Arg.Any<CancellationToken>())
             .Returns(expectedFirewallRule);
 
-        var context = new CommandContext(_serviceProvider);
+        var context = new CommandContext(_serviceProvider, McpUserContext.Empty);
         var parseResult = _commandDefinition.Parse("--subscription testsub --resource-group testrg --server testserver --firewall-rule-name TestRule --start-ip-address 192.168.1.1 --end-ip-address 192.168.1.255 --retry-max-retries 3");
 
         // Act
@@ -346,6 +357,7 @@ public class FirewallRuleCreateCommandTests
 
         // Verify the service was called with retry policy
         await _service.Received(1).CreateFirewallRuleAsync(
+            Arg.Any<McpUserContext>(),
             "testserver",
             "testrg",
             "testsub",
@@ -371,6 +383,7 @@ public class FirewallRuleCreateCommandTests
             endIp);
 
         _service.CreateFirewallRuleAsync(
+            Arg.Any<McpUserContext>(),
             Arg.Any<string>(),
             Arg.Any<string>(),
             Arg.Any<string>(),
@@ -381,7 +394,7 @@ public class FirewallRuleCreateCommandTests
             Arg.Any<CancellationToken>())
             .Returns(expectedFirewallRule);
 
-        var context = new CommandContext(_serviceProvider);
+        var context = new CommandContext(_serviceProvider, McpUserContext.Empty);
         var parseResult = _commandDefinition.Parse($"--subscription testsub --resource-group testrg --server testserver --firewall-rule-name TestRule --start-ip-address {startIp} --end-ip-address {endIp}");
 
         // Act

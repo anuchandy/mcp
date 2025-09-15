@@ -3,6 +3,7 @@
 
 using Azure.Core;
 using Azure.Data.AppConfiguration;
+using Azure.Mcp.Core.Areas.Server.Commands.Runtime;
 using Azure.Mcp.Core.Models.Identity;
 using Azure.Mcp.Core.Options;
 using Azure.Mcp.Core.Services.Azure;
@@ -21,7 +22,7 @@ public class AppConfigService(ISubscriptionService subscriptionService, ITenantS
 {
     private readonly ISubscriptionService _subscriptionService = subscriptionService ?? throw new ArgumentNullException(nameof(subscriptionService));
 
-    public async Task<List<AppConfigurationAccount>> GetAppConfigAccounts(string subscription, string? tenant = null, RetryPolicyOptions? retryPolicy = null)
+    public async Task<List<AppConfigurationAccount>> GetAppConfigAccounts(McpUserContext userContext, string subscription, string? tenant = null, RetryPolicyOptions? retryPolicy = null)
     {
         ValidateRequiredParameters(subscription);
 
@@ -82,6 +83,7 @@ public class AppConfigService(ISubscriptionService subscriptionService, ITenantS
     }
 
     public async Task<List<KeyValueSetting>> ListKeyValues(
+        McpUserContext userContext,
         string accountName,
         string subscription,
         string? key = null,
@@ -117,7 +119,7 @@ public class AppConfigService(ISubscriptionService subscriptionService, ITenantS
         return settings;
     }
 
-    public async Task<KeyValueSetting> GetKeyValue(string accountName, string key, string subscription, string? tenant = null, RetryPolicyOptions? retryPolicy = null, string? label = null, string? contentType = null)
+    public async Task<KeyValueSetting> GetKeyValue(McpUserContext userContext, string accountName, string key, string subscription, string? tenant = null, RetryPolicyOptions? retryPolicy = null, string? label = null, string? contentType = null)
     {
         ValidateRequiredParameters(accountName, key, subscription);
         var client = await GetConfigurationClient(accountName, subscription, tenant, retryPolicy);
@@ -136,17 +138,17 @@ public class AppConfigService(ISubscriptionService subscriptionService, ITenantS
         };
     }
 
-    public async Task LockKeyValue(string accountName, string key, string subscription, string? tenant = null, RetryPolicyOptions? retryPolicy = null, string? label = null)
+    public async Task LockKeyValue(McpUserContext userContext, string accountName, string key, string subscription, string? tenant = null, RetryPolicyOptions? retryPolicy = null, string? label = null)
     {
         await SetKeyValueReadOnlyState(accountName, key, subscription, tenant, retryPolicy, label, true);
     }
 
-    public async Task UnlockKeyValue(string accountName, string key, string subscription, string? tenant = null, RetryPolicyOptions? retryPolicy = null, string? label = null)
+    public async Task UnlockKeyValue(McpUserContext userContext, string accountName, string key, string subscription, string? tenant = null, RetryPolicyOptions? retryPolicy = null, string? label = null)
     {
         await SetKeyValueReadOnlyState(accountName, key, subscription, tenant, retryPolicy, label, false);
     }
 
-    public async Task SetKeyValue(string accountName, string key, string value, string subscription, string? tenant = null, RetryPolicyOptions? retryPolicy = null, string? label = null, string? contentType = null, string[]? tags = null)
+    public async Task SetKeyValue(McpUserContext userContext, string accountName, string key, string value, string subscription, string? tenant = null, RetryPolicyOptions? retryPolicy = null, string? label = null, string? contentType = null, string[]? tags = null)
     {
         ValidateRequiredParameters(accountName, key, value, subscription);
         var client = await GetConfigurationClient(accountName, subscription, tenant, retryPolicy);
@@ -181,7 +183,7 @@ public class AppConfigService(ISubscriptionService subscriptionService, ITenantS
 
         await client.SetConfigurationSettingAsync(setting, cancellationToken: default);
     }
-    public async Task DeleteKeyValue(string accountName, string key, string subscription, string? tenant = null, RetryPolicyOptions? retryPolicy = null, string? label = null)
+    public async Task DeleteKeyValue(McpUserContext userContext, string accountName, string key, string subscription, string? tenant = null, RetryPolicyOptions? retryPolicy = null, string? label = null)
     {
         ValidateRequiredParameters(accountName, key, subscription);
         var client = await GetConfigurationClient(accountName, subscription, tenant, retryPolicy);

@@ -4,6 +4,7 @@
 using System.CommandLine;
 using System.Text.Json;
 using System.Text.Json.Serialization;
+using Azure.Mcp.Core.Areas.Server.Commands.Runtime;
 using Azure.Mcp.Core.Models.Command;
 using Azure.Mcp.Core.Options;
 using Azure.Mcp.Tools.Storage.Commands.DataLake.Directory;
@@ -38,7 +39,7 @@ public class DirectoryCreateCommandTests
 
         _serviceProvider = collection.BuildServiceProvider();
         _command = new(_logger);
-        _context = new(_serviceProvider);
+        _context = new CommandContext(_serviceProvider, McpUserContext.Empty);
         _commandDefinition = _command.GetCommand();
     }
 
@@ -55,6 +56,7 @@ public class DirectoryCreateCommandTests
         );
 
         _storageService.CreateDirectory(
+            Arg.Any<McpUserContext>(),
             Arg.Is(_knownAccount),
             Arg.Is(_knownDirectoryPath),
             Arg.Is(_knownSubscription),
@@ -91,6 +93,7 @@ public class DirectoryCreateCommandTests
         var expectedError = "Test error";
 
         _storageService.CreateDirectory(
+            Arg.Any<McpUserContext>(),
             Arg.Is(_knownAccount),
             Arg.Is(_knownDirectoryPath),
             Arg.Is(_knownSubscription),
@@ -124,6 +127,7 @@ public class DirectoryCreateCommandTests
         {
             var expectedDirectory = new DataLakePathInfo("filesystem123/data/logs", "directory", null, DateTimeOffset.Now, "\"etag1\"");
             _storageService.CreateDirectory(
+                Arg.Any<McpUserContext>(),
                 Arg.Any<string>(),
                 Arg.Any<string>(),
                 Arg.Any<string>(),

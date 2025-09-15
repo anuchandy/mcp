@@ -3,6 +3,7 @@
 
 using System.CommandLine;
 using System.Text.Json;
+using Azure.Mcp.Core.Areas.Server.Commands.Runtime;
 using Azure.Mcp.Core.Areas.Subscription.Commands;
 using Azure.Mcp.Core.Models;
 using Azure.Mcp.Core.Models.Command;
@@ -38,7 +39,7 @@ public class SubscriptionListCommandTests
 
         _serviceProvider = collection.BuildServiceProvider();
         _command = new(_logger);
-        _context = new(_serviceProvider);
+        _context = new CommandContext(_serviceProvider, McpUserContext.Empty);
         _commandDefinition = _command.GetCommand();
     }
 

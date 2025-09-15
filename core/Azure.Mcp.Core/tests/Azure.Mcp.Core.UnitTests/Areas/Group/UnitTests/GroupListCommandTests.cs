@@ -4,6 +4,7 @@
 using System.CommandLine;
 using System.Text.Json;
 using Azure.Mcp.Core.Areas.Group.Commands;
+using Azure.Mcp.Core.Areas.Server.Commands.Runtime;
 using Azure.Mcp.Core.Models.Command;
 using Azure.Mcp.Core.Models.ResourceGroup;
 using Azure.Mcp.Core.Options;
@@ -38,7 +39,7 @@ public class GroupListCommandTests
 
         _serviceProvider = collection.BuildServiceProvider();
         _command = new(_logger);
-        _context = new(_serviceProvider);
+        _context = new CommandContext(_serviceProvider, McpUserContext.Empty);
         _commandDefinition = _command.GetCommand();
     }
 

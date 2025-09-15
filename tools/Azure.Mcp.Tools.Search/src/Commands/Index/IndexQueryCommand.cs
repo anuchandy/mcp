@@ -65,6 +65,7 @@ public sealed class IndexQueryCommand(ILogger<IndexQueryCommand> logger) : Globa
             var searchService = context.GetService<ISearchService>();
 
             var results = await searchService.QueryIndex(
+                context.UserContext,
                 options.Service!,
                 options.Index!,
                 options.Query!,

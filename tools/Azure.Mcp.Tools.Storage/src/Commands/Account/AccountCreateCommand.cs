@@ -1,6 +1,7 @@
 // Copyright (c) Microsoft Corporation.
 // Licensed under the MIT License.
 
+using Azure.Mcp.Core.Areas.Server.Commands.Runtime;
 using Azure.Mcp.Core.Commands;
 using Azure.Mcp.Core.Commands.Subscription;
 using Azure.Mcp.Core.Extensions;
@@ -80,6 +81,7 @@ public sealed class AccountCreateCommand(ILogger<AccountCreateCommand> logger) :
 
             // Call service to create storage account
             var account = await storageService.CreateStorageAccount(
+                context.UserContext,
                 options.Account!,
                 options.ResourceGroup!,
                 options.Location!,

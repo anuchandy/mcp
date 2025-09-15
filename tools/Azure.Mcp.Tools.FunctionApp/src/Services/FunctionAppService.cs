@@ -1,6 +1,7 @@
 // Copyright (c) Microsoft Corporation.
 // Licensed under the MIT License.
 
+using Azure.Mcp.Core.Areas.Server.Commands.Runtime;
 using Azure.Mcp.Core.Services.Azure;
 using Azure.Mcp.Core.Services.Azure.ResourceGroup;
 using Azure.Mcp.Core.Services.Azure.Subscription;
@@ -25,6 +26,7 @@ public sealed class FunctionAppService(
     private static readonly TimeSpan s_cacheDuration = TimeSpan.FromHours(1);
 
     public async Task<List<FunctionAppInfo>?> ListFunctionApps(
+        McpUserContext userContext,
         string subscription,
         string? tenant = null,
         RetryPolicyOptions? retryPolicy = null)
@@ -65,6 +67,7 @@ public sealed class FunctionAppService(
     }
 
     public async Task<FunctionAppInfo?> GetFunctionApp(
+        McpUserContext userContext,
         string subscription,
         string functionAppName,
         string resourceGroup,

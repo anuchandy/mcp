@@ -60,6 +60,7 @@ public sealed class EntityGetHealthCommand(ILogger<EntityGetHealthCommand> logge
         {
             var service = context.GetService<IMonitorHealthModelService>();
             var result = await service.GetEntityHealth(
+                context.UserContext,
                 options.Entity!,
                 options.HealthModelName!,
                 options.ResourceGroup!,

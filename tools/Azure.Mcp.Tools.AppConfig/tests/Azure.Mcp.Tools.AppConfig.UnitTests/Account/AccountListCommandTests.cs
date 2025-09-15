@@ -3,6 +3,7 @@
 
 using System.CommandLine;
 using System.Text.Json;
+using Azure.Mcp.Core.Areas.Server.Commands.Runtime;
 using Azure.Mcp.Core.Models.Command;
 using Azure.Mcp.Core.Options;
 using Azure.Mcp.Tools.AppConfig.Commands.Account;
@@ -37,7 +38,7 @@ public class AccountListCommandTests
         _serviceProvider = new ServiceCollection()
             .AddSingleton(_appConfigService)
             .BuildServiceProvider();
-        _context = new(_serviceProvider);
+        _context = new CommandContext(_serviceProvider, McpUserContext.Empty);
     }
 
     [Fact]
@@ -50,6 +51,7 @@ public class AccountListCommandTests
             new() { Name = "account2", Location = "West US", Endpoint = "https://account2.azconfig.io" }
         };
         _appConfigService.GetAppConfigAccounts(
+            Arg.Any<McpUserContext>(),
             "sub123",
             Arg.Any<string?>(),
             Arg.Any<RetryPolicyOptions?>())
@@ -83,6 +85,7 @@ public class AccountListCommandTests
         var expectedAccounts = new List<AppConfigurationAccount>();
 
         _appConfigService.GetAppConfigAccounts(
+            Arg.Any<McpUserContext>(),
             Arg.Any<string>(),
             Arg.Any<string>(),
             Arg.Any<RetryPolicyOptions>())
@@ -103,6 +106,7 @@ public class AccountListCommandTests
     {
         // Arrange
         _appConfigService.GetAppConfigAccounts(
+            Arg.Any<McpUserContext>(),
             Arg.Any<string>(),
             Arg.Any<string>(),
             Arg.Any<RetryPolicyOptions>())
@@ -133,7 +137,7 @@ public class AccountListCommandTests
     public async Task ExecuteAsync_Returns503_WhenServiceIsUnavailable()
     {
         // Arrange
-        _appConfigService.GetAppConfigAccounts(Arg.Any<string>(), Arg.Any<string>(), Arg.Any<RetryPolicyOptions>())
+        _appConfigService.GetAppConfigAccounts(Arg.Any<McpUserContext>(), Arg.Any<string>(), Arg.Any<string>(), Arg.Any<RetryPolicyOptions>())
             .ThrowsAsync(new HttpRequestException("Service Unavailable", null, System.Net.HttpStatusCode.ServiceUnavailable));
 
         var args = _commandDefinition.Parse(["--subscription", "sub123"]);

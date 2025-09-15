@@ -4,6 +4,7 @@
 using System.Text.Json;
 using System.Text.Json.Serialization;
 using Azure.Mcp.Core.Models;
+using Azure.Mcp.Core.Areas.Server.Commands.Runtime;
 using Azure.Mcp.Core.Models.Command;
 using Azure.Mcp.Core.Options;
 using Azure.Mcp.Tools.Kusto.Commands;
@@ -45,6 +46,7 @@ public sealed class DatabaseListCommandTests
         if (useClusterUri)
         {
             _kusto.ListDatabases(
+                Arg.Any<McpUserContext>(),
                 "https://mycluster.kusto.windows.net",
                 Arg.Any<string>(), Arg.Any<AuthMethod?>(), Arg.Any<RetryPolicyOptions>())
                 .Returns(expectedDatabases);
@@ -52,13 +54,14 @@ public sealed class DatabaseListCommandTests
         else
         {
             _kusto.ListDatabases(
+                Arg.Any<McpUserContext>(),
                 "sub1", "mycluster", Arg.Any<string>(), Arg.Any<AuthMethod?>(), Arg.Any<RetryPolicyOptions>())
                 .Returns(expectedDatabases);
         }
         var command = new DatabaseListCommand(_logger);
 
         var args = command.GetCommand().Parse(cliArgs);
-        var context = new CommandContext(_serviceProvider);
+        var context = new CommandContext(_serviceProvider, McpUserContext.Empty);
 
         // Act
         var response = await command.ExecuteAsync(context, args);
@@ -80,6 +83,7 @@ public sealed class DatabaseListCommandTests
         if (useClusterUri)
         {
             _kusto.ListDatabases(
+                Arg.Any<McpUserContext>(),
                 "https://mycluster.kusto.windows.net",
                 Arg.Any<string>(), Arg.Any<AuthMethod?>(), Arg.Any<RetryPolicyOptions>())
                 .Returns([]);
@@ -87,13 +91,14 @@ public sealed class DatabaseListCommandTests
         else
         {
             _kusto.ListDatabases(
+                Arg.Any<McpUserContext>(),
                 "sub1", "mycluster", Arg.Any<string>(), Arg.Any<AuthMethod?>(), Arg.Any<RetryPolicyOptions>())
                 .Returns([]);
         }
         var command = new DatabaseListCommand(_logger);
 
         var args = command.GetCommand().Parse(cliArgs);
-        var context = new CommandContext(_serviceProvider);
+        var context = new CommandContext(_serviceProvider, McpUserContext.Empty);
 
         // Act
         var response = await command.ExecuteAsync(context, args);
@@ -112,6 +117,7 @@ public sealed class DatabaseListCommandTests
         if (useClusterUri)
         {
             _kusto.ListDatabases(
+                Arg.Any<McpUserContext>(),
                 "https://mycluster.kusto.windows.net",
                 Arg.Any<string>(), Arg.Any<AuthMethod?>(), Arg.Any<RetryPolicyOptions>())
                 .Returns(Task.FromException<List<string>>(new Exception("Test error")));
@@ -119,13 +125,14 @@ public sealed class DatabaseListCommandTests
         else
         {
             _kusto.ListDatabases(
+                Arg.Any<McpUserContext>(),
                 "sub1", "mycluster", Arg.Any<string>(), Arg.Any<AuthMethod?>(), Arg.Any<RetryPolicyOptions>())
                 .Returns(Task.FromException<List<string>>(new Exception("Test error")));
         }
         var command = new DatabaseListCommand(_logger);
 
         var args = command.GetCommand().Parse(cliArgs);
-        var context = new CommandContext(_serviceProvider);
+        var context = new CommandContext(_serviceProvider, McpUserContext.Empty);
 
         // Act
         var response = await command.ExecuteAsync(context, args);
@@ -142,7 +149,7 @@ public sealed class DatabaseListCommandTests
         var command = new DatabaseListCommand(_logger);
 
         var args = command.GetCommand().Parse(""); // No arguments
-        var context = new CommandContext(_serviceProvider);
+        var context = new CommandContext(_serviceProvider, McpUserContext.Empty);
 
         var response = await command.ExecuteAsync(context, args);
 
@@ -157,7 +164,7 @@ public sealed class DatabaseListCommandTests
         var command = new DatabaseListCommand(_logger);
 
         var args = command.GetCommand().Parse(""); // No arguments
-        var context = new CommandContext(_serviceProvider);
+        var context = new CommandContext(_serviceProvider, McpUserContext.Empty);
 
         var response = await command.ExecuteAsync(context, args);
 

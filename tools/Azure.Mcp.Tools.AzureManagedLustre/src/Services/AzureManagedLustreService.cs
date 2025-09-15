@@ -1,6 +1,7 @@
 // Copyright (c) Microsoft Corporation.
 // Licensed under the MIT License.
 
+using Azure.Mcp.Core.Areas.Server.Commands.Runtime;
 using Azure.Mcp.Core.Options;
 using Azure.Mcp.Core.Services.Azure;
 using Azure.Mcp.Core.Services.Azure.ResourceGroup;
@@ -17,7 +18,7 @@ public sealed class AzureManagedLustreService(ISubscriptionService subscriptionS
     private readonly ISubscriptionService _subscriptionService = subscriptionService ?? throw new ArgumentNullException(nameof(subscriptionService));
     private readonly IResourceGroupService _resourceGroupService = resourceGroupService;
 
-    public async Task<List<LustreFileSystem>> ListFileSystemsAsync(string subscription, string? resourceGroup = null, string? tenant = null, RetryPolicyOptions? retryPolicy = null)
+    public async Task<List<LustreFileSystem>> ListFileSystemsAsync(McpUserContext userContext, string subscription, string? resourceGroup = null, string? tenant = null, RetryPolicyOptions? retryPolicy = null)
     {
         ArgumentException.ThrowIfNullOrWhiteSpace(subscription);
 
@@ -71,7 +72,7 @@ public sealed class AzureManagedLustreService(ISubscriptionService subscriptionS
         );
     }
 
-    public async Task<int> GetRequiredAmlFSSubnetsSize(string subscription,
+    public async Task<int> GetRequiredAmlFSSubnetsSize(McpUserContext userContext, string subscription,
     string sku, int size,
         string? tenant = null,
         RetryPolicyOptions? retryPolicy = null

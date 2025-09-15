@@ -3,6 +3,7 @@
 
 using System.Text.Json;
 using System.Text.Json.Serialization;
+using Azure.Mcp.Core.Areas.Server.Commands.Runtime;
 using Azure.Mcp.Core.Models.Command;
 using Azure.Mcp.Tools.MySql.Commands.Database;
 using Azure.Mcp.Tools.MySql.Services;
@@ -35,7 +36,7 @@ public class DatabaseQueryCommandTests
     public async Task ExecuteAsync_ReturnsResults_WhenQuerySucceeds()
     {
         var expectedResults = new List<string> { "id, name", "1, John", "2, Jane" };
-        _mysqlService.ExecuteQueryAsync("sub123", "rg1", "user1", "server1", "db1", "SELECT * FROM users").Returns(expectedResults);
+        _mysqlService.ExecuteQueryAsync(McpUserContext.Empty, "sub123", "rg1", "user1", "server1", "db1", "SELECT * FROM users").Returns(expectedResults);
 
         var command = new DatabaseQueryCommand(_logger);
         var args = command.GetCommand().Parse([
@@ -46,7 +47,7 @@ public class DatabaseQueryCommandTests
             "--database", "db1",
             "--query", "SELECT * FROM users"
         ]);
-        var context = new CommandContext(_serviceProvider);
+        var context = new CommandContext(_serviceProvider, McpUserContext.Empty);
 
         var response = await command.ExecuteAsync(context, args);
 
@@ -63,7 +64,7 @@ public class DatabaseQueryCommandTests
     [Fact]
     public async Task ExecuteAsync_ReturnsError_WhenQueryFails()
     {
-        _mysqlService.ExecuteQueryAsync("sub123", "rg1", "user1", "server1", "db1", "INVALID SQL").ThrowsAsync(new InvalidOperationException("Syntax error"));
+        _mysqlService.ExecuteQueryAsync(McpUserContext.Empty, "sub123", "rg1", "user1", "server1", "db1", "INVALID SQL").ThrowsAsync(new InvalidOperationException("Syntax error"));
 
         var command = new DatabaseQueryCommand(_logger);
         var args = command.GetCommand().Parse([
@@ -74,7 +75,7 @@ public class DatabaseQueryCommandTests
             "--database", "db1",
             "--query", "INVALID SQL"
         ]);
-        var context = new CommandContext(_serviceProvider);
+        var context = new CommandContext(_serviceProvider, McpUserContext.Empty);
 
         var response = await command.ExecuteAsync(context, args);
 

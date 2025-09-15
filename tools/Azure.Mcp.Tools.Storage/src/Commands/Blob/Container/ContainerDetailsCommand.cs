@@ -39,6 +39,7 @@ public sealed class ContainerDetailsCommand(ILogger<ContainerDetailsCommand> log
         {
             var storageService = context.GetService<IStorageService>();
             var details = await storageService.GetContainerDetails(
+                context.UserContext,
                 options.Account!,
                 options.Container!,
                 options.Subscription!,

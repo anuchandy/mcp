@@ -56,6 +56,7 @@ public sealed class ClusterGetCommand(ILogger<ClusterGetCommand> logger) : BaseA
         {
             var aksService = context.GetService<IAksService>();
             var cluster = await aksService.GetCluster(
+                context.UserContext,
                 options.Subscription!,
                 options.ClusterName!,
                 options.ResourceGroup!,

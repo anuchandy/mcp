@@ -40,6 +40,7 @@ public sealed class ClusterListCommand(ILogger<ClusterListCommand> logger) : Sub
         {
             var kusto = context.GetService<IKustoService>();
             var clusterNames = await kusto.ListClusters(
+                context.UserContext,
                 options.Subscription!,
                 options.Tenant,
                 options.RetryPolicy);

@@ -60,6 +60,7 @@ public sealed class SampleCommand(ILogger<SampleCommand> logger) : BaseTableComm
             if (UseClusterUri(options))
             {
                 results = await kusto.QueryItems(
+                    context.UserContext,
                     options.ClusterUri!,
                     options.Database!,
                     query,
@@ -70,6 +71,7 @@ public sealed class SampleCommand(ILogger<SampleCommand> logger) : BaseTableComm
             else
             {
                 results = await kusto.QueryItems(
+                    context.UserContext,
                     options.Subscription!,
                     options.ClusterName!,
                     options.Database!,

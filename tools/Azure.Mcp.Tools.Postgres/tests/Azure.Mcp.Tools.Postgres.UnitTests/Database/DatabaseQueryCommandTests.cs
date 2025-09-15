@@ -4,6 +4,7 @@
 using System.Diagnostics;
 using System.Text.Json;
 using System.Text.Json.Serialization;
+using Azure.Mcp.Core.Areas.Server.Commands.Runtime;
 using Azure.Mcp.Core.Models.Command;
 using Azure.Mcp.TestUtilities;
 using Azure.Mcp.Tools.Postgres.Commands.Database;
@@ -40,12 +41,12 @@ public class DatabaseQueryCommandTests
     {
         var expectedResults = new List<string> { "result1", "result2" };
 
-        _postgresService.ExecuteQueryAsync("sub123", "rg1", "user1", "server1", "db123", "SELECT * FROM test;")
+        _postgresService.ExecuteQueryAsync(McpUserContext.Empty, "sub123", "rg1", "user1", "server1", "db123", "SELECT * FROM test;")
             .Returns(expectedResults);
 
         var command = new DatabaseQueryCommand(_logger);
         var args = command.GetCommand().Parse(["--subscription", "sub123", "--resource-group", "rg1", "--user", "user1", "--server", "server1", "--database", "db123", "--query", "SELECT * FROM test;"]);
-        var context = new CommandContext(_serviceProvider);
+        var context = new CommandContext(_serviceProvider, McpUserContext.Empty);
         var response = await command.ExecuteAsync(context, args);
 
         Assert.NotNull(response);
@@ -63,13 +64,13 @@ public class DatabaseQueryCommandTests
     {
         var expectedResults = new List<string>();
 
-        _postgresService.ExecuteQueryAsync("sub123", "rg1", "user1", "server1", "db123", "SELECT * FROM test;")
+        _postgresService.ExecuteQueryAsync(McpUserContext.Empty, "sub123", "rg1", "user1", "server1", "db123", "SELECT * FROM test;")
             .Returns(expectedResults);
 
         var command = new DatabaseQueryCommand(_logger);
 
         var args = command.GetCommand().Parse(["--subscription", "sub123", "--resource-group", "rg1", "--user", "user1", "--server", "server1", "--database", "db123", "--query", "SELECT * FROM test;"]);
-        var context = new CommandContext(_serviceProvider);
+        var context = new CommandContext(_serviceProvider, McpUserContext.Empty);
         var response = await command.ExecuteAsync(context, args);
 
         Assert.NotNull(response);
@@ -96,7 +97,7 @@ public class DatabaseQueryCommandTests
             ("--query", "SELECT * FROM test;")
         ));
 
-        var context = new CommandContext(_serviceProvider);
+        var context = new CommandContext(_serviceProvider, McpUserContext.Empty);
         var response = await command.ExecuteAsync(context, args);
 
         Assert.NotNull(response);

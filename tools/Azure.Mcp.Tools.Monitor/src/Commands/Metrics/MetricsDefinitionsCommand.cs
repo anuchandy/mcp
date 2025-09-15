@@ -66,6 +66,7 @@ public sealed class MetricsDefinitionsCommand(ILogger<MetricsDefinitionsCommand>
             var service = context.GetService<IMonitorMetricsService>();
             // Call service operation with required parameters
             var allResults = await service.ListMetricDefinitionsAsync(
+                context.UserContext,
                 options.Subscription!,
                 options.ResourceGroup,
                 options.ResourceType,

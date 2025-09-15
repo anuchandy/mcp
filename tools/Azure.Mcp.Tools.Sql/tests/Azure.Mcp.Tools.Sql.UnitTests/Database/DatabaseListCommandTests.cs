@@ -2,6 +2,7 @@
 // Licensed under the MIT License.
 
 using System.CommandLine;
+using Azure.Mcp.Core.Areas.Server.Commands.Runtime;
 using Azure.Mcp.Core.Models.Command;
 using Azure.Mcp.Core.Options;
 using Azure.Mcp.Tools.Sql.Commands.Database;
@@ -34,7 +35,7 @@ public class DatabaseListCommandTests
         _serviceProvider = collection.BuildServiceProvider();
 
         _command = new(_logger);
-        _context = new(_serviceProvider);
+        _context = new CommandContext(_serviceProvider, McpUserContext.Empty);
         _commandDefinition = _command.GetCommand();
     }
 
@@ -62,6 +63,7 @@ public class DatabaseListCommandTests
             };
 
             _sqlService.ListDatabasesAsync(
+                Arg.Any<McpUserContext>(),
                 Arg.Any<string>(),
                 Arg.Any<string>(),
                 Arg.Any<string>(),
@@ -92,6 +94,7 @@ public class DatabaseListCommandTests
         var parseResult = _commandDefinition.Parse("--subscription test-sub --resource-group test-rg --server test-server");
 
         _sqlService.ListDatabasesAsync(
+            Arg.Any<McpUserContext>(),
             Arg.Any<string>(),
             Arg.Any<string>(),
             Arg.Any<string>(),
@@ -124,7 +127,7 @@ public class DatabaseListCommandTests
                 DateTimeOffset.UtcNow, 268435456000, "S0", "Standard", null, DateTimeOffset.UtcNow, "Disabled", false)
         };
 
-        _sqlService.ListDatabasesAsync("test-server", "test-rg", "test-sub", Arg.Any<RetryPolicyOptions?>(), Arg.Any<CancellationToken>())
+        _sqlService.ListDatabasesAsync(McpUserContext.Empty, "test-server", "test-rg", "test-sub", Arg.Any<RetryPolicyOptions?>(), Arg.Any<CancellationToken>())
             .Returns(expectedDatabases);
 
         // Act
@@ -134,6 +137,6 @@ public class DatabaseListCommandTests
         Assert.Equal(200, response.Status);
         Assert.NotNull(response.Results);
 
-        await _sqlService.Received(1).ListDatabasesAsync("test-server", "test-rg", "test-sub", Arg.Any<RetryPolicyOptions?>(), Arg.Any<CancellationToken>());
+        await _sqlService.Received(1).ListDatabasesAsync(Arg.Any<McpUserContext>(), "test-server", "test-rg", "test-sub", Arg.Any<RetryPolicyOptions?>(), Arg.Any<CancellationToken>());
     }
 }

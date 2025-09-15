@@ -2,6 +2,8 @@
 // Licensed under the MIT License.
 
 using Azure.Core;
+using Azure.Mcp.Core.Areas.Server.Commands.Runtime;
+using Azure.Mcp.Core.Options;
 using Azure.Mcp.Core.Services.Azure;
 using Azure.Mcp.Core.Services.Azure.Tenant;
 using Azure.ResourceManager.Datadog;
@@ -14,12 +16,18 @@ public partial class DatadogService : BaseAzureService, IDatadogService
     {
     }
 
-    public async Task<List<string>> ListMonitoredResources(string resourceGroup, string subscription, string datadogResource)
+    public async Task<List<string>> ListMonitoredResources(
+        McpUserContext userContext,
+        string resourceGroup,
+        string subscription,
+        string datadogResource,
+        string? tenant = null,
+        RetryPolicyOptions? retryPolicy = null)
     {
         try
         {
-            var tenantId = await ResolveTenantIdAsync(null);
-            var armClient = await CreateArmClientAsync(tenant: tenantId, retryPolicy: null);
+            var tenantId = await ResolveTenantIdAsync(tenant);
+            var armClient = await CreateArmClientAsync(tenant: tenantId, retryPolicy: retryPolicy);
 
             var resourceId = $"/subscriptions/{subscription}/resourceGroups/{resourceGroup}/providers/Microsoft.Datadog/monitors/{datadogResource}";
 

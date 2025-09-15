@@ -46,6 +46,7 @@ public sealed class DatabaseShowCommand(ILogger<DatabaseShowCommand> logger)
             var sqlService = context.GetService<ISqlService>();
 
             var database = await sqlService.GetDatabaseAsync(
+                context.UserContext,
                 options.Server!,
                 options.Database!,
                 options.ResourceGroup!,

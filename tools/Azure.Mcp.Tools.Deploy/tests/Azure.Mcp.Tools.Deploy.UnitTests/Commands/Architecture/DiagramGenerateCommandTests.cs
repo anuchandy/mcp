@@ -2,6 +2,7 @@
 // Licensed under the MIT License.
 
 using System.Text.Json;
+using Azure.Mcp.Core.Areas.Server.Commands.Runtime;
 using Azure.Mcp.Core.Models.Command;
 using Azure.Mcp.Tools.Deploy.Commands.Architecture;
 using Azure.Mcp.Tools.Deploy.Options;
@@ -32,7 +33,7 @@ public class DiagramGenerateCommandTests
     {
         var command = new DiagramGenerateCommand(_logger);
         var args = command.GetCommand().Parse(["--raw-mcp-tool-input", "{\"projectName\": \"test\",\"services\": []}"]);
-        var context = new CommandContext(_serviceProvider);
+        var context = new CommandContext(_serviceProvider, McpUserContext.Empty);
         var response = await command.ExecuteAsync(context, args);
         Assert.NotNull(response);
         Assert.Equal(200, response.Status);
@@ -44,7 +45,7 @@ public class DiagramGenerateCommandTests
     {
         var command = new DiagramGenerateCommand(_logger);
         var args = command.GetCommand().Parse(["--raw-mcp-tool-input", "test"]);
-        var context = new CommandContext(_serviceProvider);
+        var context = new CommandContext(_serviceProvider, McpUserContext.Empty);
         var response = await command.ExecuteAsync(context, args);
         Assert.NotNull(response);
         Assert.Equal(500, response.Status);
@@ -125,7 +126,7 @@ public class DiagramGenerateCommandTests
         };
 
         var args = command.GetCommand().Parse(["--raw-mcp-tool-input", JsonSerializer.Serialize(appTopology)]);
-        var context = new CommandContext(_serviceProvider);
+        var context = new CommandContext(_serviceProvider, McpUserContext.Empty);
         var response = await command.ExecuteAsync(context, args);
         Assert.NotNull(response);
         Assert.Equal(200, response.Status);

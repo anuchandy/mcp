@@ -4,6 +4,7 @@
 using System.Text.Json;
 using System.Text.Json.Serialization;
 using Azure.Mcp.Core.Models;
+using Azure.Mcp.Core.Areas.Server.Commands.Runtime;
 using Azure.Mcp.Core.Models.Command;
 using Azure.Mcp.Core.Options;
 using Azure.Mcp.Tools.Kusto.Commands;
@@ -44,6 +45,7 @@ public sealed class TableListCommandTests
         if (useClusterUri)
         {
             _kusto.ListTables(
+                Arg.Any<McpUserContext>(),
                 "https://mycluster.kusto.windows.net",
                 "db1",
                 Arg.Any<string>(), Arg.Any<AuthMethod?>(), Arg.Any<RetryPolicyOptions>())
@@ -52,6 +54,7 @@ public sealed class TableListCommandTests
         else
         {
             _kusto.ListTables(
+                Arg.Any<McpUserContext>(),
                 "sub1", "mycluster", "db1",
                 Arg.Any<string>(), Arg.Any<AuthMethod?>(), Arg.Any<RetryPolicyOptions>())
                 .Returns(expectedTables);
@@ -59,7 +62,7 @@ public sealed class TableListCommandTests
         var command = new TableListCommand(_logger);
 
         var args = command.GetCommand().Parse(cliArgs);
-        var context = new CommandContext(_serviceProvider);
+        var context = new CommandContext(_serviceProvider, McpUserContext.Empty);
 
         var response = await command.ExecuteAsync(context, args);
 
@@ -80,6 +83,7 @@ public sealed class TableListCommandTests
         if (useClusterUri)
         {
             _kusto.ListTables(
+                Arg.Any<McpUserContext>(),
                 "https://mycluster.kusto.windows.net",
                 "db1",
                 Arg.Any<string>(), Arg.Any<AuthMethod?>(), Arg.Any<RetryPolicyOptions>())
@@ -88,6 +92,7 @@ public sealed class TableListCommandTests
         else
         {
             _kusto.ListTables(
+                Arg.Any<McpUserContext>(),
                 "sub1", "mycluster", "db1",
                 Arg.Any<string>(), Arg.Any<AuthMethod?>(), Arg.Any<RetryPolicyOptions>())
                 .Returns(new List<string>());
@@ -95,7 +100,7 @@ public sealed class TableListCommandTests
         var command = new TableListCommand(_logger);
 
         var args = command.GetCommand().Parse(cliArgs);
-        var context = new CommandContext(_serviceProvider);
+        var context = new CommandContext(_serviceProvider, McpUserContext.Empty);
 
         var response = await command.ExecuteAsync(context, args);
         Assert.NotNull(response);
@@ -110,6 +115,7 @@ public sealed class TableListCommandTests
         if (useClusterUri)
         {
             _kusto.ListTables(
+                Arg.Any<McpUserContext>(),
                 "https://mycluster.kusto.windows.net",
                 "db1",
                 Arg.Any<string>(), Arg.Any<AuthMethod?>(), Arg.Any<RetryPolicyOptions>())
@@ -118,6 +124,7 @@ public sealed class TableListCommandTests
         else
         {
             _kusto.ListTables(
+                Arg.Any<McpUserContext>(),
                 "sub1", "mycluster", "db1",
                 Arg.Any<string>(), Arg.Any<AuthMethod?>(), Arg.Any<RetryPolicyOptions>())
                 .Returns(Task.FromException<List<string>>(new Exception("Test error")));
@@ -125,7 +132,7 @@ public sealed class TableListCommandTests
         var command = new TableListCommand(_logger);
 
         var args = command.GetCommand().Parse(cliArgs);
-        var context = new CommandContext(_serviceProvider);
+        var context = new CommandContext(_serviceProvider, McpUserContext.Empty);
 
         var response = await command.ExecuteAsync(context, args);
         Assert.NotNull(response);
@@ -139,7 +146,7 @@ public sealed class TableListCommandTests
         var command = new TableListCommand(_logger);
 
         var args = command.GetCommand().Parse("");
-        var context = new CommandContext(_serviceProvider);
+        var context = new CommandContext(_serviceProvider, McpUserContext.Empty);
 
         var response = await command.ExecuteAsync(context, args);
         Assert.NotNull(response);

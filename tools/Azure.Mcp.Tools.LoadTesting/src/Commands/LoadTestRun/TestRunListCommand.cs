@@ -51,10 +51,11 @@ public sealed class TestRunListCommand(ILogger<TestRunListCommand> logger)
 
         try
         {
-            // Get the appropriate service from DI
+                        // Get the appropriate service from DI
             var service = context.GetService<ILoadTestingService>();
             // Call service operation(s)
             var results = await service.GetLoadTestRunsFromTestIdAsync(
+                context.UserContext,
                 options.Subscription!,
                 options.TestResourceName!,
                 options.TestId!,

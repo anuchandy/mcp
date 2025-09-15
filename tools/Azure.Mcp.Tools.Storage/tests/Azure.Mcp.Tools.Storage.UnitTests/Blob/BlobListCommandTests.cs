@@ -4,6 +4,7 @@
 using System.CommandLine;
 using System.Text.Json;
 using System.Text.Json.Serialization;
+using Azure.Mcp.Core.Areas.Server.Commands.Runtime;
 using Azure.Mcp.Core.Models.Command;
 using Azure.Mcp.Core.Options;
 using Azure.Mcp.Tools.Storage.Commands.Blob;
@@ -37,7 +38,7 @@ public class BlobListCommandTests
 
         _serviceProvider = collection.BuildServiceProvider();
         _command = new(_logger);
-        _context = new(_serviceProvider);
+        _context = new CommandContext(_serviceProvider, McpUserContext.Empty);
         _commandDefinition = _command.GetCommand();
     }
 
@@ -47,7 +48,7 @@ public class BlobListCommandTests
         // Arrange
         var expectedBlobs = new List<string> { "blob1", "blob2" };
 
-        _storageService.ListBlobs(Arg.Is(_knownAccount), Arg.Is(_knownContainer), Arg.Is(_knownSubscription),
+        _storageService.ListBlobs(Arg.Any<McpUserContext>(), Arg.Is(_knownAccount), Arg.Is(_knownContainer), Arg.Is(_knownSubscription),
             Arg.Any<string>(), Arg.Any<RetryPolicyOptions>()).Returns(expectedBlobs);
 
         var args = _commandDefinition.Parse([
@@ -74,7 +75,7 @@ public class BlobListCommandTests
     public async Task ExecuteAsync_ReturnsNull_WhenNoBlobs()
     {
         // Arrange
-        _storageService.ListBlobs(Arg.Is(_knownAccount), Arg.Is(_knownContainer), Arg.Is(_knownSubscription),
+        _storageService.ListBlobs(Arg.Any<McpUserContext>(), Arg.Is(_knownAccount), Arg.Is(_knownContainer), Arg.Is(_knownSubscription),
             Arg.Any<string>(), Arg.Any<RetryPolicyOptions>()).Returns([]);
 
         var args = _commandDefinition.Parse([
@@ -97,7 +98,7 @@ public class BlobListCommandTests
         // Arrange
         var expectedError = "Test error";
 
-        _storageService.ListBlobs(Arg.Is(_knownAccount), Arg.Is(_knownContainer), Arg.Is(_knownSubscription),
+        _storageService.ListBlobs(Arg.Any<McpUserContext>(), Arg.Is(_knownAccount), Arg.Is(_knownContainer), Arg.Is(_knownSubscription),
             null, Arg.Any<RetryPolicyOptions>()).ThrowsAsync(new Exception(expectedError));
 
         var args = _commandDefinition.Parse([

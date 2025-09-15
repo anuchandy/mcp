@@ -4,6 +4,7 @@
 using System.CommandLine;
 using System.Text.Json;
 using System.Text.Json.Serialization;
+using Azure.Mcp.Core.Areas.Server.Commands.Runtime;
 using Azure.Mcp.Core.Models.Command;
 using Azure.Mcp.Core.Options;
 using Azure.Mcp.Tools.KeyVault.Commands.Certificate;
@@ -38,7 +39,7 @@ public class CertificateListCommandTests
 
         _serviceProvider = collection.BuildServiceProvider();
         _command = new(_logger);
-        _context = new(_serviceProvider);
+        _context = new CommandContext(_serviceProvider, McpUserContext.Empty);
         _commandDefinition = _command.GetCommand();
     }
 
@@ -49,6 +50,7 @@ public class CertificateListCommandTests
         var expectedCertificates = new List<string> { "cert1", "cert2" };
 
         _keyVaultService.ListCertificates(
+            Arg.Any<McpUserContext>(),
             Arg.Is(_knownVaultName),
             Arg.Is(_knownSubscriptionId),
             Arg.Any<string>(),
@@ -79,6 +81,7 @@ public class CertificateListCommandTests
     {
         // Arrange
         _keyVaultService.ListCertificates(
+            Arg.Any<McpUserContext>(),
             Arg.Is(_knownVaultName),
             Arg.Is(_knownSubscriptionId),
             Arg.Any<string>(),
@@ -105,6 +108,7 @@ public class CertificateListCommandTests
         var expectedError = "Test error";
 
         _keyVaultService.ListCertificates(
+            Arg.Any<McpUserContext>(),
             Arg.Is(_knownVaultName),
             Arg.Is(_knownSubscriptionId),
             Arg.Any<string>(),

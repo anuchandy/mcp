@@ -42,6 +42,7 @@ public sealed class WorkspaceListCommand(ILogger<WorkspaceListCommand> logger) :
         {
             var grafanaService = context.GetService<IGrafanaService>() ?? throw new InvalidOperationException("Grafana service is not available.");
             var workspaces = await grafanaService.ListWorkspacesAsync(
+                context.UserContext,
                 options.Subscription!,
                 options.Tenant,
                 options.RetryPolicy);

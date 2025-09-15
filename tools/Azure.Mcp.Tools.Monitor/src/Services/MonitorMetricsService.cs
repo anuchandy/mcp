@@ -2,6 +2,7 @@
 // Licensed under the MIT License.
 
 using System.Xml;
+using Azure.Mcp.Core.Areas.Server.Commands.Runtime;
 using Azure.Mcp.Core.Options;
 using Azure.Mcp.Core.Services.Azure;
 using Azure.Mcp.Tools.Monitor.Models;
@@ -20,6 +21,7 @@ public class MonitorMetricsService(IResourceResolverService resourceResolverServ
     private readonly IMetricsQueryClientService _metricsQueryClientService = metricsQueryClientService ?? throw new ArgumentNullException(nameof(metricsQueryClientService));
 
     public async Task<List<MetricResult>> QueryMetricsAsync(
+        McpUserContext userContext,
         string subscription,
         string? resourceGroup,
         string? resourceType,
@@ -202,6 +204,7 @@ public class MonitorMetricsService(IResourceResolverService resourceResolverServ
     }
 
     public async Task<List<MetricDefinition>> ListMetricDefinitionsAsync(
+        McpUserContext userContext,
         string subscription,
         string? resourceGroup,
         string? resourceType,
@@ -270,6 +273,7 @@ public class MonitorMetricsService(IResourceResolverService resourceResolverServ
     }
 
     public async Task<List<MetricNamespace>> ListMetricNamespacesAsync(
+        McpUserContext userContext,
         string subscription,
         string? resourceGroup,
         string? resourceType,

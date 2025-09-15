@@ -3,6 +3,7 @@
 
 using System.CommandLine;
 using System.Text.Json;
+using Azure.Mcp.Core.Areas.Server.Commands.Runtime;
 using Azure.Mcp.Core.Models.Command;
 using Azure.Mcp.Tools.AzureBestPractices.Commands;
 using Microsoft.Extensions.DependencyInjection;
@@ -25,7 +26,7 @@ public class BestPracticesCommandTests
         var collection = new ServiceCollection();
         _serviceProvider = collection.BuildServiceProvider();
 
-        _context = new(_serviceProvider);
+        _context = new CommandContext(_serviceProvider, McpUserContext.Empty);
         _logger = Substitute.For<ILogger<BestPracticesCommand>>();
         _command = new(_logger);
         _commandDefinition = _command.GetCommand();

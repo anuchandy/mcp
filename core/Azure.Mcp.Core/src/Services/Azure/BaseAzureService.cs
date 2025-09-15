@@ -68,15 +68,9 @@ public abstract class BaseAzureService(ITenantService? tenantService = null, ILo
 
     protected async Task<TokenCredential> GetCredential(string? tenant = null)
     {
-        // Check for directly registered TokenCredential first (OBO Child or OBO Parent case)
-        var directCredential = _serviceProvider?.GetService<TokenCredential>();
-        if (directCredential != null)
-        {
-            // DO NOT cache directCredential as it may be user-specific (OBO case)
-            // and BaseAzureService instances can be singletons shared across users
-            return directCredential;
-        }
-
+        // TODO: Direct TokenCredential resolution removed to eliminate security vulnerability
+        // OBO functionality temporarily disabled until factory pattern is implemented
+        
         var tenantId = string.IsNullOrEmpty(tenant) ? null : await ResolveTenantIdAsync(tenant);
         try
         {

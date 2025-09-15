@@ -4,6 +4,7 @@
 using System.CommandLine;
 using System.Text.Json;
 using System.Text.Json.Serialization;
+using Azure.Mcp.Core.Areas.Server.Commands.Runtime;
 using Azure.Mcp.Core.Models.Command;
 using Azure.Mcp.Core.Options;
 using Azure.Mcp.Tools.AzureManagedLustre.Commands.FileSystem;
@@ -37,7 +38,7 @@ public class FileSystemListCommandTests
         _serviceProvider = services.BuildServiceProvider();
 
         _command = new(_logger);
-        _context = new(_serviceProvider);
+        _context = new CommandContext(_serviceProvider, McpUserContext.Empty);
         _commandDefinition = _command.GetCommand();
     }
 
@@ -89,6 +90,7 @@ public class FileSystemListCommandTests
         };
 
         _amlfsService.ListFileSystemsAsync(
+            Arg.Any<McpUserContext>(),
             Arg.Is(_knownSubscriptionId),
             Arg.Any<string>(),
             Arg.Any<string>(),
@@ -145,6 +147,7 @@ public class FileSystemListCommandTests
             };
 
             _amlfsService.ListFileSystemsAsync(
+                Arg.Any<McpUserContext>(),
                 Arg.Is(_knownSubscriptionId),
                 Arg.Any<string>(),
                 Arg.Any<string>(),
@@ -183,6 +186,7 @@ public class FileSystemListCommandTests
     {
         // Arrange
         _amlfsService.ListFileSystemsAsync(
+            Arg.Any<McpUserContext>(),
             Arg.Is(_knownSubscriptionId),
             Arg.Is<string?>(x => x == null),
             Arg.Any<string?>(),
@@ -206,6 +210,7 @@ public class FileSystemListCommandTests
     {
         // Arrange - 404 Not Found
         _amlfsService.ListFileSystemsAsync(
+            Arg.Any<McpUserContext>(),
             Arg.Any<string>(), Arg.Any<string?>(), Arg.Any<string?>(), Arg.Any<RetryPolicyOptions?>())
             .ThrowsAsync(new RequestFailedException(404, "not found"));
 
@@ -222,6 +227,7 @@ public class FileSystemListCommandTests
     {
         // Arrange - 403 Forbidden
         _amlfsService.ListFileSystemsAsync(
+            Arg.Any<McpUserContext>(),
             Arg.Any<string>(), Arg.Any<string?>(), Arg.Any<string?>(), Arg.Any<RetryPolicyOptions?>())
             .ThrowsAsync(new RequestFailedException(403, "forbidden"));
 

@@ -40,6 +40,7 @@ public sealed class BlobListCommand(ILogger<BlobListCommand> logger) : BaseConta
         {
             var storageService = context.GetService<IStorageService>();
             var blobs = await storageService.ListBlobs(
+                context.UserContext,
                 options.Account!,
                 options.Container!,
                 options.Subscription!,

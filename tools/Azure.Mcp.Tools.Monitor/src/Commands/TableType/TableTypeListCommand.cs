@@ -42,6 +42,7 @@ public sealed class TableTypeListCommand(ILogger<TableTypeListCommand> logger) :
         {
             var monitorService = context.GetService<IMonitorService>();
             var tableTypes = await monitorService.ListTableTypes(
+                context.UserContext,
                 options.Subscription!,
                 options.ResourceGroup!,
                 options.Workspace!,

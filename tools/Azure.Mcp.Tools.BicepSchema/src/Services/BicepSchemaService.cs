@@ -1,6 +1,7 @@
 // Copyright (c) Microsoft Corporation.
 // Licensed under the MIT License.
 
+using Azure.Mcp.Core.Areas.Server.Commands.Runtime;
 using Azure.Mcp.Core.Services.Azure;
 using Azure.Mcp.Tools.BicepSchema.Services.ResourceProperties;
 using Azure.Mcp.Tools.BicepSchema.Services.ResourceProperties.Entities;
@@ -11,7 +12,7 @@ namespace Azure.Mcp.Tools.BicepSchema.Services
 {
     public class BicepSchemaService() : BaseAzureService, IBicepSchemaService
     {
-        public TypesDefinitionResult GetResourceTypeDefinitions(IServiceProvider serviceProvider, string resourceTypeName, string? apiVersion = null)
+        public TypesDefinitionResult GetResourceTypeDefinitions(McpUserContext userContext, IServiceProvider serviceProvider, string resourceTypeName, string? apiVersion = null)
         {
             ResourceVisitor resourceVisitor = serviceProvider.GetRequiredService<ResourceVisitor>();
 

@@ -2,6 +2,7 @@
 // Licensed under the MIT License.
 
 using Azure.Core;
+using Azure.Mcp.Core.Areas.Server.Commands.Runtime;
 using Azure.Mcp.Core.Options;
 using Azure.Mcp.Tools.Workbooks.Models;
 using Microsoft.Extensions.Logging;
@@ -21,7 +22,7 @@ public class WorkbooksService(ISubscriptionService _subscriptionService, ITenant
     private readonly ILogger<WorkbooksService> _logger = logger;
     private readonly ITenantService _tenantService = tenantService;
 
-    public async Task<List<WorkbookInfo>> ListWorkbooks(string subscription, string resourceGroupName, WorkbookFilters? filters = null, RetryPolicyOptions? retryPolicy = null, string? tenant = null)
+    public async Task<List<WorkbookInfo>> ListWorkbooks(McpUserContext userContext, string subscription, string resourceGroupName, WorkbookFilters? filters = null, RetryPolicyOptions? retryPolicy = null, string? tenant = null)
     {
         ValidateRequiredParameters(subscription, resourceGroupName);
 
@@ -83,7 +84,7 @@ public class WorkbooksService(ISubscriptionService _subscriptionService, ITenant
         }
     }
 
-    public async Task<WorkbookInfo?> GetWorkbook(string workbookId, RetryPolicyOptions? retryPolicy = null, string? tenant = null)
+    public async Task<WorkbookInfo?> GetWorkbook(McpUserContext userContext, string workbookId, RetryPolicyOptions? retryPolicy = null, string? tenant = null)
     {
         if (string.IsNullOrEmpty(workbookId))
         {
@@ -134,7 +135,7 @@ public class WorkbooksService(ISubscriptionService _subscriptionService, ITenant
         }
     }
 
-    public async Task<WorkbookInfo?> UpdateWorkbook(string workbookId, string? displayName = null, string? serializedContent = null, RetryPolicyOptions? retryPolicy = null, string? tenant = null)
+    public async Task<WorkbookInfo?> UpdateWorkbook(McpUserContext userContext, string workbookId, string? displayName = null, string? serializedContent = null, RetryPolicyOptions? retryPolicy = null, string? tenant = null)
     {
         if (string.IsNullOrEmpty(workbookId))
         {
@@ -204,7 +205,7 @@ public class WorkbooksService(ISubscriptionService _subscriptionService, ITenant
         }
     }
 
-    public async Task<WorkbookInfo?> CreateWorkbook(string subscription, string resourceGroupName, string displayName, string serializedData, string sourceId, RetryPolicyOptions? retryPolicy = null, string? tenant = null)
+    public async Task<WorkbookInfo?> CreateWorkbook(McpUserContext userContext, string subscription, string resourceGroupName, string displayName, string serializedData, string sourceId, RetryPolicyOptions? retryPolicy = null, string? tenant = null)
     {
         ValidateRequiredParameters(subscription, resourceGroupName, displayName, serializedData, sourceId);
 
@@ -262,7 +263,7 @@ public class WorkbooksService(ISubscriptionService _subscriptionService, ITenant
         }
     }
 
-    public async Task<bool> DeleteWorkbook(string workbookId, RetryPolicyOptions? retryPolicy = null, string? tenant = null)
+    public async Task<bool> DeleteWorkbook(McpUserContext userContext, string workbookId, RetryPolicyOptions? retryPolicy = null, string? tenant = null)
     {
         ValidateRequiredParameters(workbookId);
 

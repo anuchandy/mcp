@@ -48,7 +48,7 @@ public sealed class DatabaseQueryCommand(ILogger<DatabaseQueryCommand> logger) :
         try
         {
             IMySqlService mysqlService = context.GetService<IMySqlService>() ?? throw new InvalidOperationException("MySQL service is not available.");
-            List<string> result = await mysqlService.ExecuteQueryAsync(options.Subscription!, options.ResourceGroup!, options.User!, options.Server!, options.Database!, options.Query!);
+            List<string> result = await mysqlService.ExecuteQueryAsync(context.UserContext, options.Subscription!, options.ResourceGroup!, options.User!, options.Server!, options.Database!, options.Query!);
             context.Response.Results = result?.Count > 0 ?
                 ResponseResult.Create(
                     new DatabaseQueryCommandResult(result),

@@ -2,6 +2,7 @@
 // Licensed under the MIT License.
 
 using System.Text.Json;
+using Azure.Mcp.Core.Areas.Server.Commands.Runtime;
 using Azure.Mcp.Core.Models.Command;
 using Azure.Mcp.Core.Options;
 using Azure.Mcp.Tools.Workbooks.Commands.Workbooks;
@@ -60,6 +61,7 @@ public class DeleteWorkbooksCommandTests
         var workbookId = "/subscriptions/sub1/resourceGroups/rg1/providers/microsoft.insights/workbooks/workbook1";
 
         _service.DeleteWorkbook(
+            Arg.Any<McpUserContext>(),
             Arg.Is(workbookId),
             Arg.Any<RetryPolicyOptions>(),
             Arg.Any<string?>())
@@ -69,7 +71,7 @@ public class DeleteWorkbooksCommandTests
             "--workbook-id", workbookId
         ]);
 
-        var context = new CommandContext(_serviceProvider);
+        var context = new CommandContext(_serviceProvider, McpUserContext.Empty);
 
         // Act
         var response = await _command.ExecuteAsync(context, args);
@@ -94,6 +96,7 @@ public class DeleteWorkbooksCommandTests
         var workbookId = "/subscriptions/sub1/resourceGroups/rg1/providers/microsoft.insights/workbooks/workbook1";
 
         _service.DeleteWorkbook(
+            Arg.Any<McpUserContext>(),
             Arg.Is(workbookId),
             Arg.Any<RetryPolicyOptions>(),
             Arg.Any<string?>())
@@ -103,7 +106,7 @@ public class DeleteWorkbooksCommandTests
             "--workbook-id", workbookId
         ]);
 
-        var context = new CommandContext(_serviceProvider);
+        var context = new CommandContext(_serviceProvider, McpUserContext.Empty);
 
         // Act
         var response = await _command.ExecuteAsync(context, args);
@@ -121,6 +124,7 @@ public class DeleteWorkbooksCommandTests
         var workbookId = "/subscriptions/sub1/resourceGroups/rg1/providers/microsoft.insights/workbooks/workbook1";
 
         _service.DeleteWorkbook(
+            Arg.Any<McpUserContext>(),
             Arg.Is(workbookId),
             Arg.Any<RetryPolicyOptions>(),
             Arg.Any<string?>())
@@ -130,7 +134,7 @@ public class DeleteWorkbooksCommandTests
             "--workbook-id", workbookId
         ]);
 
-        var context = new CommandContext(_serviceProvider);
+        var context = new CommandContext(_serviceProvider, McpUserContext.Empty);
 
         // Act
         var response = await _command.ExecuteAsync(context, args);
@@ -148,6 +152,7 @@ public class DeleteWorkbooksCommandTests
         var workbookId = "/subscriptions/test-sub/resourceGroups/test-rg/providers/microsoft.insights/workbooks/test-workbook";
 
         _service.DeleteWorkbook(
+            Arg.Any<McpUserContext>(),
             Arg.Any<string>(),
             Arg.Any<RetryPolicyOptions>(),
             Arg.Any<string?>())
@@ -158,13 +163,14 @@ public class DeleteWorkbooksCommandTests
             "--tenant", "test-tenant"
         ]);
 
-        var context = new CommandContext(_serviceProvider);
+        var context = new CommandContext(_serviceProvider, McpUserContext.Empty);
 
         // Act
         await _command.ExecuteAsync(context, args);
 
         // Assert
         await _service.Received(1).DeleteWorkbook(
+            Arg.Any<McpUserContext>(),
             Arg.Is(workbookId),
             Arg.Any<RetryPolicyOptions>(),
             Arg.Is("test-tenant"));
@@ -177,6 +183,7 @@ public class DeleteWorkbooksCommandTests
         var workbookId = "/subscriptions/test-sub/resourceGroups/test-rg/providers/microsoft.insights/workbooks/test-workbook";
 
         _service.DeleteWorkbook(
+            Arg.Any<McpUserContext>(),
             Arg.Any<string>(),
             Arg.Any<RetryPolicyOptions>(),
             Arg.Any<string?>())
@@ -186,13 +193,14 @@ public class DeleteWorkbooksCommandTests
             "--workbook-id", workbookId
         ]);
 
-        var context = new CommandContext(_serviceProvider);
+        var context = new CommandContext(_serviceProvider, McpUserContext.Empty);
 
         // Act
         await _command.ExecuteAsync(context, args);
 
         // Assert
         await _service.Received(1).DeleteWorkbook(
+            Arg.Any<McpUserContext>(),
             Arg.Is(workbookId),
             Arg.Any<RetryPolicyOptions>(),
             Arg.Is((string?)null));
@@ -205,6 +213,7 @@ public class DeleteWorkbooksCommandTests
         var workbookId = "/subscriptions/test-sub/resourceGroups/test-rg/providers/microsoft.insights/workbooks/test-workbook";
 
         _service.DeleteWorkbook(
+            Arg.Any<McpUserContext>(),
             Arg.Any<string>(),
             Arg.Any<RetryPolicyOptions>(),
             Arg.Any<string?>())
@@ -215,13 +224,14 @@ public class DeleteWorkbooksCommandTests
             "--auth-method", "1"
         ]);
 
-        var context = new CommandContext(_serviceProvider);
+        var context = new CommandContext(_serviceProvider, McpUserContext.Empty);
 
         // Act
         await _command.ExecuteAsync(context, args);
 
         // Assert
         await _service.Received(1).DeleteWorkbook(
+            Arg.Any<McpUserContext>(),
             Arg.Is(workbookId),
             Arg.Any<RetryPolicyOptions>(),
             Arg.Any<string?>());
@@ -237,7 +247,7 @@ public class DeleteWorkbooksCommandTests
             "--workbook-id", invalidWorkbookId
         ]);
 
-        var context = new CommandContext(_serviceProvider);
+        var context = new CommandContext(_serviceProvider, McpUserContext.Empty);
 
         // Act
         var response = await _command.ExecuteAsync(context, args);
@@ -253,7 +263,7 @@ public class DeleteWorkbooksCommandTests
         // Arrange - Parse without required workbook-id parameter
         var parseResult = _command.GetCommand().Parse([]);
 
-        var context = new CommandContext(_serviceProvider);
+        var context = new CommandContext(_serviceProvider, McpUserContext.Empty);
 
         // Act
         var response = await _command.ExecuteAsync(context, parseResult);
@@ -270,6 +280,7 @@ public class DeleteWorkbooksCommandTests
         var validWorkbookId = "/subscriptions/12345678-1234-1234-1234-123456789012/resourceGroups/my-rg/providers/microsoft.insights/workbooks/my-workbook-guid";
 
         _service.DeleteWorkbook(
+            Arg.Any<McpUserContext>(),
             Arg.Is(validWorkbookId),
             Arg.Any<RetryPolicyOptions>(),
             Arg.Any<string?>())
@@ -279,7 +290,7 @@ public class DeleteWorkbooksCommandTests
             "--workbook-id", validWorkbookId
         ]);
 
-        var context = new CommandContext(_serviceProvider);
+        var context = new CommandContext(_serviceProvider, McpUserContext.Empty);
 
         // Act
         var response = await _command.ExecuteAsync(context, args);
@@ -303,6 +314,7 @@ public class DeleteWorkbooksCommandTests
         var displayName = "My Test Workbook";
 
         _service.DeleteWorkbook(
+            Arg.Any<McpUserContext>(),
             Arg.Is(displayName),
             Arg.Any<RetryPolicyOptions>(),
             Arg.Any<string?>())
@@ -312,7 +324,7 @@ public class DeleteWorkbooksCommandTests
             "--workbook-id", displayName
         ]);
 
-        var context = new CommandContext(_serviceProvider);
+        var context = new CommandContext(_serviceProvider, McpUserContext.Empty);
 
         // Act
         var response = await _command.ExecuteAsync(context, args);
@@ -336,6 +348,7 @@ public class DeleteWorkbooksCommandTests
         var workbookId = "/subscriptions/sub1/resourceGroups/rg1/providers/microsoft.insights/workbooks/workbook1";
 
         _service.DeleteWorkbook(
+            Arg.Any<McpUserContext>(),
             Arg.Any<string>(),
             Arg.Any<RetryPolicyOptions>(),
             Arg.Any<string?>())
@@ -347,13 +360,14 @@ public class DeleteWorkbooksCommandTests
             "--retry-delay", "2"
         ]);
 
-        var context = new CommandContext(_serviceProvider);
+        var context = new CommandContext(_serviceProvider, McpUserContext.Empty);
 
         // Act
         await _command.ExecuteAsync(context, args);
 
         // Assert
         await _service.Received(1).DeleteWorkbook(
+            Arg.Any<McpUserContext>(),
             Arg.Is(workbookId),
             Arg.Is<RetryPolicyOptions>(options =>
                 options.MaxRetries == 5 &&

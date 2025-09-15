@@ -61,6 +61,7 @@ public sealed class BatchSetTierCommand(ILogger<BatchSetTierCommand> logger) : B
         {
             var storageService = context.GetService<IStorageService>();
             var result = await storageService.SetBlobTierBatch(
+                context.UserContext,
                 options.Account!,
                 options.Container!,
                 options.Tier!,

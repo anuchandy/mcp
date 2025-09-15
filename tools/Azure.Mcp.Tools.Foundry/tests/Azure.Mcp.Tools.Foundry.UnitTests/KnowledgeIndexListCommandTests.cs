@@ -2,6 +2,7 @@
 // Licensed under the MIT License.
 
 using System.CommandLine;
+using Azure.Mcp.Core.Areas.Server.Commands.Runtime;
 using Azure.Mcp.Core.Models.Command;
 using Azure.Mcp.Core.Options;
 using Azure.Mcp.Tools.Foundry.Commands;
@@ -31,7 +32,7 @@ public class KnowledgeIndexListCommandTests
         var collection = new ServiceCollection().AddSingleton(_service);
         _serviceProvider = collection.BuildServiceProvider();
         _command = new();
-        _context = new CommandContext(_serviceProvider);
+        _context = new CommandContext(_serviceProvider, McpUserContext.Empty);
         _commandDefinition = _command.GetCommand();
     }
 
@@ -52,7 +53,7 @@ public class KnowledgeIndexListCommandTests
         // Arrange
         if (shouldSucceed)
         {
-            _service.ListKnowledgeIndexes(Arg.Any<string>(), Arg.Any<string>(), Arg.Any<RetryPolicyOptions>())
+            _service.ListKnowledgeIndexes(Arg.Any<McpUserContext>(), Arg.Any<string>(), Arg.Any<string>(), Arg.Any<RetryPolicyOptions>())
                 .Returns(new List<KnowledgeIndexInformation>
                 {
                     new() { Name = "test-index", Type = "aisearch", Version = "1.0", Description = "Test index" }
@@ -81,7 +82,7 @@ public class KnowledgeIndexListCommandTests
     public async Task ExecuteAsync_HandlesServiceErrors()
     {
         // Arrange
-        _service.ListKnowledgeIndexes(Arg.Any<string>(), Arg.Any<string>(), Arg.Any<RetryPolicyOptions>())
+        _service.ListKnowledgeIndexes(Arg.Any<McpUserContext>(), Arg.Any<string>(), Arg.Any<string>(), Arg.Any<RetryPolicyOptions>())
             .Returns(Task.FromException<List<KnowledgeIndexInformation>>(new Exception("Test error")));
 
         var parseResult = _commandDefinition.Parse(["--endpoint", "https://example.com"]);
@@ -105,7 +106,7 @@ public class KnowledgeIndexListCommandTests
             new() { Name = "test-index2", Type = "aisearch", Version = "1.1", Description = "Second test index" }
         };
 
-        _service.ListKnowledgeIndexes(Arg.Any<string>(), Arg.Any<string>(), Arg.Any<RetryPolicyOptions>())
+        _service.ListKnowledgeIndexes(Arg.Any<McpUserContext>(), Arg.Any<string>(), Arg.Any<string>(), Arg.Any<RetryPolicyOptions>())
             .Returns(expectedIndexes);
 
         var parseResult = _commandDefinition.Parse(["--endpoint", "https://example.com"]);

@@ -4,6 +4,7 @@
 using System.Reflection;
 using System.Text;
 using System.Text.Json;
+using Azure.Mcp.Core.Areas.Server.Commands.Runtime;
 using Azure.Mcp.Tools.CloudArchitect.Commands.Design;
 using Azure.Mcp.Tools.CloudArchitect.Options;
 
@@ -24,7 +25,7 @@ public class DesignCommandTests
         var collection = new ServiceCollection();
         _serviceProvider = collection.BuildServiceProvider();
         _command = new(_logger);
-        _context = new(_serviceProvider);
+        _context = new CommandContext(_serviceProvider, McpUserContext.Empty);
         _commandDefinition = _command.GetCommand();
     }
 

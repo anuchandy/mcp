@@ -3,6 +3,7 @@
 
 using System.Text.RegularExpressions;
 using Azure.Core;
+using Azure.Mcp.Core.Areas.Server.Commands.Runtime;
 using Azure.Mcp.Core.Services.Azure;
 using Azure.Mcp.Core.Services.Azure.ResourceGroup;
 using Azure.Mcp.Core.Services.Azure.Tenant;
@@ -191,7 +192,7 @@ public class MySqlService(IResourceGroupService resourceGroupService, ITenantSer
         }
     }
 
-    public async Task<List<string>> ListDatabasesAsync(string subscriptionId, string resourceGroup, string user, string server)
+    public async Task<List<string>> ListDatabasesAsync(McpUserContext userContext, string subscriptionId, string resourceGroup, string user, string server)
     {
         try
         {
@@ -230,7 +231,7 @@ public class MySqlService(IResourceGroupService resourceGroupService, ITenantSer
         }
     }
 
-    public async Task<List<string>> ExecuteQueryAsync(string subscriptionId, string resourceGroup, string user, string server, string database, string query)
+    public async Task<List<string>> ExecuteQueryAsync(McpUserContext userContext, string subscriptionId, string resourceGroup, string user, string server, string database, string query)
     {
         try
         {
@@ -278,7 +279,7 @@ public class MySqlService(IResourceGroupService resourceGroupService, ITenantSer
         }
     }
 
-    public async Task<List<string>> GetTableSchemaAsync(string subscriptionId, string resourceGroup, string user, string server, string database, string table)
+    public async Task<List<string>> GetTableSchemaAsync(McpUserContext userContext, string subscriptionId, string resourceGroup, string user, string server, string database, string table)
     {
         try
         {
@@ -305,7 +306,7 @@ public class MySqlService(IResourceGroupService resourceGroupService, ITenantSer
         }
     }
 
-    public async Task<List<string>> ListServersAsync(string subscriptionId, string resourceGroup, string user)
+    public async Task<List<string>> ListServersAsync(McpUserContext userContext, string subscriptionId, string resourceGroup, string user)
     {
         try
         {
@@ -330,7 +331,7 @@ public class MySqlService(IResourceGroupService resourceGroupService, ITenantSer
         }
     }
 
-    public async Task<List<string>> GetTablesAsync(string subscriptionId, string resourceGroup, string user, string server, string database)
+    public async Task<List<string>> GetTablesAsync(McpUserContext userContext, string subscriptionId, string resourceGroup, string user, string server, string database)
     {
         try
         {
@@ -364,7 +365,7 @@ public class MySqlService(IResourceGroupService resourceGroupService, ITenantSer
         }
     }
 
-    public async Task<string> GetServerConfigAsync(string subscriptionId, string resourceGroup, string user, string server)
+    public async Task<string> GetServerConfigAsync(McpUserContext userContext, string subscriptionId, string resourceGroup, string user, string server)
     {
         try
         {
@@ -396,7 +397,7 @@ public class MySqlService(IResourceGroupService resourceGroupService, ITenantSer
         }
     }
 
-    public async Task<string> GetServerParameterAsync(string subscriptionId, string resourceGroup, string user, string server, string param)
+    public async Task<string> GetServerParameterAsync(McpUserContext userContext, string subscriptionId, string resourceGroup, string user, string server, string param)
     {
         try
         {
@@ -423,7 +424,7 @@ public class MySqlService(IResourceGroupService resourceGroupService, ITenantSer
         }
     }
 
-    public async Task<string> SetServerParameterAsync(string subscriptionId, string resourceGroup, string user, string server, string param, string value)
+    public async Task<string> SetServerParameterAsync(McpUserContext userContext, string subscriptionId, string resourceGroup, string user, string server, string param, string value)
     {
         try
         {

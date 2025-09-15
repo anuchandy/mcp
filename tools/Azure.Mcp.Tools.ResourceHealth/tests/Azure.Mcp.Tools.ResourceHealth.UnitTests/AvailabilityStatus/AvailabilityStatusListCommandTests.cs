@@ -2,6 +2,7 @@
 // Licensed under the MIT License.
 
 using System.Text.Json;
+using Azure.Mcp.Core.Areas.Server.Commands.Runtime;
 using Azure.Mcp.Core.Models.Command;
 using Azure.Mcp.Core.Options;
 using Azure.Mcp.Tools.ResourceHealth.Commands.AvailabilityStatus;
@@ -54,12 +55,12 @@ public class AvailabilityStatusListCommandTests
             }
         };
 
-        _resourceHealthService.ListAvailabilityStatusesAsync(subscriptionId, null, Arg.Any<string?>(), Arg.Any<RetryPolicyOptions>())
+        _resourceHealthService.ListAvailabilityStatusesAsync(Arg.Any<McpUserContext>(), subscriptionId, null, Arg.Any<string?>(), Arg.Any<RetryPolicyOptions>())
             .Returns(expectedStatuses);
 
         var command = new AvailabilityStatusListCommand(_logger);
         var args = command.GetCommand().Parse(["--subscription", subscriptionId]);
-        var context = new CommandContext(_serviceProvider);
+        var context = new CommandContext(_serviceProvider, McpUserContext.Empty);
         var response = await command.ExecuteAsync(context, args);
 
         Assert.NotNull(response);
@@ -96,12 +97,12 @@ public class AvailabilityStatusListCommandTests
             }
         };
 
-        _resourceHealthService.ListAvailabilityStatusesAsync(subscriptionId, resourceGroup, Arg.Any<string?>(), Arg.Any<RetryPolicyOptions>())
+        _resourceHealthService.ListAvailabilityStatusesAsync(Arg.Any<McpUserContext>(), subscriptionId, resourceGroup, Arg.Any<string?>(), Arg.Any<RetryPolicyOptions>())
             .Returns(expectedStatuses);
 
         var command = new AvailabilityStatusListCommand(_logger);
         var args = command.GetCommand().Parse(["--subscription", subscriptionId, "--resource-group", resourceGroup]);
-        var context = new CommandContext(_serviceProvider);
+        var context = new CommandContext(_serviceProvider, McpUserContext.Empty);
         var response = await command.ExecuteAsync(context, args);
 
         Assert.NotNull(response);
@@ -127,13 +128,13 @@ public class AvailabilityStatusListCommandTests
         var subscriptionId = "12345678-1234-1234-1234-123456789012";
         var expectedError = "Test error. To mitigate this issue, please refer to the troubleshooting guidelines here at https://aka.ms/azmcp/troubleshooting.";
 
-        _resourceHealthService.ListAvailabilityStatusesAsync(subscriptionId, null, Arg.Any<string?>(), Arg.Any<RetryPolicyOptions>())
+        _resourceHealthService.ListAvailabilityStatusesAsync(Arg.Any<McpUserContext>(), subscriptionId, null, Arg.Any<string?>(), Arg.Any<RetryPolicyOptions>())
             .ThrowsAsync(new Exception("Test error"));
 
         var command = new AvailabilityStatusListCommand(_logger);
 
         var args = command.GetCommand().Parse(["--subscription", subscriptionId]);
-        var context = new CommandContext(_serviceProvider);
+        var context = new CommandContext(_serviceProvider, McpUserContext.Empty);
 
         var response = await command.ExecuteAsync(context, args);
 
@@ -156,7 +157,7 @@ public class AvailabilityStatusListCommandTests
 
         var args = command.GetCommand().Parse([.. argsList]);
 
-        var context = new CommandContext(_serviceProvider);
+        var context = new CommandContext(_serviceProvider, McpUserContext.Empty);
         var response = await command.ExecuteAsync(context, args);
 
         Assert.NotNull(response);

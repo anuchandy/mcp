@@ -2,6 +2,7 @@
 // Licensed under the MIT License.
 
 using System.Text.Json;
+using Azure.Mcp.Core.Areas.Server.Commands.Runtime;
 using Azure.Mcp.Core.Models.Command;
 using Azure.Mcp.Core.Options;
 using Azure.Mcp.Tools.Monitor.Commands.Metrics;
@@ -110,6 +111,7 @@ public class MetricsQueryCommandTests
                    "--max-buckets 100";
 
         _service.QueryMetricsAsync(
+            Arg.Any<McpUserContext>(),
             Arg.Any<string>(),
             Arg.Any<string?>(),
             Arg.Any<string?>(),
@@ -125,7 +127,7 @@ public class MetricsQueryCommandTests
             Arg.Any<RetryPolicyOptions?>())
             .Returns(new List<MetricResult>());
 
-        var context = new CommandContext(_serviceProvider);
+        var context = new CommandContext(_serviceProvider, McpUserContext.Empty);
         var parseResult = _command.GetCommand().Parse(args);
 
         // Act
@@ -133,6 +135,7 @@ public class MetricsQueryCommandTests
 
         // Assert - Verify all parameters were passed correctly to the service
         await _service.Received(1).QueryMetricsAsync(
+            Arg.Any<McpUserContext>(),
             "sub1", // subscription
             "rg1", // resource group
             "Microsoft.Storage/storageAccounts", // resource type
@@ -155,6 +158,7 @@ public class MetricsQueryCommandTests
         var args = "--subscription sub1 --resource sa1 --metric-names CPU --metric-namespace microsoft.compute/virtualmachines";
 
         _service.QueryMetricsAsync(
+            Arg.Any<McpUserContext>(),
             Arg.Any<string>(),
             Arg.Any<string?>(),
             Arg.Any<string?>(),
@@ -170,7 +174,7 @@ public class MetricsQueryCommandTests
             Arg.Any<RetryPolicyOptions?>())
             .Returns(new List<MetricResult>());
 
-        var context = new CommandContext(_serviceProvider);
+        var context = new CommandContext(_serviceProvider, McpUserContext.Empty);
         var parseResult = _command.GetCommand().Parse(args);
 
         // Act
@@ -178,6 +182,7 @@ public class MetricsQueryCommandTests
 
         // Assert - Verify optional parameters are null when not provided
         await _service.Received(1).QueryMetricsAsync(
+            Arg.Any<McpUserContext>(),
             Arg.Is<string>(t => t == "sub1"), // subscription
             Arg.Is<string?>(t => t == null), // resource group (not provided)
             Arg.Is<string?>(t => t == null), // resource type (not provided)
@@ -211,7 +216,7 @@ public class MetricsQueryCommandTests
         var parseResult = _command.GetCommand().Parse(args);
         var commandResult = parseResult.CommandResult;
 
-        var context = new CommandContext(_serviceProvider);
+        var context = new CommandContext(_serviceProvider, McpUserContext.Empty);
         // Act
         var result = await _command.ExecuteAsync(context, parseResult);
 
@@ -262,6 +267,7 @@ public class MetricsQueryCommandTests
         };
 
         _service.QueryMetricsAsync(
+            Arg.Any<McpUserContext>(),
             Arg.Any<string>(),
             Arg.Any<string?>(),
             Arg.Any<string?>(),
@@ -277,7 +283,7 @@ public class MetricsQueryCommandTests
             Arg.Any<RetryPolicyOptions?>())
             .Returns(expectedResults);
 
-        var context = new CommandContext(_serviceProvider);
+        var context = new CommandContext(_serviceProvider, McpUserContext.Empty);
         var parseResult = _command.GetCommand().Parse(args);
 
         // Act
@@ -303,6 +309,7 @@ public class MetricsQueryCommandTests
     {
         // Arrange
         _service.QueryMetricsAsync(
+            Arg.Any<McpUserContext>(),
             Arg.Any<string>(),
             Arg.Any<string?>(),
             Arg.Any<string?>(),
@@ -318,7 +325,7 @@ public class MetricsQueryCommandTests
             Arg.Any<RetryPolicyOptions?>())
             .Returns(new List<MetricResult>());
 
-        var context = new CommandContext(_serviceProvider);
+        var context = new CommandContext(_serviceProvider, McpUserContext.Empty);
         var parseResult = _command.GetCommand().Parse("--subscription sub1 --resource sa1 --metric-names CPU --metric-namespace microsoft.compute/virtualmachines");
 
         // Act
@@ -334,6 +341,7 @@ public class MetricsQueryCommandTests
     {
         // Arrange
         _service.QueryMetricsAsync(
+            Arg.Any<McpUserContext>(),
             Arg.Any<string>(),
             Arg.Any<string?>(),
             Arg.Any<string?>(),
@@ -349,7 +357,7 @@ public class MetricsQueryCommandTests
             Arg.Any<RetryPolicyOptions?>())
             .Returns(new List<MetricResult>());
 
-        var context = new CommandContext(_serviceProvider);
+        var context = new CommandContext(_serviceProvider, McpUserContext.Empty);
         var parseResult = _command.GetCommand().Parse(
             "--subscription sub1 --resource-group rg1 --resource-type Microsoft.Storage/storageAccounts --metric-namespace microsoft.compute/virtualmachines " +
             "--resource sa1 --metric-names CPU,Memory --start-time 2023-01-01T00:00:00Z " +
@@ -360,6 +368,7 @@ public class MetricsQueryCommandTests
 
         // Assert
         await _service.Received(1).QueryMetricsAsync(
+            Arg.Any<McpUserContext>(),
             "sub1",
             "rg1",
             "Microsoft.Storage/storageAccounts",
@@ -385,7 +394,7 @@ public class MetricsQueryCommandTests
     public async Task ExecuteAsync_InvalidInput_ReturnsBadRequest(string args)
     {
         // Arrange
-        var context = new CommandContext(_serviceProvider);
+        var context = new CommandContext(_serviceProvider, McpUserContext.Empty);
         var parseResult = _command.GetCommand().Parse(args);
 
         // Act
@@ -426,6 +435,7 @@ public class MetricsQueryCommandTests
         };
 
         _service.QueryMetricsAsync(
+            Arg.Any<McpUserContext>(),
             Arg.Any<string>(),
             Arg.Any<string?>(),
             Arg.Any<string?>(),
@@ -441,7 +451,7 @@ public class MetricsQueryCommandTests
             Arg.Any<RetryPolicyOptions?>())
             .Returns(resultsWithTooManyBuckets);
 
-        var context = new CommandContext(_serviceProvider);
+        var context = new CommandContext(_serviceProvider, McpUserContext.Empty);
         var parseResult = _command.GetCommand().Parse("--subscription sub1 --resource sa1 --metric-names CPU --metric-namespace microsoft.compute/virtualmachines");
 
         // Act
@@ -480,6 +490,7 @@ public class MetricsQueryCommandTests
         };
 
         _service.QueryMetricsAsync(
+            Arg.Any<McpUserContext>(),
             Arg.Any<string>(),
             Arg.Any<string?>(),
             Arg.Any<string?>(),
@@ -495,7 +506,7 @@ public class MetricsQueryCommandTests
             Arg.Any<RetryPolicyOptions?>())
             .Returns(resultsWithTooManyBuckets);
 
-        var context = new CommandContext(_serviceProvider);
+        var context = new CommandContext(_serviceProvider, McpUserContext.Empty);
         var parseResult = _command.GetCommand().Parse("--subscription sub1 --resource sa1 --metric-names Memory --max-buckets 25 --metric-namespace microsoft.compute/virtualmachines");
 
         // Act
@@ -557,6 +568,7 @@ public class MetricsQueryCommandTests
         };
 
         _service.QueryMetricsAsync(
+            Arg.Any<McpUserContext>(),
             Arg.Any<string>(),
             Arg.Any<string?>(),
             Arg.Any<string?>(),
@@ -572,7 +584,7 @@ public class MetricsQueryCommandTests
             Arg.Any<RetryPolicyOptions?>())
             .Returns(results);
 
-        var context = new CommandContext(_serviceProvider);
+        var context = new CommandContext(_serviceProvider, McpUserContext.Empty);
         var parseResult = _command.GetCommand().Parse("--subscription sub1 --resource sa1 --metric-names TestMetric --metric-namespace microsoft.compute/virtualmachines");
 
         // Act
@@ -608,6 +620,7 @@ public class MetricsQueryCommandTests
         };
 
         _service.QueryMetricsAsync(
+            Arg.Any<McpUserContext>(),
             Arg.Any<string>(),
             Arg.Any<string?>(),
             Arg.Any<string?>(),
@@ -623,7 +636,7 @@ public class MetricsQueryCommandTests
             Arg.Any<RetryPolicyOptions?>())
             .Returns(resultsWithinLimit);
 
-        var context = new CommandContext(_serviceProvider);
+        var context = new CommandContext(_serviceProvider, McpUserContext.Empty);
         var parseResult = _command.GetCommand().Parse("--subscription sub1 --resource sa1 --metric-names CPU --metric-namespace microsoft.compute/virtualmachines");
 
         // Act
@@ -659,6 +672,7 @@ public class MetricsQueryCommandTests
         };
 
         _service.QueryMetricsAsync(
+            Arg.Any<McpUserContext>(),
             Arg.Any<string>(),
             Arg.Any<string?>(),
             Arg.Any<string?>(),
@@ -674,7 +688,7 @@ public class MetricsQueryCommandTests
             Arg.Any<RetryPolicyOptions?>())
             .Returns(resultsWithTooManyBuckets);
 
-        var context = new CommandContext(_serviceProvider);
+        var context = new CommandContext(_serviceProvider, McpUserContext.Empty);
         var parseResult = _command.GetCommand().Parse("--subscription sub1 --resource sa1 --metric-names CPU --metric-namespace microsoft.compute/virtualmachines");
 
         // Act
@@ -699,6 +713,7 @@ public class MetricsQueryCommandTests
         // Arrange
         var expectedException = new Exception("Service unavailable");
         _service.When(x => x.QueryMetricsAsync(
+            Arg.Any<McpUserContext>(),
             Arg.Any<string>(),
             Arg.Any<string?>(),
             Arg.Any<string?>(),
@@ -714,7 +729,7 @@ public class MetricsQueryCommandTests
             Arg.Any<RetryPolicyOptions?>()))
             .Do(x => throw expectedException);
 
-        var context = new CommandContext(_serviceProvider);
+        var context = new CommandContext(_serviceProvider, McpUserContext.Empty);
         var parseResult = _command.GetCommand().Parse("--subscription sub1 --resource sa1 --metric-names CPU --metric-namespace microsoft.compute/virtualmachines");
 
         // Act
@@ -732,6 +747,7 @@ public class MetricsQueryCommandTests
         // Arrange
         var expectedException = new Exception("Service error");
         _service.When(x => x.QueryMetricsAsync(
+            Arg.Any<McpUserContext>(),
             Arg.Any<string>(),
             Arg.Any<string?>(),
             Arg.Any<string?>(),
@@ -747,7 +763,7 @@ public class MetricsQueryCommandTests
             Arg.Any<RetryPolicyOptions?>()))
             .Do(x => throw expectedException);
 
-        var context = new CommandContext(_serviceProvider);
+        var context = new CommandContext(_serviceProvider, McpUserContext.Empty);
         var parseResult = _command.GetCommand().Parse("--subscription sub1 --resource sa1 --metric-names CPU --metric-namespace microsoft.compute/virtualmachines");
 
         // Act
@@ -799,6 +815,7 @@ public class MetricsQueryCommandTests
         };
 
         _service.QueryMetricsAsync(
+            Arg.Any<McpUserContext>(),
             Arg.Any<string>(),
             Arg.Any<string?>(),
             Arg.Any<string?>(),
@@ -814,7 +831,7 @@ public class MetricsQueryCommandTests
             Arg.Any<RetryPolicyOptions?>())
             .Returns(results);
 
-        var context = new CommandContext(_serviceProvider);
+        var context = new CommandContext(_serviceProvider, McpUserContext.Empty);
         var parseResult = _command.GetCommand().Parse("--subscription sub1 --resource sa1 --metric-names CPU,Memory --metric-namespace microsoft.compute/virtualmachines");
 
         // Act
@@ -851,6 +868,7 @@ public class MetricsQueryCommandTests
         };
 
         _service.QueryMetricsAsync(
+            Arg.Any<McpUserContext>(),
             Arg.Any<string>(),
             Arg.Any<string?>(),
             Arg.Any<string?>(),
@@ -866,7 +884,7 @@ public class MetricsQueryCommandTests
             Arg.Any<RetryPolicyOptions?>())
             .Returns(results);
 
-        var context = new CommandContext(_serviceProvider);
+        var context = new CommandContext(_serviceProvider, McpUserContext.Empty);
         var parseResult = _command.GetCommand().Parse("--subscription sub1 --resource sa1 --metric-names CPU --metric-namespace microsoft.compute/virtualmachines");
 
         // Act
@@ -903,6 +921,7 @@ public class MetricsQueryCommandTests
         };
 
         _service.QueryMetricsAsync(
+            Arg.Any<McpUserContext>(),
             Arg.Any<string>(),
             Arg.Any<string?>(),
             Arg.Any<string?>(),
@@ -918,7 +937,7 @@ public class MetricsQueryCommandTests
             Arg.Any<RetryPolicyOptions?>())
             .Returns(results);
 
-        var context = new CommandContext(_serviceProvider);
+        var context = new CommandContext(_serviceProvider, McpUserContext.Empty);
         var parseResult = _command.GetCommand().Parse("--subscription sub1 --resource sa1 --metric-names CPU --metric-namespace microsoft.compute/virtualmachines");
 
         // Act
@@ -934,6 +953,7 @@ public class MetricsQueryCommandTests
     {
         // Arrange
         _service.QueryMetricsAsync(
+            Arg.Any<McpUserContext>(),
             Arg.Any<string>(),
             Arg.Any<string?>(),
             Arg.Any<string?>(),
@@ -949,7 +969,7 @@ public class MetricsQueryCommandTests
             Arg.Any<RetryPolicyOptions?>())
             .Returns(Task.FromResult((List<MetricResult>)null!));
 
-        var context = new CommandContext(_serviceProvider);
+        var context = new CommandContext(_serviceProvider, McpUserContext.Empty);
         var parseResult = _command.GetCommand().Parse("--subscription sub1 --resource sa1 --metric-names CPU --metric-namespace microsoft.compute/virtualmachines");
 
         // Act

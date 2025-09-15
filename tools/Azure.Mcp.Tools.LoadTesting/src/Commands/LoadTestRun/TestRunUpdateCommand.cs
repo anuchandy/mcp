@@ -64,6 +64,7 @@ public sealed class TestRunUpdateCommand(ILogger<TestRunUpdateCommand> logger)
             var service = context.GetService<ILoadTestingService>();
             // Call service operation(s)
             var results = await service.CreateOrUpdateLoadTestRunAsync(
+                context.UserContext,
                 options.Subscription!,
                 options.TestResourceName!,
                 options.TestId!,

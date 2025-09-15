@@ -39,6 +39,7 @@ public sealed class KeyValueDeleteCommand(ILogger<KeyValueDeleteCommand> logger)
         {
             var appConfigService = context.GetService<IAppConfigService>();
             await appConfigService.DeleteKeyValue(
+                context.UserContext,
                 options.Account!,
                 options.Key!,
                 options.Subscription!,

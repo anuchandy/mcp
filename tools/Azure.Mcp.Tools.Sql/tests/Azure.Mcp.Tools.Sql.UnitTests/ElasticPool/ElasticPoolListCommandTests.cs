@@ -2,6 +2,7 @@
 // Licensed under the MIT License.
 
 using System.CommandLine;
+using Azure.Mcp.Core.Areas.Server.Commands.Runtime;
 using Azure.Mcp.Core.Models.Command;
 using Azure.Mcp.Core.Options;
 using Azure.Mcp.Tools.Sql.Commands.ElasticPool;
@@ -34,7 +35,7 @@ public class ElasticPoolListCommandTests
         _serviceProvider = collection.BuildServiceProvider();
 
         _command = new(_logger);
-        _context = new(_serviceProvider);
+        _context = new CommandContext(_serviceProvider, McpUserContext.Empty);
         _commandDefinition = _command.GetCommand();
     }
 
@@ -74,6 +75,7 @@ public class ElasticPoolListCommandTests
         };
 
         _sqlService.GetElasticPoolsAsync(
+            Arg.Any<McpUserContext>(),
             Arg.Is("server1"),
             Arg.Is("rg"),
             Arg.Is("sub"),
@@ -100,6 +102,7 @@ public class ElasticPoolListCommandTests
         var mockElasticPools = new List<SqlElasticPool>();
 
         _sqlService.GetElasticPoolsAsync(
+            Arg.Any<McpUserContext>(),
             Arg.Is("server1"),
             Arg.Is("rg"),
             Arg.Is("sub"),
@@ -124,6 +127,7 @@ public class ElasticPoolListCommandTests
     {
         // Arrange
         _sqlService.GetElasticPoolsAsync(
+                Arg.Any<McpUserContext>(),
                 Arg.Any<string>(),
                 Arg.Any<string>(),
                 Arg.Any<string>(),
@@ -148,6 +152,7 @@ public class ElasticPoolListCommandTests
         // Arrange
         var requestException = new RequestFailedException(404, "Server not found");
         _sqlService.GetElasticPoolsAsync(
+                Arg.Any<McpUserContext>(),
                 Arg.Any<string>(),
                 Arg.Any<string>(),
                 Arg.Any<string>(),
@@ -171,6 +176,7 @@ public class ElasticPoolListCommandTests
         // Arrange
         var requestException = new RequestFailedException(403, "Forbidden");
         _sqlService.GetElasticPoolsAsync(
+                Arg.Any<McpUserContext>(),
                 Arg.Any<string>(),
                 Arg.Any<string>(),
                 Arg.Any<string>(),
@@ -200,6 +206,7 @@ public class ElasticPoolListCommandTests
         if (shouldSucceed)
         {
             _sqlService.GetElasticPoolsAsync(
+                Arg.Any<McpUserContext>(),
                 Arg.Any<string>(),
                 Arg.Any<string>(),
                 Arg.Any<string>(),

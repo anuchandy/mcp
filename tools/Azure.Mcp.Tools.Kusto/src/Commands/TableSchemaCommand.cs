@@ -42,6 +42,7 @@ public sealed class TableSchemaCommand(ILogger<TableSchemaCommand> logger) : Bas
             if (UseClusterUri(options))
             {
                 tableSchema = await kusto.GetTableSchema(
+                    context.UserContext,
                     options.ClusterUri!,
                     options.Database!,
                     options.Table!,
@@ -52,6 +53,7 @@ public sealed class TableSchemaCommand(ILogger<TableSchemaCommand> logger) : Bas
             else
             {
                 tableSchema = await kusto.GetTableSchema(
+                    context.UserContext,
                     options.Subscription!,
                     options.ClusterName!,
                     options.Database!,

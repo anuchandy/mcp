@@ -2,6 +2,7 @@
 // Licensed under the MIT License.
 
 using Azure.Core;
+using Azure.Mcp.Core.Areas.Server.Commands.Runtime;
 using Azure.Mcp.Core.Services.Azure;
 using Azure.Mcp.Core.Services.Http;
 using Azure.Mcp.Tools.Quota.Models;
@@ -16,6 +17,7 @@ public class QuotaService(ILoggerFactory? loggerFactory = null, IHttpClientServi
     private readonly IHttpClientService _httpClientService = httpClientService ?? throw new ArgumentNullException(nameof(httpClientService));
 
     public async Task<Dictionary<string, List<UsageInfo>>> GetAzureQuotaAsync(
+        McpUserContext userContext,
         List<string> resourceTypes,
         string subscriptionId,
         string location)
@@ -33,6 +35,7 @@ public class QuotaService(ILoggerFactory? loggerFactory = null, IHttpClientServi
     }
 
     public async Task<List<string>> GetAvailableRegionsForResourceTypesAsync(
+        McpUserContext userContext,
         string[] resourceTypes,
         string subscriptionId,
         string? cognitiveServiceModelName = null,

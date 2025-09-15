@@ -1,6 +1,7 @@
 // Copyright (c) Microsoft Corporation.
 // Licensed under the MIT License.
 
+using Azure.Mcp.Core.Areas.Server.Commands.Runtime;
 using Azure.Mcp.Core.Options;
 using Azure.Mcp.Core.Services.Azure;
 using Azure.Mcp.Core.Services.Azure.Subscription;
@@ -24,6 +25,7 @@ public sealed class AksService(
     private static readonly TimeSpan s_cacheDuration = TimeSpan.FromHours(1);
 
     public async Task<List<Cluster>> ListClusters(
+        McpUserContext userContext,
         string subscription,
         string? tenant = null,
         RetryPolicyOptions? retryPolicy = null)
@@ -67,6 +69,7 @@ public sealed class AksService(
     }
 
     public async Task<Cluster?> GetCluster(
+        McpUserContext userContext,
         string subscription,
         string clusterName,
         string resourceGroup,

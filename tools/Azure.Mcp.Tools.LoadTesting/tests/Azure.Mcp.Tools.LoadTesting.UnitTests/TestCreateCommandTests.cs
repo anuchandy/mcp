@@ -2,6 +2,7 @@
 // Licensed under the MIT License.
 
 using System.Text.Json;
+using Azure.Mcp.Core.Areas.Server.Commands.Runtime;
 using Azure.Mcp.Core.Models.Command;
 using Azure.Mcp.Core.Options;
 using Azure.Mcp.Tools.LoadTesting.Commands.LoadTest;
@@ -46,6 +47,7 @@ public class TestCreateCommandTests
     {
         var expected = new Test { TestId = "testId1", DisplayName = "TestDisplayName", Description = "TestDescription" };
         _service.CreateTestAsync(
+            Arg.Any<McpUserContext>(),
             Arg.Is("sub123"), Arg.Is("testResourceName"), Arg.Is("testId1"), Arg.Is("resourceGroup123"),
             Arg.Is("TestDisplayName"), Arg.Is("TestDescription"),
             Arg.Is((int?)20), Arg.Is((int?)50), Arg.Is((int?)1), Arg.Is("https://example.com/api/test"),
@@ -66,7 +68,7 @@ public class TestCreateCommandTests
             "--ramp-up-time", "1",
             "--endpoint", "https://example.com/api/test"
         ]);
-        var context = new CommandContext(_serviceProvider);
+        var context = new CommandContext(_serviceProvider, McpUserContext.Empty);
 
         // Act
         var response = await command.ExecuteAsync(context, args);
@@ -90,6 +92,7 @@ public class TestCreateCommandTests
     {
         var expected = new Test();
         _service.CreateTestAsync(
+            Arg.Any<McpUserContext>(),
             Arg.Is("sub123"), Arg.Is("testResourceName"), Arg.Is("testId1"), Arg.Is("resourceGroup123"),
             Arg.Is("TestDisplayName"), Arg.Is("TestDescription"),
             Arg.Is((int?)20), Arg.Is((int?)50), Arg.Is((int?)1), Arg.Is((string?)null),
@@ -102,7 +105,7 @@ public class TestCreateCommandTests
             "--resource-group", "resourceGroup123",
             "--tenant", "tenant123"
         ]);
-        var context = new CommandContext(_serviceProvider);
+        var context = new CommandContext(_serviceProvider, McpUserContext.Empty);
         var response = await command.ExecuteAsync(context, args);
         Assert.Equal(400, response.Status);
     }
@@ -111,6 +114,7 @@ public class TestCreateCommandTests
     public async Task ExecuteAsync_HandlesServiceErrors()
     {
         _service.CreateTestAsync(
+            Arg.Any<McpUserContext>(),
             Arg.Is("sub123"), Arg.Is("testResourceName"), Arg.Is("testId1"), Arg.Is("resourceGroup123"),
             Arg.Is("TestDisplayName"), Arg.Is("TestDescription"),
             Arg.Is((int?)20), Arg.Is((int?)50), Arg.Is((int?)1), Arg.Is("https://example.com/api/test"),
@@ -131,7 +135,7 @@ public class TestCreateCommandTests
             "--ramp-up-time", "1",
             "--endpoint", "https://example.com/api/test"
         ]);
-        var context = new CommandContext(_serviceProvider);
+        var context = new CommandContext(_serviceProvider, McpUserContext.Empty);
         var response = await command.ExecuteAsync(context, args);
         Assert.Equal(500, response.Status);
         Assert.Contains("Test error", response.Message);

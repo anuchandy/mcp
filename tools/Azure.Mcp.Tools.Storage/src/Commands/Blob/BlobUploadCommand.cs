@@ -61,6 +61,7 @@ public sealed class BlobUploadCommand(ILogger<BlobUploadCommand> logger) : BaseB
             var storageService = context.GetService<IStorageService>();
 
             var result = await storageService.UploadBlob(
+                context.UserContext,
                 options.Account!,
                 options.Container!,
                 options.Blob!,
