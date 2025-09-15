@@ -12,17 +12,17 @@ namespace Azure.Mcp.Core.Services.Azure.Authentication;
 /// Provides token brokering services using ITokenAcquisition for inter-process communication.
 /// This service enables OBO Child processes to request tokens from the OBO Parent via named pipes.
 /// </summary>
-public sealed class BrokerService : IBrokerService
+public sealed class OboParentBrokerService : IOboParentBrokerService
 {
     private readonly ITokenAcquisition _tokenAcquisition;
-    private readonly ILogger<BrokerService> _logger;
+    private readonly ILogger<OboParentBrokerService> _logger;
 
     /// <summary>
-    /// Initializes a new instance of the <see cref="BrokerService"/> class.
+    /// Initializes a new instance of the <see cref="OboParentBrokerService"/> class.
     /// </summary>
     /// <param name="tokenAcquisition">The token acquisition service from Microsoft.Identity.Web.</param>
     /// <param name="logger">The logger for diagnostic information.</param>
-    public BrokerService(ITokenAcquisition tokenAcquisition, ILogger<BrokerService> logger)
+    public OboParentBrokerService(ITokenAcquisition tokenAcquisition, ILogger<OboParentBrokerService> logger)
     {
         _tokenAcquisition = tokenAcquisition ?? throw new ArgumentNullException(nameof(tokenAcquisition));
         _logger = logger ?? throw new ArgumentNullException(nameof(logger));

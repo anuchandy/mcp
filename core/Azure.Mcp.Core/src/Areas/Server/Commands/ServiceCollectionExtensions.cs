@@ -105,7 +105,7 @@ public static class AzureMcpServiceCollectionExtensions
             // Named pipes are supported on Windows, Linux, and macOS
             if (OperatingSystem.IsWindows() || OperatingSystem.IsLinux() || OperatingSystem.IsMacOS())
             {
-                services.AddSingleton<IBrokerService, BrokerService>();
+                services.AddSingleton<IOboParentBrokerService, OboParentBrokerService>();
                 services.AddSingleton<NamedPipeServerService>();
                 services.AddHostedService<BrokerHostedService>();
             }

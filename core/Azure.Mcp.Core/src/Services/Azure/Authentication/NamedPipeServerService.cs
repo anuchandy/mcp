@@ -21,16 +21,16 @@ internal partial class BrokerJsonContext : JsonSerializerContext
 }
 
 /// <summary>
-/// Named pipe server service that hosts the IBrokerService over named pipes.
-/// Handles multiple client connections and provides token brokering services
-/// for OBO Child processes requesting tokens from the OBO Parent.
+/// Named pipe server service that hosts the IOboParentBrokerService over named pipes.
+/// This enables OBO Child processes to communicate with the OBO Parent process
+/// for token acquisition via inter-process communication.
 /// </summary>
 [SupportedOSPlatform("windows")]
 [SupportedOSPlatform("linux")]
 [SupportedOSPlatform("macos")]
-public sealed class NamedPipeServerService
+public sealed class NamedPipeServerService : IDisposable
 {
-    private readonly IBrokerService _brokerService;
+    private readonly IOboParentBrokerService _brokerService;
     private readonly ILogger<NamedPipeServerService> _logger;
     private readonly string _pipeName;
 
@@ -39,10 +39,11 @@ public sealed class NamedPipeServerService
     /// </summary>
     /// <param name="brokerService">The broker service for token acquisition.</param>
     /// <param name="logger">The logger for diagnostic information.</param>
-    public NamedPipeServerService(IBrokerService brokerService, ILogger<NamedPipeServerService> logger)
+    public NamedPipeServerService(IOboParentBrokerService brokerService, ILogger<NamedPipeServerService> logger)
     {
         _brokerService = brokerService ?? throw new ArgumentNullException(nameof(brokerService));
         _logger = logger ?? throw new ArgumentNullException(nameof(logger));
+        // TODO: anu: decide the pipe-name startOpt::obo-channel etc..
         _pipeName = $"azmcp_broker_{Environment.ProcessId}";
     }
 
@@ -291,6 +292,11 @@ public sealed class NamedPipeServerService
         await stream.WriteAsync(messageBuffer, 0, messageBuffer.Length, cancellationToken);
         
         await stream.FlushAsync(cancellationToken);
+    }
+
+    public void Dispose()
+    {
+        // Named pipe server will be disposed of by the hosting infrastructure
     }
 }
 

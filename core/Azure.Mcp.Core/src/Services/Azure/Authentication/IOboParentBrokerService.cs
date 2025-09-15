@@ -9,7 +9,7 @@ namespace Azure.Mcp.Core.Services.Azure.Authentication;
 /// Provides token brokering services for inter-process communication between OBO Parent and Child processes.
 /// This service enables OBO Child processes to request tokens from the OBO Parent via named pipes.
 /// </summary>
-public interface IBrokerService
+public interface IOboParentBrokerService
 {
     /// <summary>
     /// Acquires an access token for the specified scopes and user identity.

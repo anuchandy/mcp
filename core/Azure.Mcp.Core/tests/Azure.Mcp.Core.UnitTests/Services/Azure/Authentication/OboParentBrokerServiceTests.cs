@@ -11,17 +11,17 @@ using Xunit;
 
 namespace Azure.Mcp.Core.UnitTests.Services.Azure.Authentication;
 
-public class BrokerServiceTests
+public class OboParentBrokerServiceTests
 {
     [Fact]
     public void Constructor_WithValidParameters_Succeeds()
     {
         // Arrange
         var mockTokenAcquisition = Substitute.For<ITokenAcquisition>();
-        var mockLogger = Substitute.For<ILogger<BrokerService>>();
+        var mockLogger = Substitute.For<ILogger<OboParentBrokerService>>();
 
         // Act
-        var brokerService = new BrokerService(mockTokenAcquisition, mockLogger);
+        var brokerService = new OboParentBrokerService(mockTokenAcquisition, mockLogger);
 
         // Assert
         Assert.NotNull(brokerService);
@@ -31,10 +31,10 @@ public class BrokerServiceTests
     public void Constructor_WithNullTokenAcquisition_ThrowsArgumentNullException()
     {
         // Arrange
-        var mockLogger = Substitute.For<ILogger<BrokerService>>();
+        var mockLogger = Substitute.For<ILogger<OboParentBrokerService>>();
 
         // Act & Assert
-        Assert.Throws<ArgumentNullException>(() => new BrokerService(null!, mockLogger));
+        Assert.Throws<ArgumentNullException>(() => new OboParentBrokerService(null!, mockLogger));
     }
 
     [Fact]
@@ -44,7 +44,7 @@ public class BrokerServiceTests
         var mockTokenAcquisition = Substitute.For<ITokenAcquisition>();
 
         // Act & Assert
-        Assert.Throws<ArgumentNullException>(() => new BrokerService(mockTokenAcquisition, null!));
+        Assert.Throws<ArgumentNullException>(() => new OboParentBrokerService(mockTokenAcquisition, null!));
     }
 
     [Fact]
@@ -52,8 +52,8 @@ public class BrokerServiceTests
     {
         // Arrange
         var mockTokenAcquisition = Substitute.For<ITokenAcquisition>();
-        var mockLogger = Substitute.For<ILogger<BrokerService>>();
-        var brokerService = new BrokerService(mockTokenAcquisition, mockLogger);
+        var mockLogger = Substitute.For<ILogger<OboParentBrokerService>>();
+        var brokerService = new OboParentBrokerService(mockTokenAcquisition, mockLogger);
         var serializedClaimsPrincipal = CreateSerializedClaimsPrincipal();
 
         // Act & Assert
@@ -66,8 +66,8 @@ public class BrokerServiceTests
     {
         // Arrange
         var mockTokenAcquisition = Substitute.For<ITokenAcquisition>();
-        var mockLogger = Substitute.For<ILogger<BrokerService>>();
-        var brokerService = new BrokerService(mockTokenAcquisition, mockLogger);
+        var mockLogger = Substitute.For<ILogger<OboParentBrokerService>>();
+        var brokerService = new OboParentBrokerService(mockTokenAcquisition, mockLogger);
         var serializedClaimsPrincipal = CreateSerializedClaimsPrincipal();
 
         // Act & Assert
@@ -80,8 +80,8 @@ public class BrokerServiceTests
     {
         // Arrange
         var mockTokenAcquisition = Substitute.For<ITokenAcquisition>();
-        var mockLogger = Substitute.For<ILogger<BrokerService>>();
-        var brokerService = new BrokerService(mockTokenAcquisition, mockLogger);
+        var mockLogger = Substitute.For<ILogger<OboParentBrokerService>>();
+        var brokerService = new OboParentBrokerService(mockTokenAcquisition, mockLogger);
         var scopes = new[] { "https://management.azure.com/.default" };
 
         // Act & Assert
@@ -94,8 +94,8 @@ public class BrokerServiceTests
     {
         // Arrange
         var mockTokenAcquisition = Substitute.For<ITokenAcquisition>();
-        var mockLogger = Substitute.For<ILogger<BrokerService>>();
-        var brokerService = new BrokerService(mockTokenAcquisition, mockLogger);
+        var mockLogger = Substitute.For<ILogger<OboParentBrokerService>>();
+        var brokerService = new OboParentBrokerService(mockTokenAcquisition, mockLogger);
         var scopes = new[] { "https://management.azure.com/.default" };
 
         // Act & Assert
@@ -108,8 +108,8 @@ public class BrokerServiceTests
     {
         // Arrange
         var mockTokenAcquisition = Substitute.For<ITokenAcquisition>();
-        var mockLogger = Substitute.For<ILogger<BrokerService>>();
-        var brokerService = new BrokerService(mockTokenAcquisition, mockLogger);
+        var mockLogger = Substitute.For<ILogger<OboParentBrokerService>>();
+        var brokerService = new OboParentBrokerService(mockTokenAcquisition, mockLogger);
         
         var scopes = new[] { "https://management.azure.com/.default" };
         var serializedClaimsPrincipal = CreateSerializedClaimsPrincipal();
@@ -142,8 +142,8 @@ public class BrokerServiceTests
     {
         // Arrange
         var mockTokenAcquisition = Substitute.For<ITokenAcquisition>();
-        var mockLogger = Substitute.For<ILogger<BrokerService>>();
-        var brokerService = new BrokerService(mockTokenAcquisition, mockLogger);
+        var mockLogger = Substitute.For<ILogger<OboParentBrokerService>>();
+        var brokerService = new OboParentBrokerService(mockTokenAcquisition, mockLogger);
         
         var scopes = new[] { 
             "https://management.azure.com/.default",
@@ -179,8 +179,8 @@ public class BrokerServiceTests
     {
         // Arrange
         var mockTokenAcquisition = Substitute.For<ITokenAcquisition>();
-        var mockLogger = Substitute.For<ILogger<BrokerService>>();
-        var brokerService = new BrokerService(mockTokenAcquisition, mockLogger);
+        var mockLogger = Substitute.For<ILogger<OboParentBrokerService>>();
+        var brokerService = new OboParentBrokerService(mockTokenAcquisition, mockLogger);
         
         var scopes = new[] { "https://management.azure.com/.default" };
         var invalidSerializedClaimsPrincipal = "invalid-base64-string";
@@ -195,8 +195,8 @@ public class BrokerServiceTests
     {
         // Arrange
         var mockTokenAcquisition = Substitute.For<ITokenAcquisition>();
-        var mockLogger = Substitute.For<ILogger<BrokerService>>();
-        var brokerService = new BrokerService(mockTokenAcquisition, mockLogger);
+        var mockLogger = Substitute.For<ILogger<OboParentBrokerService>>();
+        var brokerService = new OboParentBrokerService(mockTokenAcquisition, mockLogger);
         
         var scopes = new[] { "https://management.azure.com/.default" };
         var serializedClaimsPrincipal = CreateSerializedClaimsPrincipal();
@@ -215,8 +215,8 @@ public class BrokerServiceTests
     {
         // Arrange
         var mockTokenAcquisition = Substitute.For<ITokenAcquisition>();
-        var mockLogger = Substitute.For<ILogger<BrokerService>>();
-        var brokerService = new BrokerService(mockTokenAcquisition, mockLogger);
+        var mockLogger = Substitute.For<ILogger<OboParentBrokerService>>();
+        var brokerService = new OboParentBrokerService(mockTokenAcquisition, mockLogger);
         
         var scopes = new[] { "https://management.azure.com/.default" };
         var serializedClaimsPrincipal = CreateSerializedClaimsPrincipal();
@@ -246,8 +246,8 @@ public class BrokerServiceTests
     {
         // Arrange
         var mockTokenAcquisition = Substitute.For<ITokenAcquisition>();
-        var mockLogger = Substitute.For<ILogger<BrokerService>>();
-        var brokerService = new BrokerService(mockTokenAcquisition, mockLogger);
+        var mockLogger = Substitute.For<ILogger<OboParentBrokerService>>();
+        var brokerService = new OboParentBrokerService(mockTokenAcquisition, mockLogger);
         
         var scopes = new[] { "https://management.azure.com/.default" };
         var serializedClaimsPrincipal = CreateSerializedClaimsPrincipal();
@@ -280,8 +280,8 @@ public class BrokerServiceTests
     {
         // Arrange
         var mockTokenAcquisition = Substitute.For<ITokenAcquisition>();
-        var mockLogger = Substitute.For<ILogger<BrokerService>>();
-        var brokerService = new BrokerService(mockTokenAcquisition, mockLogger);
+        var mockLogger = Substitute.For<ILogger<OboParentBrokerService>>();
+        var brokerService = new OboParentBrokerService(mockTokenAcquisition, mockLogger);
         
         var scopes = new[] { "https://management.azure.com/.default" };
         var serializedClaimsPrincipal = CreateSerializedClaimsPrincipal();
@@ -303,8 +303,8 @@ public class BrokerServiceTests
     {
         // Arrange
         var mockTokenAcquisition = Substitute.For<ITokenAcquisition>();
-        var mockLogger = Substitute.For<ILogger<BrokerService>>();
-        var brokerService = new BrokerService(mockTokenAcquisition, mockLogger);
+        var mockLogger = Substitute.For<ILogger<OboParentBrokerService>>();
+        var brokerService = new OboParentBrokerService(mockTokenAcquisition, mockLogger);
         
         var scopes = new[] { "https://management.azure.com/.default" };
         var serializedClaimsPrincipal = CreateSerializedClaimsPrincipal();
