@@ -46,10 +46,10 @@ public sealed class McpUserContext
     public AzRuntimeMode Role { get; }
 
     /// <summary>
-    /// The deserialized ClaimsPrincipal containing the full user identity.
+    /// Lazy-loaded deserialized ClaimsPrincipal containing the full user identity.
     /// Null if no serialized claims principal was provided or deserialization failed.
     /// </summary>
-    private readonly ClaimsPrincipal? _claimsPrincipal;
+    private readonly Lazy<ClaimsPrincipal?> _claimsPrincipal;
 
     /// <summary>
     /// Initializes a new instance of McpUserContext with the specified user identity information.
@@ -69,8 +69,8 @@ public sealed class McpUserContext
         SerializedClaimsPrincipal = serializedClaimsPrincipal;
         Role = role;
 
-        // Eagerly deserialize the ClaimsPrincipal if available (TODO: anu make it lazy)
-        _claimsPrincipal = DeserializeClaimsPrincipal(serializedClaimsPrincipal);
+        // Lazily deserialize the ClaimsPrincipal when first accessed
+        _claimsPrincipal = new Lazy<ClaimsPrincipal?>(() => DeserializeClaimsPrincipal(serializedClaimsPrincipal));
     }
 
     /// <summary>
@@ -80,20 +80,17 @@ public sealed class McpUserContext
     public static McpUserContext Empty => new(null, null, null, AzRuntimeMode.Default);
 
     /// <summary>
-    /// Deserializes and returns the ClaimsPrincipal from SerializedClaimsPrincipal if available.
+    /// Gets the deserialized ClaimsPrincipal from SerializedClaimsPrincipal if available.
     /// </summary>
-    /// <returns>
+    /// <value>
     /// The deserialized ClaimsPrincipal containing full user identity, or null if not available.
-    /// </returns>
+    /// </value>
     /// <remarks>
-    /// This method enables service classes to access the complete user identity for token acquisition
+    /// This property enables service classes to access the complete user identity for token acquisition
     /// without requiring direct access to HttpContext. The ClaimsPrincipal can be passed directly
     /// to Microsoft.Identity.Web's ITokenAcquisition.GetAccessTokenForUserAsync() method.
     /// </remarks>
-    public ClaimsPrincipal? GetClaimsPrincipal()
-    {
-        return _claimsPrincipal;
-    }
+    public ClaimsPrincipal? ClaimsPrincipal => _claimsPrincipal.Value;
 
     /// <summary>
     /// Static helper method to deserialize a ClaimsPrincipal from a Base64-encoded string.
@@ -130,7 +127,7 @@ public sealed class McpUserContext
     /// <summary>
     /// Gets a value indicating whether this context represents an authenticated user.
     /// </summary>
-    public bool IsAuthenticated => _claimsPrincipal?.Identity?.IsAuthenticated == true || 
+    public bool IsAuthenticated => ClaimsPrincipal?.Identity?.IsAuthenticated == true || 
                                   !string.IsNullOrEmpty(SerializedClaimsPrincipal);
 
     /// <summary>

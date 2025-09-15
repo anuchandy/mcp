@@ -136,33 +136,33 @@ public class McpUserContextTests
     }
 
     [Fact]
-    public void GetClaimsPrincipal_WithNullSerializedClaimsPrincipal_ReturnsNull()
+    public void ClaimsPrincipal_WithNullSerializedClaimsPrincipal_ReturnsNull()
     {
         // Arrange
         var context = new McpUserContext("tenant-123", "user-456", null, AzRuntimeMode.OboParent);
 
         // Act
-        var claimsPrincipal = context.GetClaimsPrincipal();
+        var claimsPrincipal = context.ClaimsPrincipal;
 
         // Assert
         Assert.Null(claimsPrincipal);
     }
 
     [Fact]
-    public void GetClaimsPrincipal_WithEmptySerializedClaimsPrincipal_ReturnsNull()
+    public void ClaimsPrincipal_WithEmptySerializedClaimsPrincipal_ReturnsNull()
     {
         // Arrange
         var context = new McpUserContext("tenant-123", "user-456", "", AzRuntimeMode.OboParent);
 
         // Act
-        var claimsPrincipal = context.GetClaimsPrincipal();
+        var claimsPrincipal = context.ClaimsPrincipal;
 
         // Assert
         Assert.Null(claimsPrincipal);
     }
 
     [Fact]
-    public void GetClaimsPrincipal_WithValidSerializedClaimsPrincipal_ReturnsClaimsPrincipal()
+    public void ClaimsPrincipal_WithValidSerializedClaimsPrincipal_ReturnsClaimsPrincipal()
     {
         // Arrange
         // Create a test ClaimsPrincipal and serialize it
@@ -188,7 +188,7 @@ public class McpUserContextTests
         var context = new McpUserContext("tenant-123", "user-456", serializedClaimsPrincipal, AzRuntimeMode.OboParent);
 
         // Act
-        var claimsPrincipal = context.GetClaimsPrincipal();
+        var claimsPrincipal = context.ClaimsPrincipal;
 
         // Assert
         Assert.NotNull(claimsPrincipal);
@@ -198,13 +198,13 @@ public class McpUserContextTests
     }
 
     [Fact]
-    public void GetClaimsPrincipal_WithInvalidSerializedClaimsPrincipal_ReturnsNull()
+    public void ClaimsPrincipal_WithInvalidSerializedClaimsPrincipal_ReturnsNull()
     {
         // Arrange
         var context = new McpUserContext("tenant-123", "user-456", "invalid-base64!", AzRuntimeMode.OboParent);
 
         // Act
-        var claimsPrincipal = context.GetClaimsPrincipal();
+        var claimsPrincipal = context.ClaimsPrincipal;
 
         // Assert
         Assert.Null(claimsPrincipal);

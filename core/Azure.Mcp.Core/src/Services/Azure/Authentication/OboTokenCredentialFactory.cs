@@ -94,7 +94,7 @@ public sealed class OboTokenCredentialFactory : IOboTokenCredentialFactory
             try
             {
                 // Use the ClaimsPrincipal from the user context for OBO token acquisition
-                var claimsPrincipal = _userContext.GetClaimsPrincipal();
+                var claimsPrincipal = _userContext.ClaimsPrincipal;
                 if (claimsPrincipal == null)
                 {
                     throw new InvalidOperationException("No ClaimsPrincipal available in user context for OBO token acquisition.");
