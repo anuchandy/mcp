@@ -310,7 +310,7 @@ public class MySqlService(IResourceGroupService resourceGroupService, ITenantSer
     {
         try
         {
-            var rg = await _resourceGroupService.GetResourceGroupResource(subscriptionId, resourceGroup);
+            var rg = await _resourceGroupService.GetResourceGroupResource(userContext, subscriptionId, resourceGroup);
             if (rg == null)
             {
                 throw new Exception($"Resource group '{resourceGroup}' not found.");
@@ -369,7 +369,7 @@ public class MySqlService(IResourceGroupService resourceGroupService, ITenantSer
     {
         try
         {
-            var rg = await _resourceGroupService.GetResourceGroupResource(subscriptionId, resourceGroup);
+            var rg = await _resourceGroupService.GetResourceGroupResource(userContext, subscriptionId, resourceGroup);
             if (rg == null)
             {
                 throw new Exception($"Resource group '{resourceGroup}' not found.");
@@ -401,7 +401,7 @@ public class MySqlService(IResourceGroupService resourceGroupService, ITenantSer
     {
         try
         {
-            var rg = await _resourceGroupService.GetResourceGroupResource(subscriptionId, resourceGroup);
+            var rg = await _resourceGroupService.GetResourceGroupResource(userContext, subscriptionId, resourceGroup);
             if (rg == null)
             {
                 throw new Exception($"Resource group '{resourceGroup}' not found.");
@@ -428,7 +428,7 @@ public class MySqlService(IResourceGroupService resourceGroupService, ITenantSer
     {
         try
         {
-            var rg = await _resourceGroupService.GetResourceGroupResource(subscriptionId, resourceGroup);
+            var rg = await _resourceGroupService.GetResourceGroupResource(userContext, subscriptionId, resourceGroup);
             if (rg == null)
             {
                 throw new Exception($"Resource group '{resourceGroup}' not found.");

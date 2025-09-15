@@ -23,7 +23,7 @@ public sealed class AcrService(ISubscriptionService subscriptionService, ITenant
     {
         ValidateRequiredParameters(subscription);
 
-        var subscriptionResource = await _subscriptionService.GetSubscription(subscription, tenant, retryPolicy);
+        var subscriptionResource = await _subscriptionService.GetSubscription(userContext,subscription, tenant, retryPolicy);
         var registries = new List<Models.AcrRegistryInfo>();
 
         // Select enumeration source based on optional resource group
@@ -72,7 +72,7 @@ public sealed class AcrService(ISubscriptionService subscriptionService, ITenant
     {
         ValidateRequiredParameters(subscription);
 
-        var subscriptionResource = await _subscriptionService.GetSubscription(subscription, tenant, retryPolicy);
+        var subscriptionResource = await _subscriptionService.GetSubscription(userContext, subscription, tenant, retryPolicy);
         var result = new Dictionary<string, List<string>>(StringComparer.OrdinalIgnoreCase);
 
         async Task AddRepositoriesForRegistryAsync(ContainerRegistryResource reg)

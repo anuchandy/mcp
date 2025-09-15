@@ -44,7 +44,7 @@ public sealed class SearchService(ISubscriptionService subscriptionService, ICac
             return cachedServices;
         }
 
-        var subscriptionResource = await _subscriptionService.GetSubscription(subscription, tenantId, retryPolicy);
+        var subscriptionResource = await _subscriptionService.GetSubscription(userContext, subscription, tenantId, retryPolicy);
         var services = new List<string>();
         try
         {

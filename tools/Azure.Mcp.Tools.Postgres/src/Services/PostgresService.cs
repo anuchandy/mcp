@@ -132,7 +132,7 @@ public class PostgresService : BaseAzureService, IPostgresService
 
     public async Task<List<string>> ListServersAsync(McpUserContext userContext, string subscriptionId, string resourceGroup, string user)
     {
-        var rg = await _resourceGroupService.GetResourceGroupResource(subscriptionId, resourceGroup);
+        var rg = await _resourceGroupService.GetResourceGroupResource(userContext, subscriptionId, resourceGroup);
         if (rg == null)
         {
             throw new Exception($"Resource group '{resourceGroup}' not found.");
@@ -147,7 +147,7 @@ public class PostgresService : BaseAzureService, IPostgresService
 
     public async Task<string> GetServerConfigAsync(McpUserContext userContext, string subscriptionId, string resourceGroup, string user, string server)
     {
-        var rg = await _resourceGroupService.GetResourceGroupResource(subscriptionId, resourceGroup);
+        var rg = await _resourceGroupService.GetResourceGroupResource(userContext, subscriptionId, resourceGroup);
         if (rg == null)
         {
             throw new Exception($"Resource group '{resourceGroup}' not found.");
@@ -166,7 +166,7 @@ public class PostgresService : BaseAzureService, IPostgresService
 
     public async Task<string> GetServerParameterAsync(McpUserContext userContext, string subscriptionId, string resourceGroup, string user, string server, string param)
     {
-        var rg = await _resourceGroupService.GetResourceGroupResource(subscriptionId, resourceGroup);
+        var rg = await _resourceGroupService.GetResourceGroupResource(userContext, subscriptionId, resourceGroup);
         if (rg == null)
         {
             throw new Exception($"Resource group '{resourceGroup}' not found.");
@@ -183,7 +183,7 @@ public class PostgresService : BaseAzureService, IPostgresService
 
     public async Task<string> SetServerParameterAsync(McpUserContext userContext, string subscriptionId, string resourceGroup, string user, string server, string param, string value)
     {
-        var rg = await _resourceGroupService.GetResourceGroupResource(subscriptionId, resourceGroup);
+        var rg = await _resourceGroupService.GetResourceGroupResource(userContext, subscriptionId, resourceGroup);
         if (rg == null)
         {
             throw new Exception($"Resource group '{resourceGroup}' not found.");

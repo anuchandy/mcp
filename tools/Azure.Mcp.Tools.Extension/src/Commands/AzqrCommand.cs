@@ -57,7 +57,7 @@ public sealed class AzqrCommand(ILogger<AzqrCommand> logger, int processTimeoutS
 
             var subscriptionService = context.GetService<ISubscriptionService>();
             var dateTimeProvider = context.GetService<IDateTimeProvider>();
-            var subscription = await subscriptionService.GetSubscription(options.Subscription, options.Tenant);
+            var subscription = await subscriptionService.GetSubscription(context.UserContext, options.Subscription, options.Tenant);
 
             // Compose azqr command
             var command = $"scan --subscription-id {subscription.Id}";

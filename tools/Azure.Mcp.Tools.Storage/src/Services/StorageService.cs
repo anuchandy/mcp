@@ -38,7 +38,7 @@ public class StorageService(ISubscriptionService subscriptionService, ITenantSer
     {
         ValidateRequiredParameters(subscription);
 
-        var subscriptionResource = await _subscriptionService.GetSubscription(subscription, tenant, retryPolicy);
+        var subscriptionResource = await _subscriptionService.GetSubscription(userContext, subscription, tenant, retryPolicy);
 
         // Create cache key using the resolved subscription ID for consistency
         var cacheKey = string.IsNullOrEmpty(tenant)
@@ -92,7 +92,7 @@ public class StorageService(ISubscriptionService subscriptionService, ITenantSer
     {
         ValidateRequiredParameters(account, subscription);
 
-        var subscriptionResource = await _subscriptionService.GetSubscription(subscription, tenant, retryPolicy);
+        var subscriptionResource = await _subscriptionService.GetSubscription(userContext, subscription, tenant, retryPolicy);
 
         try
         {
@@ -133,7 +133,7 @@ public class StorageService(ISubscriptionService subscriptionService, ITenantSer
     {
         ValidateRequiredParameters(account, resourceGroup, location, subscription);
 
-        var subscriptionResource = await _subscriptionService.GetSubscription(subscription, tenant, retryPolicy);
+        var subscriptionResource = await _subscriptionService.GetSubscription(userContext, subscription, tenant, retryPolicy);
 
         try
         {
@@ -409,11 +409,12 @@ public class StorageService(ISubscriptionService subscriptionService, ITenantSer
     }
 
     private async Task<string> GetStorageAccountKey(
+        McpUserContext userContext,
         string account,
         string subscription,
         string? tenant = null)
     {
-        var subscriptionResource = await _subscriptionService.GetSubscription(subscription, tenant);
+        var subscriptionResource = await _subscriptionService.GetSubscription(userContext, subscription, tenant);
         var storageAccount = await GetStorageAccount(subscriptionResource, account) ??
             throw new Exception($"Storage account '{account}' not found in subscription '{subscription}'");
 
@@ -428,11 +429,12 @@ public class StorageService(ISubscriptionService subscriptionService, ITenantSer
     }
 
     private async Task<string> GetStorageAccountConnectionString(
+        McpUserContext userContext,
         string account,
         string subscription,
         string? tenant = null)
     {
-        var subscriptionResource = await _subscriptionService.GetSubscription(subscription, tenant);
+        var subscriptionResource = await _subscriptionService.GetSubscription(userContext, subscription, tenant);
         var storageAccount = await GetStorageAccount(subscriptionResource, account) ??
             throw new Exception($"Storage account '{account}' not found in subscription '{subscription}'");
 
@@ -473,12 +475,12 @@ public class StorageService(ISubscriptionService subscriptionService, ITenantSer
         switch (authMethod)
         {
             case AuthMethod.Key:
-                var key = await GetStorageAccountKey(account, subscription, tenant);
+                var key = await GetStorageAccountKey(userContext, account, subscription, tenant);
                 var uri = $"https://{account}.table.core.windows.net";
                 return new TableServiceClient(new Uri(uri), new TableSharedKeyCredential(account, key), options);
 
             case AuthMethod.ConnectionString:
-                var connString = await GetStorageAccountConnectionString(account, subscription, tenant);
+                var connString = await GetStorageAccountConnectionString(userContext, account, subscription, tenant);
                 return new TableServiceClient(connString, options);
 
             case AuthMethod.Credential:

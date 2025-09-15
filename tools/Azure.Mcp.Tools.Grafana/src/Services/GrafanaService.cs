@@ -25,7 +25,7 @@ public class GrafanaService(ISubscriptionService _subscriptionService, ITenantSe
 
         try
         {
-            var subscriptionResource = await _subscriptionService.GetSubscription(subscription, tenant, retryPolicy) ?? throw new Exception($"Subscription '{subscription}' not found");
+            var subscriptionResource = await _subscriptionService.GetSubscription(userContext, subscription, tenant, retryPolicy) ?? throw new Exception($"Subscription '{subscription}' not found");
             var workspaces = new List<Models.Workspace.Workspace>();
 
             await foreach (var workspaceResource in subscriptionResource.GetManagedGrafanasAsync())

@@ -2,6 +2,7 @@
 // Licensed under the MIT License.
 
 using Azure.Core;
+using Azure.Mcp.Core.Areas.Server.Commands.Runtime;
 using Azure.Mcp.Core.Options;
 using Azure.Mcp.Core.Services.Azure;
 using Azure.Mcp.Core.Services.Azure.Subscription;
@@ -15,6 +16,7 @@ public class ResourceResolverService(ISubscriptionService subscriptionService, I
     private readonly ISubscriptionService _subscriptionService = subscriptionService ?? throw new ArgumentNullException(nameof(subscriptionService));
 
     public async Task<ResourceIdentifier> ResolveResourceIdAsync(
+        McpUserContext userContext,
         string subscription,
         string? resourceGroup,
         string? resourceType,
@@ -37,7 +39,7 @@ public class ResourceResolverService(ISubscriptionService subscriptionService, I
         }
 
         // Need to discover the resource - get subscription resource
-        var subscriptionResource = await _subscriptionService.GetSubscription(subscription, tenant, retryPolicy);
+        var subscriptionResource = await _subscriptionService.GetSubscription(userContext, subscription, tenant, retryPolicy);
 
         // Get all resources matching the name
         var allMatchingResources = await subscriptionResource.GetGenericResourcesAsync()

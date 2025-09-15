@@ -39,7 +39,7 @@ public class MonitorMetricsService(IResourceResolverService resourceResolverServ
         ValidateRequiredParameters(subscription, resourceName, metricNamespace);
         ArgumentNullException.ThrowIfNull(metricNames);
 
-        var resourceId = await _resourceResolverService.ResolveResourceIdAsync(subscription, resourceGroup, resourceType, resourceName, tenant, retryPolicy);
+        var resourceId = await _resourceResolverService.ResolveResourceIdAsync(userContext, subscription, resourceGroup, resourceType, resourceName, tenant, retryPolicy);
         var client = await _metricsQueryClientService.CreateClientAsync(userContext,tenant, retryPolicy);
 
         // Parse time range
@@ -216,7 +216,7 @@ public class MonitorMetricsService(IResourceResolverService resourceResolverServ
     {
         ValidateRequiredParameters(subscription, resourceName);
 
-        var resourceId = await _resourceResolverService.ResolveResourceIdAsync(subscription, resourceGroup, resourceType, resourceName, tenant, retryPolicy);
+        var resourceId = await _resourceResolverService.ResolveResourceIdAsync(userContext, subscription, resourceGroup, resourceType, resourceName, tenant, retryPolicy);
         var client = await _metricsQueryClientService.CreateClientAsync(userContext, tenant, retryPolicy);
 
         // List metric definitions using the metrics query client
@@ -284,7 +284,7 @@ public class MonitorMetricsService(IResourceResolverService resourceResolverServ
     {
         ValidateRequiredParameters(subscription, resourceName);
 
-        var resourceId = await _resourceResolverService.ResolveResourceIdAsync(subscription, resourceGroup, resourceType, resourceName, tenant, retryPolicy);
+        var resourceId = await _resourceResolverService.ResolveResourceIdAsync(userContext,subscription, resourceGroup, resourceType, resourceName, tenant, retryPolicy);
         var client = await _metricsQueryClientService.CreateClientAsync(userContext, tenant, retryPolicy);
 
         // List metric namespaces using the metrics query client

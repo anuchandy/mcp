@@ -167,7 +167,7 @@ public class MonitorService : BaseAzureService, IMonitorService
         {
             var (_, resolvedWorkspaceName) = await GetWorkspaceInfo(userContext, workspace, subscription, tenant, retryPolicy);
 
-            var resourceGroupResource = await _resourceGroupService.GetResourceGroupResource(subscription, resourceGroup, tenant, retryPolicy) ??
+            var resourceGroupResource = await _resourceGroupService.GetResourceGroupResource(userContext, subscription, resourceGroup, tenant, retryPolicy) ??
                 throw new Exception($"Resource group {resourceGroup} not found in subscription {subscription}");
             var workspaceResponse = await resourceGroupResource.GetOperationalInsightsWorkspaceAsync(resolvedWorkspaceName)
                 .ConfigureAwait(false);
@@ -205,7 +205,7 @@ public class MonitorService : BaseAzureService, IMonitorService
 
         try
         {
-            var subscriptionResource = await _subscriptionService.GetSubscription(subscription, tenant, retryPolicy);
+            var subscriptionResource = await _subscriptionService.GetSubscription(userContext,subscription, tenant, retryPolicy);
 
             var workspaces = await subscriptionResource
                 .GetOperationalInsightsWorkspacesAsync()
@@ -331,7 +331,7 @@ public class MonitorService : BaseAzureService, IMonitorService
         {
             var (_, resolvedWorkspaceName) = await GetWorkspaceInfo(userContext, workspace, subscription, tenant, retryPolicy);
 
-            var resourceGroupResource = await _resourceGroupService.GetResourceGroupResource(subscription, resourceGroup, tenant, retryPolicy)
+            var resourceGroupResource = await _resourceGroupService.GetResourceGroupResource(userContext, subscription, resourceGroup, tenant, retryPolicy)
                 ?? throw new Exception($"Resource group {resourceGroup} not found in subscription {subscription}");
             var workspaceResponse = await resourceGroupResource.GetOperationalInsightsWorkspaceAsync(resolvedWorkspaceName)
                 .ConfigureAwait(false);

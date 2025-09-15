@@ -73,7 +73,7 @@ public class ResourceHealthService(ISubscriptionService subscriptionService, ITe
 
         try
         {
-            var subscriptionResource = await _subscriptionService.GetSubscription(subscription, tenant, retryPolicy);
+            var subscriptionResource = await _subscriptionService.GetSubscription(userContext, subscription, tenant, retryPolicy);
 
             // Get all availability statuses from the subscription
             var availabilityStatuses = new List<AvailabilityStatus>();

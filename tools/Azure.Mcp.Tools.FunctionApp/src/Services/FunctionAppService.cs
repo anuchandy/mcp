@@ -43,7 +43,7 @@ public sealed class FunctionAppService(
             return cachedResults;
         }
 
-        var subscriptionResource = await _subscriptionService.GetSubscription(subscription, tenant, retryPolicy);
+        var subscriptionResource = await _subscriptionService.GetSubscription(userContext, subscription, tenant, retryPolicy);
         var functionApps = new List<FunctionAppInfo>();
 
         try
@@ -88,7 +88,7 @@ public sealed class FunctionAppService(
 
         try
         {
-            var rg = await _resourceGroupService.GetResourceGroupResource(subscription, resourceGroup, tenant, retryPolicy);
+            var rg = await _resourceGroupService.GetResourceGroupResource(userContext, subscription, resourceGroup, tenant, retryPolicy);
             if (rg is null)
             {
                 return null;

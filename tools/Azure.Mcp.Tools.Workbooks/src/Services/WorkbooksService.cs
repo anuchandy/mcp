@@ -29,7 +29,7 @@ public class WorkbooksService(ISubscriptionService _subscriptionService, ITenant
         try
         {
             // Resolve subscription to get the actual subscription ID for the query
-            var subscriptionResource = await _subscriptionService.GetSubscription(subscription, tenant, retryPolicy);
+            var subscriptionResource = await _subscriptionService.GetSubscription(userContext, subscription, tenant, retryPolicy);
             var subscriptionId = subscriptionResource.Data.SubscriptionId;
 
             var armClient = await CreateArmClientAsync(userContext, tenant, retryPolicy);
@@ -212,7 +212,7 @@ public class WorkbooksService(ISubscriptionService _subscriptionService, ITenant
         try
         {
             // Get the subscription resource
-            var subscriptionResource = await _subscriptionService.GetSubscription(subscription, tenant, retryPolicy) ?? throw new Exception($"Subscription '{subscription}' not found");
+            var subscriptionResource = await _subscriptionService.GetSubscription(userContext, subscription, tenant, retryPolicy) ?? throw new Exception($"Subscription '{subscription}' not found");
             // Get the resource group
             var resourceGroupResource = await subscriptionResource.GetResourceGroups().GetAsync(resourceGroupName);
             if (resourceGroupResource?.Value == null)

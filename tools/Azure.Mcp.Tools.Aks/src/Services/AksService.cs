@@ -44,7 +44,7 @@ public sealed class AksService(
             return cachedClusters;
         }
 
-        var subscriptionResource = await _subscriptionService.GetSubscription(subscription, tenant, retryPolicy);
+        var subscriptionResource = await _subscriptionService.GetSubscription(userContext,subscription, tenant, retryPolicy);
         var clusters = new List<Cluster>();
 
         try
@@ -90,7 +90,7 @@ public sealed class AksService(
             return cachedCluster;
         }
 
-        var subscriptionResource = await _subscriptionService.GetSubscription(subscription, tenant, retryPolicy);
+        var subscriptionResource = await _subscriptionService.GetSubscription(userContext,subscription, tenant, retryPolicy);
 
         try
         {

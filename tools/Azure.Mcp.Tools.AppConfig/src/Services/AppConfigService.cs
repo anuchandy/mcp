@@ -26,7 +26,7 @@ public class AppConfigService(ISubscriptionService subscriptionService, ITenantS
     {
         ValidateRequiredParameters(subscription);
 
-        var subscriptionResource = await _subscriptionService.GetSubscription(subscription, tenant, retryPolicy);
+        var subscriptionResource = await _subscriptionService.GetSubscription(userContext,subscription, tenant, retryPolicy);
         var accounts = new List<AppConfigurationAccount>();
 
         await foreach (var account in subscriptionResource.GetAppConfigurationStoresAsync())
@@ -199,7 +199,7 @@ public class AppConfigService(ISubscriptionService subscriptionService, ITenantS
 
     private async Task<ConfigurationClient> GetConfigurationClient(McpUserContext userContext, string accountName, string subscription, string? tenant, RetryPolicyOptions? retryPolicy)
     {
-        var subscriptionResource = await _subscriptionService.GetSubscription(subscription, tenant, retryPolicy);
+        var subscriptionResource = await _subscriptionService.GetSubscription(userContext, subscription, tenant, retryPolicy);
         var configStore = await FindAppConfigStore(subscriptionResource, accountName, subscription);
         var endpoint = configStore.Data.Endpoint;
         var credential = await GetCredential(userContext, tenant);

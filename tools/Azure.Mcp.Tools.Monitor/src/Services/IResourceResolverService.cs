@@ -2,6 +2,7 @@
 // Licensed under the MIT License.
 
 using Azure.Core;
+using Azure.Mcp.Core.Areas.Server.Commands.Runtime;
 using Azure.Mcp.Core.Options;
 
 namespace Azure.Mcp.Tools.Monitor.Services;
@@ -22,6 +23,7 @@ public interface IResourceResolverService
     /// <param name="retryPolicy">Optional retry policy parameters</param>
     /// <returns>The full Azure resource ID</returns>
     Task<ResourceIdentifier> ResolveResourceIdAsync(
+        McpUserContext userContext,
         string subscription,
         string? resourceGroup,
         string? resourceType,

@@ -15,7 +15,7 @@ public class VirtualDesktopService(ISubscriptionService subscriptionService) : I
 
     public async Task<IReadOnlyList<HostPool>> ListHostpoolsAsync(McpUserContext userContext, string subscription, string? tenant = null, RetryPolicyOptions? retryPolicy = null)
     {
-        var sub = await _subscriptionService.GetSubscription(subscription, tenant, retryPolicy);
+        var sub = await _subscriptionService.GetSubscription(userContext, subscription, tenant, retryPolicy);
         var hostpools = new List<HostPool>();
         await foreach (HostPoolResource resource in sub.GetHostPoolsAsync())
         {
@@ -26,7 +26,7 @@ public class VirtualDesktopService(ISubscriptionService subscriptionService) : I
 
     public async Task<IReadOnlyList<HostPool>> ListHostpoolsByResourceGroupAsync(McpUserContext userContext, string subscription, string resourceGroup, string? tenant = null, RetryPolicyOptions? retryPolicy = null)
     {
-        var sub = await _subscriptionService.GetSubscription(subscription, tenant, retryPolicy);
+        var sub = await _subscriptionService.GetSubscription(userContext, subscription, tenant, retryPolicy);
         var hostpools = new List<HostPool>();
 
         var resourceGroupResource = await sub.GetResourceGroupAsync(resourceGroup);
@@ -39,7 +39,7 @@ public class VirtualDesktopService(ISubscriptionService subscriptionService) : I
 
     public async Task<IReadOnlyList<SessionHost>> ListSessionHostsAsync(McpUserContext userContext, string subscription, string hostPoolName, string? tenant = null, RetryPolicyOptions? retryPolicy = null)
     {
-        var sub = await _subscriptionService.GetSubscription(subscription, tenant, retryPolicy);
+        var sub = await _subscriptionService.GetSubscription(userContext, subscription, tenant, retryPolicy);
         var sessionHosts = new List<SessionHost>();
 
         await foreach (HostPoolResource resource in sub.GetHostPoolsAsync())
@@ -61,7 +61,7 @@ public class VirtualDesktopService(ISubscriptionService subscriptionService) : I
 
     public async Task<IReadOnlyList<UserSession>> ListUserSessionsAsync(McpUserContext userContext, string subscription, string hostPoolName, string sessionHostName, string? tenant = null, RetryPolicyOptions? retryPolicy = null)
     {
-        var sub = await _subscriptionService.GetSubscription(subscription, tenant, retryPolicy);
+        var sub = await _subscriptionService.GetSubscription(userContext, subscription, tenant, retryPolicy);
         var userSessions = new List<UserSession>();
 
         await foreach (HostPoolResource resource in sub.GetHostPoolsAsync())
@@ -90,7 +90,7 @@ public class VirtualDesktopService(ISubscriptionService subscriptionService) : I
 
     public async Task<IReadOnlyList<SessionHost>> ListSessionHostsByResourceIdAsync(McpUserContext userContext, string subscription, string hostPoolResourceId, string? tenant = null, RetryPolicyOptions? retryPolicy = null)
     {
-        var sub = await _subscriptionService.GetSubscription(subscription, tenant, retryPolicy);
+        var sub = await _subscriptionService.GetSubscription(userContext, subscription, tenant, retryPolicy);
         var sessionHosts = new List<SessionHost>();
 
         var armClient = sub.GetCachedClient(client => client);
@@ -105,7 +105,7 @@ public class VirtualDesktopService(ISubscriptionService subscriptionService) : I
 
     public async Task<IReadOnlyList<UserSession>> ListUserSessionsByResourceIdAsync(McpUserContext userContext, string subscription, string hostPoolResourceId, string sessionHostName, string? tenant = null, RetryPolicyOptions? retryPolicy = null)
     {
-        var sub = await _subscriptionService.GetSubscription(subscription, tenant, retryPolicy);
+        var sub = await _subscriptionService.GetSubscription(userContext, subscription, tenant, retryPolicy);
         var userSessions = new List<UserSession>();
 
         var armClient = sub.GetCachedClient(client => client);
@@ -127,7 +127,7 @@ public class VirtualDesktopService(ISubscriptionService subscriptionService) : I
 
     public async Task<IReadOnlyList<SessionHost>> ListSessionHostsByResourceGroupAsync(McpUserContext userContext, string subscription, string resourceGroup, string hostPoolName, string? tenant = null, RetryPolicyOptions? retryPolicy = null)
     {
-        var sub = await _subscriptionService.GetSubscription(subscription, tenant, retryPolicy);
+        var sub = await _subscriptionService.GetSubscription(userContext, subscription, tenant, retryPolicy);
         var sessionHosts = new List<SessionHost>();
 
         var resourceGroupResource = await sub.GetResourceGroupAsync(resourceGroup);
@@ -143,7 +143,7 @@ public class VirtualDesktopService(ISubscriptionService subscriptionService) : I
 
     public async Task<IReadOnlyList<UserSession>> ListUserSessionsByResourceGroupAsync(McpUserContext userContext, string subscription, string resourceGroup, string hostPoolName, string sessionHostName, string? tenant = null, RetryPolicyOptions? retryPolicy = null)
     {
-        var sub = await _subscriptionService.GetSubscription(subscription, tenant, retryPolicy);
+        var sub = await _subscriptionService.GetSubscription(userContext, subscription, tenant, retryPolicy);
         var userSessions = new List<UserSession>();
 
         var resourceGroupResource = await sub.GetResourceGroupAsync(resourceGroup);

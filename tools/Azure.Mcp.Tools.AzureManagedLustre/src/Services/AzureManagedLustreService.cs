@@ -28,7 +28,7 @@ public sealed class AzureManagedLustreService(ISubscriptionService subscriptionS
         {
             if (!string.IsNullOrWhiteSpace(resourceGroup))
             {
-                var rg = await _resourceGroupService.GetResourceGroupResource(subscription, resourceGroup, tenant, retryPolicy) ?? throw new Exception($"Resource group '{resourceGroup}' not found");
+                var rg = await _resourceGroupService.GetResourceGroupResource(userContext, subscription, resourceGroup, tenant, retryPolicy) ?? throw new Exception($"Resource group '{resourceGroup}' not found");
                 foreach (var fs in rg.GetAmlFileSystems())
                 {
                     results.Add(Map(fs));
@@ -37,7 +37,7 @@ public sealed class AzureManagedLustreService(ISubscriptionService subscriptionS
             }
             else
             {
-                var sub = await _subscriptionService.GetSubscription(subscription, tenant, retryPolicy) ?? throw new Exception($"Subscription '{subscription}' not found");
+                var sub = await _subscriptionService.GetSubscription(userContext, subscription, tenant, retryPolicy) ?? throw new Exception($"Subscription '{subscription}' not found");
                 await foreach (var fs in sub.GetAmlFileSystemsAsync())
                 {
                     results.Add(Map(fs));
@@ -78,7 +78,7 @@ public sealed class AzureManagedLustreService(ISubscriptionService subscriptionS
         RetryPolicyOptions? retryPolicy = null
         )
     {
-        var sub = await _subscriptionService.GetSubscription(subscription, tenant, retryPolicy) ?? throw new Exception($"Subscription '{subscription}' not found");
+        var sub = await _subscriptionService.GetSubscription(userContext, subscription, tenant, retryPolicy) ?? throw new Exception($"Subscription '{subscription}' not found");
         var fileSystemSizeContent = new RequiredAmlFileSystemSubnetsSizeContent
         {
             SkuName = sku,

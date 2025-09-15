@@ -53,7 +53,7 @@ public sealed class KustoService(
             return cachedClusters;
         }
 
-        var subscription = await _subscriptionService.GetSubscription(subscriptionId, tenant, retryPolicy);
+        var subscription = await _subscriptionService.GetSubscription(userContext, subscriptionId, tenant, retryPolicy);
         var clusters = new List<string>();
 
         await foreach (var cluster in subscription.GetKustoClustersAsync())
@@ -77,7 +77,7 @@ public sealed class KustoService(
     {
         ValidateRequiredParameters(subscriptionId);
 
-        var subscription = await _subscriptionService.GetSubscription(subscriptionId, tenant, retryPolicy);
+        var subscription = await _subscriptionService.GetSubscription(userContext, subscriptionId, tenant, retryPolicy);
         await foreach (var cluster in subscription.GetKustoClustersAsync())
         {
             if (string.Equals(cluster.Data.Name, clusterName, StringComparison.OrdinalIgnoreCase))
