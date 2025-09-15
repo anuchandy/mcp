@@ -73,7 +73,7 @@ public class SubscriptionCommandTests
                 new("account2", null, null, null, null, null, null, null)
             };
 
-            _storageService.GetStorageAccounts(Arg.Is("env-subs"), Arg.Any<string>(), Arg.Any<RetryPolicyOptions>())
+            _storageService.GetStorageAccounts(Arg.Any<McpUserContext>(), Arg.Is("env-subs"), Arg.Any<string>(), Arg.Any<RetryPolicyOptions>())
                 .Returns(Task.FromResult(expectedAccounts));
 
             var parseResult = _commandDefinition.Parse([]);
@@ -85,7 +85,7 @@ public class SubscriptionCommandTests
             Assert.NotNull(response);
 
             // Verify the service was called with the environment variable subscription
-            _ = _storageService.Received(1).GetStorageAccounts("env-subs", Arg.Any<string>(), Arg.Any<RetryPolicyOptions>());
+            _ = _storageService.Received(1).GetStorageAccounts(Arg.Any<McpUserContext>(), "env-subs", Arg.Any<string>(), Arg.Any<RetryPolicyOptions>());
         }
         finally
         {
@@ -109,7 +109,7 @@ public class SubscriptionCommandTests
                 new("account2", null, null, null, null, null, null, null)
             };
 
-            _storageService.GetStorageAccounts(Arg.Is("option-subs"), Arg.Any<string>(), Arg.Any<RetryPolicyOptions>())
+            _storageService.GetStorageAccounts(Arg.Any<McpUserContext>(), Arg.Is("option-subs"), Arg.Any<string>(), Arg.Any<RetryPolicyOptions>())
                 .Returns(Task.FromResult(expectedAccounts));
 
             var parseResult = _commandDefinition.Parse(["--subscription", "option-subs"]);
@@ -121,8 +121,8 @@ public class SubscriptionCommandTests
             Assert.NotNull(response);
 
             // Verify the service was called with the option subscription, not the environment variable
-            _ = _storageService.Received(1).GetStorageAccounts("option-subs", Arg.Any<string>(), Arg.Any<RetryPolicyOptions>());
-            _ = _storageService.DidNotReceive().GetStorageAccounts("env-subs", Arg.Any<string>(), Arg.Any<RetryPolicyOptions>());
+            _ = _storageService.Received(1).GetStorageAccounts(Arg.Any<McpUserContext>(), "option-subs", Arg.Any<string>(), Arg.Any<RetryPolicyOptions>());
+            _ = _storageService.DidNotReceive().GetStorageAccounts(Arg.Any<McpUserContext>(), "env-subs", Arg.Any<string>(), Arg.Any<RetryPolicyOptions>());
         }
         finally
         {
