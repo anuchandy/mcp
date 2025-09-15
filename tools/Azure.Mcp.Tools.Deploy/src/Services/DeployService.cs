@@ -18,7 +18,7 @@ public class DeployService() : BaseAzureService, IDeployService
          string subscriptionId,
          int? limit = null)
     {
-        TokenCredential credential = await GetCredential();
+        TokenCredential credential = await GetCredential(userContext);
         string result = await AzdResourceLogService.GetAzdResourceLogsAsync(
             credential,
             workspaceFolder,

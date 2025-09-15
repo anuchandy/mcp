@@ -2,6 +2,7 @@
 // Licensed under the MIT License.
 
 using Azure.Core;
+using Azure.Mcp.Core.Areas.Server.Commands.Runtime;
 
 namespace Azure.Mcp.Core.Services.Azure.Authentication;
 

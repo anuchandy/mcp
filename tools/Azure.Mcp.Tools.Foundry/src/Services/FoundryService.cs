@@ -140,7 +140,7 @@ public class FoundryService(IHttpClientService httpClientService, ITenantService
 
         try
         {
-            var credential = await GetCredential(tenantId);
+            var credential = await GetCredential(userContext, tenantId);
             var deploymentsClient = new AIProjectClient(new Uri(endpoint), credential).GetDeploymentsClient();
 
             var deployments = new List<Deployment>();
@@ -165,7 +165,7 @@ public class FoundryService(IHttpClientService httpClientService, ITenantService
 
         try
         {
-            ArmClient armClient = await CreateArmClientAsync(null, retryPolicy);
+            ArmClient armClient = await CreateArmClientAsync(userContext, null, retryPolicy);
 
             var subscription =
                 armClient.GetSubscriptionResource(SubscriptionResource.CreateResourceIdentifier(subscriptionId));
@@ -246,7 +246,7 @@ public class FoundryService(IHttpClientService httpClientService, ITenantService
 
         try
         {
-            var credential = await GetCredential(tenantId);
+            var credential = await GetCredential(userContext, tenantId);
             var indexesClient = new AIProjectClient(new Uri(endpoint), credential).GetIndexesClient();
 
             var indexes = new List<KnowledgeIndexInformation>();

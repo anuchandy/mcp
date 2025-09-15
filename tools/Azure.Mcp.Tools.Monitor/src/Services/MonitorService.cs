@@ -42,7 +42,7 @@ public class MonitorService : BaseAzureService, IMonitorService
         ValidateRequiredParameters(subscription, resourceId, table);
         query = BuildQuery(query, table, limit);
 
-        var credential = await GetCredential(tenant);
+        var credential = await GetCredential(userContext, tenant);
         var options = AddDefaultPolicies(new LogsQueryClientOptions());
 
         if (retryPolicy != null)
@@ -102,7 +102,7 @@ public class MonitorService : BaseAzureService, IMonitorService
     {
         ValidateRequiredParameters(subscription, workspace, query);
 
-        var credential = await GetCredential(tenant);
+        var credential = await GetCredential(userContext, tenant);
         var options = AddDefaultPolicies(new LogsQueryClientOptions());
 
         if (retryPolicy != null)
@@ -243,7 +243,7 @@ public class MonitorService : BaseAzureService, IMonitorService
 
         try
         {
-            var credential = await GetCredential(tenant);
+            var credential = await GetCredential(userContext, tenant);
             var options = AddDefaultPolicies(new LogsQueryClientOptions());
 
             if (retryPolicy != null)

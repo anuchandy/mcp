@@ -46,6 +46,12 @@ public sealed class McpUserContext
     public AzRuntimeMode Role { get; }
 
     /// <summary>
+    /// The deserialized ClaimsPrincipal containing the full user identity.
+    /// Null if no serialized claims principal was provided or deserialization failed.
+    /// </summary>
+    private readonly ClaimsPrincipal? _claimsPrincipal;
+
+    /// <summary>
     /// Initializes a new instance of McpUserContext with the specified user identity information.
     /// </summary>
     /// <param name="tenantId">Azure AD tenant ID (optional).</param>
@@ -62,6 +68,9 @@ public sealed class McpUserContext
         UserObjectId = userObjectId;
         SerializedClaimsPrincipal = serializedClaimsPrincipal;
         Role = role;
+
+        // Eagerly deserialize the ClaimsPrincipal if available (TODO: anu make it lazy)
+        _claimsPrincipal = DeserializeClaimsPrincipal(serializedClaimsPrincipal);
     }
 
     /// <summary>
@@ -83,12 +92,22 @@ public sealed class McpUserContext
     /// </remarks>
     public ClaimsPrincipal? GetClaimsPrincipal()
     {
-        if (string.IsNullOrEmpty(SerializedClaimsPrincipal))
+        return _claimsPrincipal;
+    }
+
+    /// <summary>
+    /// Static helper method to deserialize a ClaimsPrincipal from a Base64-encoded string.
+    /// </summary>
+    /// <param name="serializedClaimsPrincipal">Base64-encoded serialized ClaimsPrincipal.</param>
+    /// <returns>The deserialized ClaimsPrincipal, or null if deserialization fails or input is null/empty.</returns>
+    private static ClaimsPrincipal? DeserializeClaimsPrincipal(string? serializedClaimsPrincipal)
+    {
+        if (string.IsNullOrEmpty(serializedClaimsPrincipal))
             return null;
 
         try
         {
-            var bytes = Convert.FromBase64String(SerializedClaimsPrincipal);
+            var bytes = Convert.FromBase64String(serializedClaimsPrincipal);
             using var stream = new MemoryStream(bytes);
             using var reader = new BinaryReader(stream);
             return new ClaimsPrincipal(reader);
@@ -109,10 +128,42 @@ public sealed class McpUserContext
                                    !string.IsNullOrEmpty(SerializedClaimsPrincipal);
 
     /// <summary>
-    /// Indicates whether this context has sufficient information for On-Behalf-Of token flows.
+    /// Gets a value indicating whether this context represents an authenticated user.
     /// </summary>
-    public bool SupportsOboFlow => HasUserIdentity && 
-                                   (Role == AzRuntimeMode.OboParent || Role == AzRuntimeMode.OboChild);
+    public bool IsAuthenticated => _claimsPrincipal?.Identity?.IsAuthenticated == true || 
+                                  !string.IsNullOrEmpty(SerializedClaimsPrincipal);
+
+    /// <summary>
+    /// Determines if this user context supports OBO (On-Behalf-Of) authentication flow.
+    /// This requires the user to be authenticated and have both tenant ID and user object ID.
+    /// </summary>
+    public bool SupportsOboFlow => IsAuthenticated && !string.IsNullOrEmpty(TenantId) && !string.IsNullOrEmpty(UserObjectId);
+
+    /// <summary>
+    /// Validates that all required OBO fields are present and throws an exception if not.
+    /// This method ensures tenant ID, user object ID, and serialized claims principal are all available
+    /// before attempting OBO token acquisition.
+    /// </summary>
+    /// <exception cref="InvalidOperationException">
+    /// Thrown when any required OBO fields are missing (TenantId, UserObjectId, or SerializedClaimsPrincipal).
+    /// </exception>
+    public void EnsureOboFields()
+    {
+        if (string.IsNullOrEmpty(TenantId))
+        {
+            throw new InvalidOperationException("TenantId is required for OBO token acquisition but is null or empty.");
+        }
+
+        if (string.IsNullOrEmpty(UserObjectId))
+        {
+            throw new InvalidOperationException("UserObjectId is required for OBO token acquisition but is null or empty.");
+        }
+
+        if (string.IsNullOrEmpty(SerializedClaimsPrincipal))
+        {
+            throw new InvalidOperationException("SerializedClaimsPrincipal is required for OBO token acquisition but is null or empty.");
+        }
+    }
 
     /// <summary>
     /// Creates a new McpUserContext from an AzMcpRequestContext.

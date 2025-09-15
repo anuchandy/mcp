@@ -19,7 +19,7 @@ public class ServiceBusService : BaseAzureService, IServiceBusService
         string? tenantId = null,
         RetryPolicyOptions? retryPolicy = null)
     {
-        var credential = await GetCredential(tenantId);
+        var credential = await GetCredential(userContext, tenantId);
         var client = new ServiceBusAdministrationClient(namespaceName, credential);
         var runtimeProperties = (await client.GetQueueRuntimePropertiesAsync(queueName)).Value;
         var properties = (await client.GetQueueAsync(queueName)).Value;
@@ -57,7 +57,7 @@ public class ServiceBusService : BaseAzureService, IServiceBusService
         string? tenantId = null,
         RetryPolicyOptions? retryPolicy = null)
     {
-        var credential = await GetCredential(tenantId);
+        var credential = await GetCredential(userContext, tenantId);
         var client = new ServiceBusAdministrationClient(namespaceName, credential);
         var runtimeProperties = (await client.GetSubscriptionRuntimePropertiesAsync(topicName, subscriptionName)).Value;
         var properties = (await client.GetSubscriptionAsync(topicName, subscriptionName)).Value;
@@ -88,7 +88,7 @@ public class ServiceBusService : BaseAzureService, IServiceBusService
         string? tenantId = null,
         RetryPolicyOptions? retryPolicy = null)
     {
-        var credential = await GetCredential(tenantId);
+        var credential = await GetCredential(userContext, tenantId);
         var client = new ServiceBusAdministrationClient(namespaceName, credential);
         var runtimeProperties = (await client.GetTopicRuntimePropertiesAsync(topicName)).Value;
         var properties = (await client.GetTopicAsync(topicName)).Value;
@@ -116,7 +116,7 @@ public class ServiceBusService : BaseAzureService, IServiceBusService
         string? tenantId = null,
         RetryPolicyOptions? retryPolicy = null)
     {
-        var credential = await GetCredential(tenantId);
+        var credential = await GetCredential(userContext, tenantId);
 
         await using (var client = new ServiceBusClient(namespaceName, credential))
         await using (var receiver = client.CreateReceiver(queueName))
@@ -136,7 +136,7 @@ public class ServiceBusService : BaseAzureService, IServiceBusService
         string? tenantId = null,
         RetryPolicyOptions? retryPolicy = null)
     {
-        var credential = await GetCredential(tenantId);
+        var credential = await GetCredential(userContext, tenantId);
 
         await using (var client = new ServiceBusClient(namespaceName, credential))
         await using (var receiver = client.CreateReceiver(topicName, subscriptionName))

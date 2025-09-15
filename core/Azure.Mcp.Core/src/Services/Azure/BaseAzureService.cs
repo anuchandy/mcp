@@ -10,6 +10,7 @@ using Azure.Mcp.Core.Services.Azure.Tenant;
 using Azure.ResourceManager;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.DependencyInjection;
+using Azure.Mcp.Core.Areas.Server.Commands.Runtime;
 
 namespace Azure.Mcp.Core.Services.Azure;
 
@@ -172,8 +173,15 @@ public abstract class BaseAzureService(ITenantService? tenantService = null, ILo
     /// </summary>
     /// <param name="tenant">Optional Azure tenant ID or name</param>
     /// <param name="retryPolicy">Optional retry policy configuration</param>
-    protected async Task<ArmClient> CreateArmClientAsync(string? tenant = null, RetryPolicyOptions? retryPolicy = null)
+    protected async Task<ArmClient> CreateArmClientAsync(McpUserContext userContext, string? tenant = null, RetryPolicyOptions? retryPolicy = null)
     {
+        if (userContext.Role == AzRuntimeMode.OboParent || userContext.Role == AzRuntimeMode.OboChild)
+        {
+            var credential = await GetCredential(userContext, tenant);
+            var options = ConfigureRetryPolicy(AddDefaultPolicies(new ArmClientOptions()), retryPolicy);
+            return new ArmClient(credential, default, options);
+        }
+
         var tenantId = await ResolveTenantIdAsync(tenant);
 
         // Return cached client if parameters match
@@ -186,7 +194,7 @@ public abstract class BaseAzureService(ITenantService? tenantService = null, ILo
 
         try
         {
-            var credential = await GetCredential(tenantId);
+            var credential = await GetCredential(userContext, tenantId);
             var options = ConfigureRetryPolicy(AddDefaultPolicies(new ArmClientOptions()), retryPolicy);
 
             _armClient = new ArmClient(credential, default, options);

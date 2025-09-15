@@ -21,7 +21,7 @@ public class PostgresService : BaseAzureService, IPostgresService
         _resourceGroupService = resourceGroupService ?? throw new ArgumentNullException(nameof(resourceGroupService));
     }
 
-    private async Task<string> GetEntraIdAccessTokenAsync()
+    private async Task<string> GetEntraIdAccessTokenAsync(McpUserContext userContext)
     {
         if (_cachedEntraIdAccessToken != null && DateTime.UtcNow < _tokenExpiryTime)
         {
@@ -29,7 +29,7 @@ public class PostgresService : BaseAzureService, IPostgresService
         }
 
         var tokenRequestContext = new TokenRequestContext(new[] { "https://ossrdbms-aad.database.windows.net/.default" });
-        var tokenCredential = await GetCredential();
+        var tokenCredential = await GetCredential(userContext);
         var accessToken = await tokenCredential
             .GetTokenAsync(tokenRequestContext, CancellationToken.None)
             .ConfigureAwait(false);
@@ -50,7 +50,7 @@ public class PostgresService : BaseAzureService, IPostgresService
 
     public async Task<List<string>> ListDatabasesAsync(McpUserContext userContext, string subscriptionId, string resourceGroup, string user, string server)
     {
-        var entraIdAccessToken = await GetEntraIdAccessTokenAsync();
+        var entraIdAccessToken = await GetEntraIdAccessTokenAsync(userContext);
         var host = NormalizeServerName(server);
         var connectionString = $"Host={host};Database=postgres;Username={user};Password={entraIdAccessToken}";
 
@@ -68,7 +68,7 @@ public class PostgresService : BaseAzureService, IPostgresService
 
     public async Task<List<string>> ExecuteQueryAsync(McpUserContext userContext, string subscriptionId, string resourceGroup, string user, string server, string database, string query)
     {
-        var entraIdAccessToken = await GetEntraIdAccessTokenAsync();
+        var entraIdAccessToken = await GetEntraIdAccessTokenAsync(userContext);
         var host = NormalizeServerName(server);
         var connectionString = $"Host={host};Database={database};Username={user};Password={entraIdAccessToken}";
 
@@ -96,7 +96,7 @@ public class PostgresService : BaseAzureService, IPostgresService
 
     public async Task<List<string>> ListTablesAsync(McpUserContext userContext, string subscriptionId, string resourceGroup, string user, string server, string database)
     {
-        var entraIdAccessToken = await GetEntraIdAccessTokenAsync();
+        var entraIdAccessToken = await GetEntraIdAccessTokenAsync(userContext);
         var host = NormalizeServerName(server);
         var connectionString = $"Host={host};Database={database};Username={user};Password={entraIdAccessToken}";
 
@@ -114,7 +114,7 @@ public class PostgresService : BaseAzureService, IPostgresService
 
     public async Task<List<string>> GetTableSchemaAsync(McpUserContext userContext, string subscriptionId, string resourceGroup, string user, string server, string database, string table)
     {
-        var entraIdAccessToken = await GetEntraIdAccessTokenAsync();
+        var entraIdAccessToken = await GetEntraIdAccessTokenAsync(userContext);
         var host = NormalizeServerName(server);
         var connectionString = $"Host={host};Database={database};Username={user};Password={entraIdAccessToken}";
 

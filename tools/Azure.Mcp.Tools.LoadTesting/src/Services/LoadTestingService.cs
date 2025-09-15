@@ -25,7 +25,7 @@ public class LoadTestingService(ISubscriptionService subscriptionService) : Base
         ValidateRequiredParameters(subscription);
         var subscriptionId = (await _subscriptionService.GetSubscription(subscription, tenant, retryPolicy)).Data.SubscriptionId;
 
-        var credential = await GetCredential(tenant);
+        var credential = await GetCredential(userContext);
 
         var client = new ArmClient(credential);
         if (!string.IsNullOrEmpty(testResourceName))
@@ -79,7 +79,7 @@ public class LoadTestingService(ISubscriptionService subscriptionService) : Base
         ValidateRequiredParameters(subscription, resourceGroup);
         var subscriptionId = (await _subscriptionService.GetSubscription(subscription, tenant, retryPolicy)).Data.SubscriptionId;
 
-        var credential = await GetCredential(tenant);
+        var credential = await GetCredential(userContext);
 
         var client = new ArmClient(credential);
         var rgResource = client.GetResourceGroupResource(ResourceGroupResource.CreateResourceIdentifier(subscriptionId, resourceGroup));
@@ -120,7 +120,7 @@ public class LoadTestingService(ISubscriptionService subscriptionService) : Base
             throw new Exception($"Data Plane URI for Load Test '{testResourceName}' is not available.");
         }
 
-        var credential = await GetCredential(tenant);
+        var credential = await GetCredential(userContext);
         var loadTestClient = new LoadTestRunClient(new Uri($"https://{dataPlaneUri}"), credential);
 
         var loadTestRunResponse = await loadTestClient.GetTestRunAsync(testRunId);
@@ -148,7 +148,7 @@ public class LoadTestingService(ISubscriptionService subscriptionService) : Base
             throw new Exception($"Data Plane URI for Load Test '{testResourceName}' is not available.");
         }
 
-        var credential = await GetCredential(tenant);
+        var credential = await GetCredential(userContext);
         var loadTestClient = new LoadTestRunClient(new Uri($"https://{dataPlaneUri}"), credential);
 
         var loadTestRunResponse = loadTestClient.GetTestRunsAsync(testId: testId);
@@ -190,7 +190,7 @@ public class LoadTestingService(ISubscriptionService subscriptionService) : Base
             throw new Exception($"Data Plane URI for Load Test '{testResourceName}' is not available.");
         }
 
-        var credential = await GetCredential(tenant);
+        var credential = await GetCredential(userContext);
         var loadTestClient = new LoadTestRunClient(new Uri($"https://{dataPlaneUri}"), credential);
 
         TestRunRequest requestBody = new TestRunRequest
@@ -227,7 +227,7 @@ public class LoadTestingService(ISubscriptionService subscriptionService) : Base
             throw new Exception($"Data Plane URI for Load Test '{testResourceName}' is not available.");
         }
 
-        var credential = await GetCredential(tenant);
+        var credential = await GetCredential(userContext);
         var loadTestClient = new LoadTestAdministrationClient(new Uri($"https://{dataPlaneUri}"), credential);
 
         var loadTestResponse = await loadTestClient.GetTestAsync(testId);
@@ -257,7 +257,7 @@ public class LoadTestingService(ISubscriptionService subscriptionService) : Base
             throw new Exception($"Data Plane URI for Load Test '{testResourceName}' is not available.");
         }
 
-        var credential = await GetCredential(tenant);
+        var credential = await GetCredential(userContext);
         var loadTestClient = new LoadTestAdministrationClient(new Uri($"https://{dataPlaneUri}"), credential);
         OptionalLoadTestConfig optionalLoadTestConfig = new OptionalLoadTestConfig
         {

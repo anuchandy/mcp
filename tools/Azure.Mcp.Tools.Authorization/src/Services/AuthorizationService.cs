@@ -25,7 +25,7 @@ public class AuthorizationService(ITenantService tenantService)
 
         try
         {
-            ArmClient armClient = await CreateArmClientAsync(tenantId, retryPolicy);
+            ArmClient armClient = await CreateArmClientAsync(userContext, tenantId, retryPolicy);
             ResourceIdentifier scopeResourceId = new(scope!);
             RoleAssignmentCollection resources = armClient.GetRoleAssignments(scopeResourceId);
             List<RoleAssignment> roleAssignments = [];

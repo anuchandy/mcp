@@ -68,7 +68,7 @@ public class MySqlService(IResourceGroupService resourceGroupService, ITenantSer
         "ENCODE(", "DECODE(", "PASSWORD(", "OLD_PASSWORD("
     ];
 
-    private async Task<string> GetEntraIdAccessTokenAsync()
+    private async Task<string> GetEntraIdAccessTokenAsync(McpUserContext userContext)
     {
         lock (_tokenLock)
         {
@@ -79,7 +79,7 @@ public class MySqlService(IResourceGroupService resourceGroupService, ITenantSer
         }
 
         var tokenRequestContext = new TokenRequestContext(new[] { "https://ossrdbms-aad.database.windows.net/.default" });
-        var tokenCredential = await GetCredential();
+        var tokenCredential = await GetCredential(userContext);
         var accessToken = await tokenCredential
             .GetTokenAsync(tokenRequestContext, CancellationToken.None)
             .ConfigureAwait(false);
@@ -102,9 +102,9 @@ public class MySqlService(IResourceGroupService resourceGroupService, ITenantSer
         return server;
     }
 
-    private async Task<string> BuildConnectionStringAsync(string server, string user, string database)
+    private async Task<string> BuildConnectionStringAsync(McpUserContext userContext, string server, string user, string database)
     {
-        var entraIdAccessToken = await GetEntraIdAccessTokenAsync();
+        var entraIdAccessToken = await GetEntraIdAccessTokenAsync(userContext);
         var host = NormalizeServerName(server);
         return $"Server={host};Database={database};User ID={user};Password={entraIdAccessToken};SSL Mode=Required;";
     }
@@ -196,7 +196,7 @@ public class MySqlService(IResourceGroupService resourceGroupService, ITenantSer
     {
         try
         {
-            var connectionString = await BuildConnectionStringAsync(server, user, "mysql");
+            var connectionString = await BuildConnectionStringAsync(userContext, server, user, "mysql");
 
             await using var resource = await MySqlResource.CreateAsync(connectionString);
             var query = "SHOW DATABASES;";
@@ -237,7 +237,7 @@ public class MySqlService(IResourceGroupService resourceGroupService, ITenantSer
         {
             ValidateQuerySafety(query);
 
-            var connectionString = await BuildConnectionStringAsync(server, user, database);
+            var connectionString = await BuildConnectionStringAsync(userContext, server, user, database);
 
             await using var resource = await MySqlResource.CreateAsync(connectionString);
             await using var command = new MySqlCommand(query, resource.Connection);
@@ -283,7 +283,7 @@ public class MySqlService(IResourceGroupService resourceGroupService, ITenantSer
     {
         try
         {
-            var connectionString = await BuildConnectionStringAsync(server, user, database);
+            var connectionString = await BuildConnectionStringAsync(userContext, server, user, database);
 
             await using var resource = await MySqlResource.CreateAsync(connectionString);
             var query = "SELECT column_name, data_type FROM information_schema.columns WHERE table_schema = DATABASE() AND table_name = @table;";
@@ -335,7 +335,7 @@ public class MySqlService(IResourceGroupService resourceGroupService, ITenantSer
     {
         try
         {
-            var connectionString = await BuildConnectionStringAsync(server, user, database);
+            var connectionString = await BuildConnectionStringAsync(userContext, server, user, database);
 
             await using var resource = await MySqlResource.CreateAsync(connectionString);
             var query = "SELECT table_name FROM information_schema.tables WHERE table_schema = DATABASE();";

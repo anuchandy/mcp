@@ -1,6 +1,7 @@
 // Copyright (c) Microsoft Corporation.
 // Licensed under the MIT License.
 
+using Azure.Mcp.Core.Areas.Server.Commands.Runtime;
 using Azure.Mcp.Core.Options;
 using Azure.Mcp.Core.Services.Azure;
 using Azure.Mcp.Core.Services.Azure.Tenant;
@@ -10,9 +11,9 @@ namespace Azure.Mcp.Tools.Monitor.Services;
 
 public class MetricsQueryClientService(ITenantService tenantService) : BaseAzureService(tenantService), IMetricsQueryClientService
 {
-    public async Task<MetricsQueryClient> CreateClientAsync(string? tenant = null, RetryPolicyOptions? retryPolicy = null)
+    public async Task<MetricsQueryClient> CreateClientAsync(McpUserContext userContext, string? tenant = null, RetryPolicyOptions? retryPolicy = null)
     {
-        var credential = await GetCredential(tenant);
+        var credential = await GetCredential(userContext, tenant);
         var options = AddDefaultPolicies(new MetricsQueryClientOptions());
 
         if (retryPolicy != null)

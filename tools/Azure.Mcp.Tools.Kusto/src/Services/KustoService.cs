@@ -113,7 +113,7 @@ public sealed class KustoService(
     {
         ValidateRequiredParameters(clusterUri);
 
-        var kustoClient = await GetOrCreateKustoClient(clusterUri, tenant).ConfigureAwait(false);
+        var kustoClient = await GetOrCreateKustoClient(userContext, clusterUri, tenant).ConfigureAwait(false);
         var kustoResult = await kustoClient.ExecuteControlCommandAsync(
             "NetDefaultDB",
             ".show databases | project DatabaseName",
@@ -146,7 +146,7 @@ public sealed class KustoService(
     {
         ValidateRequiredParameters(clusterUri, databaseName);
 
-        var kustoClient = await GetOrCreateKustoClient(clusterUri, tenant);
+        var kustoClient = await GetOrCreateKustoClient(userContext, clusterUri, tenant);
         var kustoResult = await kustoClient.ExecuteControlCommandAsync(
             databaseName,
             ".show tables",
@@ -179,7 +179,7 @@ public sealed class KustoService(
     {
         ValidateRequiredParameters(clusterUri, databaseName, tableName);
 
-        var kustoClient = await GetOrCreateKustoClient(clusterUri, tenant);
+        var kustoClient = await GetOrCreateKustoClient(userContext, clusterUri, tenant);
         var kustoResult = await kustoClient.ExecuteQueryCommandAsync(
             databaseName,
             $".show table {tableName} cslschema", CancellationToken.None);
@@ -219,7 +219,7 @@ public sealed class KustoService(
     {
         ValidateRequiredParameters(clusterUri, databaseName, query);
 
-        var cslQueryProvider = await GetOrCreateCslQueryProvider(clusterUri, tenant);
+        var cslQueryProvider = await GetOrCreateCslQueryProvider(userContext, clusterUri, tenant);
         var result = new List<JsonElement>();
         var kustoResult = await cslQueryProvider.ExecuteQueryCommandAsync(databaseName, query, CancellationToken.None);
         if (kustoResult.JsonDocument is null)
@@ -292,13 +292,13 @@ public sealed class KustoService(
         return result;
     }
 
-    private async Task<KustoClient> GetOrCreateKustoClient(string clusterUri, string? tenant)
+    private async Task<KustoClient> GetOrCreateKustoClient(McpUserContext userContext, string clusterUri, string? tenant)
     {
         var providerCacheKey = GetProviderCacheKey(clusterUri) + "_command";
         var kustoClient = await _cacheService.GetAsync<KustoClient>(CacheGroup, providerCacheKey, s_providerCacheDuration);
         if (kustoClient == null)
         {
-            var tokenCredential = await GetCredential(tenant);
+            var tokenCredential = await GetCredential(userContext, tenant);
             kustoClient = new KustoClient(clusterUri, tokenCredential, UserAgent, _httpClientService);
             await _cacheService.SetAsync(CacheGroup, providerCacheKey, kustoClient, s_providerCacheDuration);
         }
@@ -306,13 +306,13 @@ public sealed class KustoService(
         return kustoClient;
     }
 
-    private async Task<KustoClient> GetOrCreateCslQueryProvider(string clusterUri, string? tenant)
+    private async Task<KustoClient> GetOrCreateCslQueryProvider(McpUserContext userContext, string clusterUri, string? tenant)
     {
         var providerCacheKey = GetProviderCacheKey(clusterUri) + "_query";
         var kustoClient = await _cacheService.GetAsync<KustoClient>(CacheGroup, providerCacheKey, s_providerCacheDuration);
         if (kustoClient == null)
         {
-            var tokenCredential = await GetCredential(tenant);
+            var tokenCredential = await GetCredential(userContext, tenant);
             kustoClient = new KustoClient(clusterUri, tokenCredential, UserAgent, _httpClientService);
             await _cacheService.SetAsync(CacheGroup, providerCacheKey, kustoClient, s_providerCacheDuration);
         }

@@ -32,7 +32,7 @@ public class WorkbooksService(ISubscriptionService _subscriptionService, ITenant
             var subscriptionResource = await _subscriptionService.GetSubscription(subscription, tenant, retryPolicy);
             var subscriptionId = subscriptionResource.Data.SubscriptionId;
 
-            var armClient = await CreateArmClientAsync(tenant, retryPolicy);
+            var armClient = await CreateArmClientAsync(userContext, tenant, retryPolicy);
 
             var tenants = await _tenantService.GetTenants();
             var currentTenant = tenants.FirstOrDefault() ?? throw new InvalidOperationException("No accessible tenants found");
@@ -94,7 +94,7 @@ public class WorkbooksService(ISubscriptionService _subscriptionService, ITenant
 
         try
         {
-            var armClient = await CreateArmClientAsync(tenant, retryPolicy);
+            var armClient = await CreateArmClientAsync(userContext, tenant, retryPolicy);
 
             // Parse the workbook resource ID to get the workbook directly
             var workbookResourceId = new ResourceIdentifier(workbookId);
@@ -145,7 +145,7 @@ public class WorkbooksService(ISubscriptionService _subscriptionService, ITenant
 
         try
         {
-            var armClient = await CreateArmClientAsync(tenant, retryPolicy);
+            var armClient = await CreateArmClientAsync(userContext, tenant, retryPolicy);
 
             // Parse the workbook resource ID to get the workbook directly
             var workbookResourceId = new ResourceIdentifier(workbookId);
@@ -269,7 +269,7 @@ public class WorkbooksService(ISubscriptionService _subscriptionService, ITenant
 
         try
         {
-            var armClient = await CreateArmClientAsync(tenant, retryPolicy);
+            var armClient = await CreateArmClientAsync(userContext, tenant, retryPolicy);
 
             // Parse the workbook resource ID to get the workbook directly
             var workbookResourceId = new ResourceIdentifier(workbookId);

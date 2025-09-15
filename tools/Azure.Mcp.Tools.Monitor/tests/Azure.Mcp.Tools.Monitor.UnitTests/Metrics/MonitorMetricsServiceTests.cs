@@ -45,6 +45,7 @@ public class MonitorMetricsServiceTests
             .Returns(new ResourceIdentifier(TestResourceId));
 
         _metricsQueryClientService.CreateClientAsync(
+                Arg.Any<McpUserContext>(),
                 Arg.Any<string?>(),
                 Arg.Any<RetryPolicyOptions?>())
             .Returns(_metricsQueryClient);
@@ -293,6 +294,7 @@ public class MonitorMetricsServiceTests
         var metricNames = new[] { "Transactions" };
         var metricNamespace = "Microsoft.Storage/storageAccounts";
         _metricsQueryClientService.CreateClientAsync(
+                Arg.Any<McpUserContext>(),
                 Arg.Any<string?>(),
                 Arg.Any<RetryPolicyOptions?>())
             .ThrowsAsync(new Exception("Authentication failed"));
@@ -638,6 +640,7 @@ public class MonitorMetricsServiceTests
 
         // Assert
         await _metricsQueryClientService.Received(1).CreateClientAsync(
+            Arg.Any<McpUserContext>(),
             TestTenant,
             Arg.Any<RetryPolicyOptions?>());
     }

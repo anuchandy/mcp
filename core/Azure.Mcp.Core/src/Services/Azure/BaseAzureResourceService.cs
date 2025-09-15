@@ -1,6 +1,7 @@
 // Copyright (c) Microsoft Corporation.
 // Licensed under the MIT License.
 
+using Azure.Mcp.Core.Areas.Server.Commands.Runtime;
 using Azure.Mcp.Core.Options;
 using Azure.Mcp.Core.Services.Azure.Subscription;
 using Azure.Mcp.Core.Services.Azure.Tenant;
@@ -62,6 +63,7 @@ public abstract class BaseAzureResourceService(
     /// <param name="cancellationToken">Cancellation token</param>
     /// <returns>List of resources converted to the specified type</returns>
     protected async Task<List<T>> ExecuteResourceQueryAsync<T>(
+        McpUserContext userContext,
         string resourceType,
         string resourceGroup,
         string subscription,
@@ -76,7 +78,7 @@ public abstract class BaseAzureResourceService(
 
         var results = new List<T>();
 
-        var subscriptionResource = await _subscriptionService.GetSubscription(subscription, null, retryPolicy);
+        var subscriptionResource = await _subscriptionService.GetSubscription(userContext, subscription, null, retryPolicy);
         var tenantResource = await GetTenantResourceAsync(subscriptionResource.Data.TenantId, cancellationToken);
 
         var queryFilter = $"Resources | where type =~ '{EscapeKqlString(resourceType)}' and resourceGroup =~ '{EscapeKqlString(resourceGroup)}'";
@@ -121,6 +123,7 @@ public abstract class BaseAzureResourceService(
     /// <param name="cancellationToken">Cancellation token</param>
     /// <returns>Single resource converted to the specified type, or null if not found</returns>
     protected async Task<T?> ExecuteSingleResourceQueryAsync<T>(
+        McpUserContext userContext,
         string resourceType,
         string resourceGroup,
         string subscription,
@@ -132,7 +135,7 @@ public abstract class BaseAzureResourceService(
         ValidateRequiredParameters(resourceType, resourceGroup, subscription);
         ArgumentNullException.ThrowIfNull(converter);
 
-        var subscriptionResource = await _subscriptionService.GetSubscription(subscription, null, retryPolicy);
+        var subscriptionResource = await _subscriptionService.GetSubscription(userContext, subscription, null, retryPolicy);
         var tenantResource = await GetTenantResourceAsync(subscriptionResource.Data.TenantId, cancellationToken);
 
         var queryFilter = $"Resources | where type =~ '{EscapeKqlString(resourceType)}' and resourceGroup =~ '{EscapeKqlString(resourceGroup)}'";

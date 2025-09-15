@@ -26,7 +26,7 @@ public class ResourceHealthService(ISubscriptionService subscriptionService, ITe
 
         try
         {
-            var armClient = await CreateArmClientAsync(null, retryPolicy);
+            var armClient = await CreateArmClientAsync(userContext, null, retryPolicy);
 
             // Create ResourceIdentifier from the resource ID string
             var resourceIdentifier = new ResourceIdentifier(resourceId);

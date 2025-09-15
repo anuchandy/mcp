@@ -84,7 +84,7 @@ public sealed class AcrService(ISubscriptionService subscriptionService, ITenant
             }
 
             // Build data-plane client for this login server
-            var credential = await GetCredential(tenant);
+            var credential = await GetCredential(userContext, tenant);
             var options = ConfigureRetryPolicy(AddDefaultPolicies(new ContainerRegistryClientOptions()), retryPolicy);
             var acrEndpoint = new Uri($"https://{data.LoginServer}");
             var client = new ContainerRegistryClient(acrEndpoint, credential, options);

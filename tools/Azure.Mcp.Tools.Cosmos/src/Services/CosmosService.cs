@@ -26,6 +26,7 @@ public class CosmosService(ISubscriptionService subscriptionService, ITenantServ
     private bool _disposed;
 
     private async Task<CosmosDBAccountResource> GetCosmosAccountAsync(
+        McpUserContext userContext,
         string subscription,
         string accountName,
         string? tenant = null,
@@ -46,6 +47,7 @@ public class CosmosService(ISubscriptionService subscriptionService, ITenantServ
     }
 
     private async Task<CosmosClient> CreateCosmosClientWithAuth(
+        McpUserContext userContext,
         string accountName,
         string subscription,
         AuthMethod authMethod,
@@ -68,7 +70,7 @@ public class CosmosService(ISubscriptionService subscriptionService, ITenantServ
         switch (authMethod)
         {
             case AuthMethod.Key:
-                var cosmosAccount = await GetCosmosAccountAsync(subscription, accountName, tenant);
+                var cosmosAccount = await GetCosmosAccountAsync(userContext, subscription, accountName, tenant);
                 var keys = await cosmosAccount.GetKeysAsync();
                 cosmosClient = new CosmosClient(
                     string.Format(CosmosBaseUri, accountName),
@@ -80,7 +82,7 @@ public class CosmosService(ISubscriptionService subscriptionService, ITenantServ
             default:
                 cosmosClient = new CosmosClient(
                     string.Format(CosmosBaseUri, accountName),
-                    await GetCredential(tenant),
+                    await GetCredential(userContext, tenant),
                     clientOptions);
                 break;
         }
@@ -109,6 +111,7 @@ public class CosmosService(ISubscriptionService subscriptionService, ITenantServ
     }
 
     private async Task<CosmosClient> GetCosmosClientAsync(
+        McpUserContext userContext,
         string accountName,
         string subscription,
         AuthMethod authMethod = AuthMethod.Credential,
@@ -126,6 +129,7 @@ public class CosmosService(ISubscriptionService subscriptionService, ITenantServ
         {
             // First attempt with requested auth method
             cosmosClient = await CreateCosmosClientWithAuth(
+                userContext,
                 accountName,
                 subscription,
                 authMethod,
@@ -141,6 +145,7 @@ public class CosmosService(ISubscriptionService subscriptionService, ITenantServ
         {
             // If credential auth fails with 401/403, try key auth
             cosmosClient = await CreateCosmosClientWithAuth(
+                userContext,
                 accountName,
                 subscription,
                 AuthMethod.Key,
@@ -196,7 +201,7 @@ public class CosmosService(ISubscriptionService subscriptionService, ITenantServ
             return cachedDatabases;
         }
 
-        var client = await GetCosmosClientAsync(accountName, subscription, authMethod, tenant, retryPolicy);
+        var client = await GetCosmosClientAsync(userContext, accountName, subscription, authMethod, tenant, retryPolicy);
         var databases = new List<string>();
 
         try
@@ -251,7 +256,7 @@ public class CosmosService(ISubscriptionService subscriptionService, ITenantServ
             return cachedContainers;
         }
 
-        var client = await GetCosmosClientAsync(accountName, subscription, authMethod, tenant, retryPolicy);
+        var client = await GetCosmosClientAsync(userContext, accountName, subscription, authMethod, tenant, retryPolicy);
         var containers = new List<string>();
 
         try
@@ -301,7 +306,7 @@ public class CosmosService(ISubscriptionService subscriptionService, ITenantServ
     {
         ValidateRequiredParameters(accountName, databaseName, containerName, subscription);
 
-        var client = await GetCosmosClientAsync(accountName, subscription, authMethod, tenant, retryPolicy);
+        var client = await GetCosmosClientAsync(userContext, accountName, subscription, authMethod, tenant, retryPolicy);
 
         try
         {

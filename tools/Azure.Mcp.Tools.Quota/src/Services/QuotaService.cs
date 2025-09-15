@@ -22,7 +22,7 @@ public class QuotaService(ILoggerFactory? loggerFactory = null, IHttpClientServi
         string subscriptionId,
         string location)
     {
-        TokenCredential credential = await GetCredential();
+        TokenCredential credential = await GetCredential(userContext);
         Dictionary<string, List<UsageInfo>> quotaByResourceTypes = await AzureQuotaService.GetAzureQuotaAsync(
             credential,
             resourceTypes,
@@ -42,7 +42,7 @@ public class QuotaService(ILoggerFactory? loggerFactory = null, IHttpClientServi
         string? cognitiveServiceModelVersion = null,
         string? cognitiveServiceDeploymentSkuName = null)
     {
-        ArmClient armClient = await CreateArmClientAsync();
+        ArmClient armClient = await CreateArmClientAsync(userContext);
 
         // Create cognitive service properties if any of the parameters are provided
         CognitiveServiceProperties? cognitiveServiceProperties = null;

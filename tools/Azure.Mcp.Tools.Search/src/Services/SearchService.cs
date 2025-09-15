@@ -77,7 +77,7 @@ public sealed class SearchService(ISubscriptionService subscriptionService, ICac
 
         try
         {
-            var searchClient = await GetSearchIndexClient(serviceName, retryPolicy);
+            var searchClient = await GetSearchIndexClient(userContext,serviceName, retryPolicy);
             await foreach (var index in searchClient.GetIndexesAsync())
             {
                 indexes.Add(new IndexInfo(index.Name, index.Description));
@@ -100,7 +100,7 @@ public sealed class SearchService(ISubscriptionService subscriptionService, ICac
 
         try
         {
-            var searchClient = await GetSearchIndexClient(serviceName, retryPolicy);
+            var searchClient = await GetSearchIndexClient(userContext,serviceName, retryPolicy);
             var index = await searchClient.GetIndexAsync(indexName);
 
             return new(index.Value);
@@ -122,7 +122,7 @@ public sealed class SearchService(ISubscriptionService subscriptionService, ICac
 
         try
         {
-            var searchClient = await GetSearchIndexClient(serviceName, retryPolicy);
+            var searchClient = await GetSearchIndexClient(userContext,serviceName, retryPolicy);
             var indexDefinition = await searchClient.GetIndexAsync(indexName);
             var client = searchClient.GetSearchClient(indexName);
 
@@ -182,13 +182,13 @@ public sealed class SearchService(ISubscriptionService subscriptionService, ICac
         return vectorizableFields;
     }
 
-    private async Task<SearchIndexClient> GetSearchIndexClient(string serviceName, RetryPolicyOptions? retryPolicy)
+    private async Task<SearchIndexClient> GetSearchIndexClient(McpUserContext userContext, string serviceName, RetryPolicyOptions? retryPolicy)
     {
         var key = $"{SearchServicesCacheKey}_{serviceName}";
         var searchClient = await _cacheService.GetAsync<SearchIndexClient>(CacheGroup, key, s_cacheDurationClients);
         if (searchClient == null)
         {
-            var credential = await GetCredential();
+            var credential = await GetCredential(userContext);
 
             var clientOptions = AddDefaultPolicies(new SearchClientOptions());
             ConfigureRetryPolicy(clientOptions, retryPolicy);

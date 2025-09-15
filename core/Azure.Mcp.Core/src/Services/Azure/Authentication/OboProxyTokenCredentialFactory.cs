@@ -4,6 +4,7 @@
 using System.Runtime.Versioning;
 using Azure.Core;
 using Azure.Identity;
+using Azure.Mcp.Core.Areas.Server.Commands.Runtime;
 using Azure.Mcp.Core.Areas.Server.Options;
 using Azure.Mcp.Core.Services.Caching;
 using Microsoft.Extensions.Logging;

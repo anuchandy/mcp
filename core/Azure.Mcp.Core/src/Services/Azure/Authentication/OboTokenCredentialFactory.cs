@@ -3,6 +3,7 @@
 
 using Azure.Core;
 using Azure.Identity;
+using Azure.Mcp.Core.Areas.Server.Commands.Runtime;
 using Azure.Mcp.Core.Services.Caching;
 using Microsoft.Extensions.Logging;
 using Microsoft.Identity.Web;
@@ -93,7 +94,7 @@ public sealed class OboTokenCredentialFactory : IOboTokenCredentialFactory
             try
             {
                 // Use the ClaimsPrincipal from the user context for OBO token acquisition
-                var claimsPrincipal = _userContext.ClaimsPrincipal ?? _userContext.DeserializeClaimsPrincipal();
+                var claimsPrincipal = _userContext.GetClaimsPrincipal();
                 if (claimsPrincipal == null)
                 {
                     throw new InvalidOperationException("No ClaimsPrincipal available in user context for OBO token acquisition.");

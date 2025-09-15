@@ -22,7 +22,7 @@ public sealed class KeyVaultService : BaseAzureService, IKeyVaultService
     {
         ValidateRequiredParameters(vaultName, subscriptionId);
 
-        var credential = await GetCredential(tenantId);
+        var credential = await GetCredential(userContext, tenantId);
         var client = new KeyClient(new Uri($"https://{vaultName}.vault.azure.net"), credential);
         var keys = new List<string>();
 
@@ -51,7 +51,7 @@ public sealed class KeyVaultService : BaseAzureService, IKeyVaultService
     {
         ValidateRequiredParameters(vaultName, keyName, subscriptionId);
 
-        var credential = await GetCredential(tenantId);
+        var credential = await GetCredential(userContext, tenantId);
         var client = new KeyClient(new Uri($"https://{vaultName}.vault.azure.net"), credential);
 
         try
@@ -76,7 +76,7 @@ public sealed class KeyVaultService : BaseAzureService, IKeyVaultService
         ValidateRequiredParameters(vaultName, keyName, keyType, subscriptionId);
 
         var type = new KeyType(keyType);
-        var credential = await GetCredential(tenantId);
+        var credential = await GetCredential(userContext, tenantId);
         var client = new KeyClient(new Uri($"https://{vaultName}.vault.azure.net"), credential);
 
         try
@@ -98,7 +98,7 @@ public sealed class KeyVaultService : BaseAzureService, IKeyVaultService
     {
         ValidateRequiredParameters(vaultName, subscriptionId);
 
-        var credential = await GetCredential(tenantId);
+        var credential = await GetCredential(userContext, tenantId);
         var client = new SecretClient(new Uri($"https://{vaultName}.vault.azure.net"), credential);
         var secrets = new List<string>();
 
@@ -128,7 +128,7 @@ public sealed class KeyVaultService : BaseAzureService, IKeyVaultService
     {
         ValidateRequiredParameters(vaultName, secretName, secretValue, subscriptionId);
 
-        var credential = await GetCredential(tenantId);
+        var credential = await GetCredential(userContext, tenantId);
         var client = new SecretClient(new Uri($"https://{vaultName}.vault.azure.net"), credential);
 
         try
@@ -151,7 +151,7 @@ public sealed class KeyVaultService : BaseAzureService, IKeyVaultService
     {
         ValidateRequiredParameters(vaultName, secretName, subscriptionId);
 
-        var credential = await GetCredential(tenantId);
+        var credential = await GetCredential(userContext, tenantId);
         var client = new SecretClient(new Uri($"https://{vaultName}.vault.azure.net"), credential);
 
         try
@@ -174,7 +174,7 @@ public sealed class KeyVaultService : BaseAzureService, IKeyVaultService
     {
         ValidateRequiredParameters(vaultName, subscriptionId);
 
-        var credential = await GetCredential(tenantId);
+        var credential = await GetCredential(userContext, tenantId);
         var client = new CertificateClient(new Uri($"https://{vaultName}.vault.azure.net"), credential);
         var certificates = new List<string>();
 
@@ -203,7 +203,7 @@ public sealed class KeyVaultService : BaseAzureService, IKeyVaultService
     {
         ValidateRequiredParameters(vaultName, certificateName, subscriptionId);
 
-        var credential = await GetCredential(tenantId);
+        var credential = await GetCredential(userContext, tenantId);
         var client = new CertificateClient(new Uri($"https://{vaultName}.vault.azure.net"), credential);
 
         try
@@ -226,7 +226,7 @@ public sealed class KeyVaultService : BaseAzureService, IKeyVaultService
     {
         ValidateRequiredParameters(vaultName, certificateName, subscriptionId);
 
-        var credential = await GetCredential(tenantId);
+        var credential = await GetCredential(userContext, tenantId);
         var client = new CertificateClient(new Uri($"https://{vaultName}.vault.azure.net"), credential);
 
         try
@@ -251,7 +251,7 @@ public sealed class KeyVaultService : BaseAzureService, IKeyVaultService
     {
         ValidateRequiredParameters(vaultName, certificateName, certificateData, subscriptionId);
 
-        var credential = await GetCredential(tenantId);
+        var credential = await GetCredential(userContext, tenantId);
         var client = new CertificateClient(new Uri($"https://{vaultName}.vault.azure.net"), credential);
 
         try

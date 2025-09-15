@@ -40,7 +40,7 @@ public class MonitorMetricsService(IResourceResolverService resourceResolverServ
         ArgumentNullException.ThrowIfNull(metricNames);
 
         var resourceId = await _resourceResolverService.ResolveResourceIdAsync(subscription, resourceGroup, resourceType, resourceName, tenant, retryPolicy);
-        var client = await _metricsQueryClientService.CreateClientAsync(tenant, retryPolicy);
+        var client = await _metricsQueryClientService.CreateClientAsync(userContext,tenant, retryPolicy);
 
         // Parse time range
         DateTimeOffset? startTimeOffset = null;
@@ -217,7 +217,7 @@ public class MonitorMetricsService(IResourceResolverService resourceResolverServ
         ValidateRequiredParameters(subscription, resourceName);
 
         var resourceId = await _resourceResolverService.ResolveResourceIdAsync(subscription, resourceGroup, resourceType, resourceName, tenant, retryPolicy);
-        var client = await _metricsQueryClientService.CreateClientAsync(tenant, retryPolicy);
+        var client = await _metricsQueryClientService.CreateClientAsync(userContext, tenant, retryPolicy);
 
         // List metric definitions using the metrics query client
         var response = client.GetMetricDefinitionsAsync(resourceId, metricNamespace);
@@ -285,7 +285,7 @@ public class MonitorMetricsService(IResourceResolverService resourceResolverServ
         ValidateRequiredParameters(subscription, resourceName);
 
         var resourceId = await _resourceResolverService.ResolveResourceIdAsync(subscription, resourceGroup, resourceType, resourceName, tenant, retryPolicy);
-        var client = await _metricsQueryClientService.CreateClientAsync(tenant, retryPolicy);
+        var client = await _metricsQueryClientService.CreateClientAsync(userContext, tenant, retryPolicy);
 
         // List metric namespaces using the metrics query client
         var response = client.GetMetricNamespacesAsync(resourceId);
