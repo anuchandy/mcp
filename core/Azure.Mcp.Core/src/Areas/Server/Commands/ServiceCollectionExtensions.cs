@@ -96,7 +96,6 @@ public static class AzureMcpServiceCollectionExtensions
             
             // Register On-Behalf-Of authentication services for HTTP transport
             services.AddHttpContextAccessor();
-            services.AddScoped<IAuthenticationContext, HttpAuthenticationContext>();
             
             // Register OBO Token Credential Factory for parent processes
             services.AddSingleton<IOboTokenCredentialFactory, OboTokenCredentialFactory>();
@@ -125,9 +124,6 @@ public static class AzureMcpServiceCollectionExtensions
         {
             services.AddSingleton<IAzMcpRequestContextFactory, DefaultRequestContextFactory>();
         }
-        // When OBO is disabled, IAuthenticationContext is not registered.
-        // BaseAzureService.GetCredential() will use GetService<IAuthenticationContext>() which returns null,
-        // causing it to fall back to DefaultAzureCredential for all scenarios.
 
         // Register MCP discovery strategies based on proxy mode
         if (serviceStartOptions.Mode == ModeTypes.SingleToolProxy || serviceStartOptions.Mode == ModeTypes.NamespaceProxy)

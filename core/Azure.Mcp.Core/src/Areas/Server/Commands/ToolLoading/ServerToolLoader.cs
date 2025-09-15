@@ -232,7 +232,7 @@ public sealed class ServerToolLoader(IMcpDiscoveryStrategy serverDiscoveryStrate
             // At this point we should always have a valid command (child tool) call to invoke.
             await NotifyProgressAsync(request, $"Calling {tool} {command}...", cancellationToken);
             // Inject identity context per invocation so multi-user scenarios don't rely on process state.
-            if (request.Role == AzRuntimeMode.OboParent)
+            if (request.Role == AzRuntimeMode.OboParent || request.Role == AzRuntimeMode.OboChild)
             {
                 if (!string.IsNullOrWhiteSpace(request.TenantId) && !parameters.ContainsKey("tenantId"))
                 {
