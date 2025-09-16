@@ -39,6 +39,10 @@ public sealed class CacheService2 : ICacheService2, IDisposable
     /// <inheritdoc />
     public string Compose(string group0, string group1, string localKey)
     { 
+        ArgumentNullException.ThrowIfNull(group0);
+        ArgumentNullException.ThrowIfNull(group1);
+        ArgumentNullException.ThrowIfNull(localKey);
+
         return string.Concat(group0, Sep, group1, Sep, localKey);
     }
 
@@ -126,6 +130,8 @@ public sealed class CacheService2 : ICacheService2, IDisposable
     /// <inheritdoc />
     public int RemoveByGroup0(string group0)
     {
+        ArgumentNullException.ThrowIfNull(group0);
+
         var l0 = GetLock(_g0Locks, group0);
         string[] keys;
 
@@ -172,6 +178,8 @@ public sealed class CacheService2 : ICacheService2, IDisposable
     /// <inheritdoc />
     public int RemoveByGroup1(string group1)
     {
+        ArgumentNullException.ThrowIfNull(group1);
+
         var l1 = GetLock(_g1Locks, group1);
         string[] keys;
 
@@ -216,6 +224,8 @@ public sealed class CacheService2 : ICacheService2, IDisposable
     /// <inheritdoc />
     public IReadOnlyCollection<string> KeysByGroup0(string group0)
     {
+        ArgumentNullException.ThrowIfNull(group0);
+
         _indexLock.EnterReadLock();
         try
         {
@@ -232,6 +242,8 @@ public sealed class CacheService2 : ICacheService2, IDisposable
     /// <inheritdoc />
     public IReadOnlyCollection<string> KeysByGroup1(string group1)
     {
+        ArgumentNullException.ThrowIfNull(group1);
+
         _indexLock.EnterReadLock();
         try
         {
@@ -243,6 +255,76 @@ public sealed class CacheService2 : ICacheService2, IDisposable
         {
             _indexLock.ExitReadLock();
         }
+    }
+
+    /// <inheritdoc />
+    public IReadOnlyDictionary<CacheKey, T> GetValuesByGroup0<T>(string group0)
+    {
+        ArgumentNullException.ThrowIfNull(group0);
+
+        string[] keys;
+
+        _indexLock.EnterReadLock();
+        try
+        {
+            if (!_byGroup0.TryGetValue(group0, out var set) || set.Count == 0)
+            {
+                return new Dictionary<CacheKey, T>();
+            }
+
+            keys = set.ToArray();
+        }
+        finally
+        {
+            _indexLock.ExitReadLock();
+        }
+
+        var dict = new Dictionary<CacheKey, T>(keys.Length);
+        foreach (var full in keys)
+        {
+            if (TryGetTyped(_cache, full, out T value))
+            {
+                var ck = ToCacheKey(full);
+                dict[ck] = value;
+            }
+        }
+
+        return dict;
+    }
+
+    /// <inheritdoc />
+    public IReadOnlyDictionary<CacheKey, T> GetValuesByGroup1<T>(string group1)
+    {
+        ArgumentNullException.ThrowIfNull(group1);
+
+        string[] keys;
+
+        _indexLock.EnterReadLock();
+        try
+        {
+            if (!_byGroup1.TryGetValue(group1, out var set) || set.Count == 0)
+            {
+                return new Dictionary<CacheKey, T>();
+            }
+
+            keys = set.ToArray();
+        }
+        finally
+        {
+            _indexLock.ExitReadLock();
+        }
+
+        var dict = new Dictionary<CacheKey, T>(keys.Length);
+        foreach (var full in keys)
+        {
+            if (TryGetTyped(_cache, full, out T value))
+            {
+                var ck = ToCacheKey(full);
+                dict[ck] = value;
+            }
+        }
+
+        return dict;
     }
 
     /// <summary>
@@ -361,6 +443,29 @@ public sealed class CacheService2 : ICacheService2, IDisposable
 
         value = default!; // safe: ignored by callers when returning false
         return false;
+    }
+
+    /// <summary>
+    /// Converts a full key of the form "group0␟group1␟localKey" into a <see cref="CacheKey"/>.
+    /// Assumes the key was created by <see cref="Compose"/>.
+    /// </summary>
+    private static CacheKey ToCacheKey(string fullKey)
+    {
+        ArgumentNullException.ThrowIfNull(fullKey);
+
+        var first = fullKey.IndexOf(Sep);
+        var second = fullKey.IndexOf(Sep, first + 1);
+
+        if (first <= 0 || second <= first || second == fullKey.Length - 1)
+        {
+            throw new FormatException($"Invalid fullKey format: '{fullKey}'");
+        }
+
+        var g0 = fullKey[..first];
+        var g1 = fullKey.Substring(first + 1, second - first - 1);
+        var local = fullKey[(second + 1)..];
+
+        return new CacheKey(fullKey, g0, g1, local);
     }
 
     private static bool TryParseGroup0(string fullKey, out string? g0)

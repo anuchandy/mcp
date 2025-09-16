@@ -61,4 +61,16 @@ public interface ICacheService2
 
     /// <summary>Returns a snapshot of composed full keys currently indexed under <paramref name="group1"/>.</summary>
     IReadOnlyCollection<string> KeysByGroup1(string group1);
+
+    /// <summary>
+    /// Returns a snapshot of the current VALUES for all entries under the given group0.
+    /// Only entries that are still present in IMemoryCache at read time are returned.
+    /// </summary>
+    IReadOnlyDictionary<CacheKey, T> GetValuesByGroup0<T>(string group0);
+
+    /// <summary>
+    /// Returns a snapshot of the current VALUES for all entries under the given group1.
+    /// Only entries that are still present in IMemoryCache at read time are returned.
+    /// </summary>
+    IReadOnlyDictionary<CacheKey, T> GetValuesByGroup1<T>(string group1);
 }
