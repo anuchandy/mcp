@@ -68,6 +68,7 @@ public abstract class BaseAzureService(ITenantService? tenantService = null, ILo
         return await _tenantService.GetTenantId(tenant);
     }
 
+    // This method is now used only from TenantService (to fix), otherwise all credential request goes threw OBO aware GetCredential(McpUserContext userContext, string? tenant = null)
     protected async Task<TokenCredential> GetCredential(string? tenant = null)
     {
         // Fallback to existing credential chain for backward compatibility when no user context
