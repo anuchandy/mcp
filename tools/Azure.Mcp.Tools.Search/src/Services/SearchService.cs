@@ -17,12 +17,13 @@ using static Azure.Mcp.Tools.Search.Commands.Index.IndexDescribeCommand;
 
 namespace Azure.Mcp.Tools.Search.Services;
 
-public sealed class SearchService(ISubscriptionService subscriptionService, ICacheService cacheService) : BaseAzureService, ISearchService
+public sealed class SearchService(ISubscriptionService subscriptionService, ICacheService2 cacheService) : BaseAzureService, ISearchService
 {
     private readonly ISubscriptionService _subscriptionService = subscriptionService ?? throw new ArgumentNullException(nameof(subscriptionService));
-    private readonly ICacheService _cacheService = cacheService ?? throw new ArgumentNullException(nameof(cacheService));
+    private readonly ICacheService2 _cacheService = cacheService ?? throw new ArgumentNullException(nameof(cacheService));
     private const string CacheGroup = "search";
     private const string SearchServicesCacheKey = "services";
+    private const string SearchClientsCacheKeyPrefix = "clients_";
     private static readonly TimeSpan s_cacheDurationServices = TimeSpan.FromHours(1);
     private static readonly TimeSpan s_cacheDurationClients = TimeSpan.FromMinutes(15);
 
@@ -38,12 +39,25 @@ public sealed class SearchService(ISubscriptionService subscriptionService, ICac
             ? $"{SearchServicesCacheKey}_{subscription}"
             : $"{SearchServicesCacheKey}_{subscription}_{tenantId}";
 
-        var cachedServices = await _cacheService.GetAsync<List<string>>(CacheGroup, cacheKey, s_cacheDurationServices);
-        if (cachedServices != null)
-        {
-            return cachedServices;
-        }
+        var userGroup = userContext.GroupKey();
+        var serviceGroup = "search";
 
+        var cachedServices = _cacheService.GetOrCreate<List<string>>(userGroup, serviceGroup, cacheKey, entry =>
+        {
+            entry.AbsoluteExpirationRelativeToNow = s_cacheDurationServices;
+            
+            return GetSearchServicesFromAzureAsync(userContext, subscription, tenantId, retryPolicy).GetAwaiter().GetResult();
+        });
+
+        return await Task.FromResult(cachedServices);
+    }
+
+    private async Task<List<string>> GetSearchServicesFromAzureAsync(
+        McpUserContext userContext,
+        string subscription,
+        string? tenantId,
+        RetryPolicyOptions? retryPolicy)
+    {
         var subscriptionResource = await _subscriptionService.GetSubscription(userContext, subscription, tenantId, retryPolicy);
         var services = new List<string>();
         try
@@ -55,8 +69,6 @@ public sealed class SearchService(ISubscriptionService subscriptionService, ICac
                     services.Add(service.Data.Name);
                 }
             }
-
-            await _cacheService.SetAsync(CacheGroup, cacheKey, services, s_cacheDurationServices);
         }
         catch (Exception ex)
         {
@@ -184,20 +196,32 @@ public sealed class SearchService(ISubscriptionService subscriptionService, ICac
 
     private async Task<SearchIndexClient> GetSearchIndexClient(McpUserContext userContext, string serviceName, RetryPolicyOptions? retryPolicy)
     {
-        var key = $"{SearchServicesCacheKey}_{serviceName}";
-        var searchClient = await _cacheService.GetAsync<SearchIndexClient>(CacheGroup, key, s_cacheDurationClients);
-        if (searchClient == null)
+        var key = SearchClientsCacheKeyPrefix + serviceName;
+        var userGroup = userContext.GroupKey();
+        var serviceGroup = "search";
+
+        var searchClient = _cacheService.GetOrCreate<SearchIndexClient>(userGroup, serviceGroup, key, entry =>
         {
-            var credential = await GetCredential(userContext);
+            entry.AbsoluteExpirationRelativeToNow = s_cacheDurationClients;
+            
+            return CreateSearchIndexClientAsync(userContext, serviceName, retryPolicy).GetAwaiter().GetResult();
+        });
+        
+        return await Task.FromResult(searchClient);
+    }
 
-            var clientOptions = AddDefaultPolicies(new SearchClientOptions());
-            ConfigureRetryPolicy(clientOptions, retryPolicy);
+    private async Task<SearchIndexClient> CreateSearchIndexClientAsync(
+        McpUserContext userContext,
+        string serviceName,
+        RetryPolicyOptions? retryPolicy)
+    {
+        var credential = await GetCredential(userContext);
 
-            var endpoint = new Uri($"https://{serviceName}.search.windows.net");
-            searchClient = new SearchIndexClient(endpoint, credential, clientOptions);
-            await _cacheService.SetAsync(CacheGroup, key, searchClient, s_cacheDurationClients);
-        }
-        return searchClient;
+        var clientOptions = AddDefaultPolicies(new SearchClientOptions());
+        ConfigureRetryPolicy(clientOptions, retryPolicy);
+
+        var endpoint = new Uri($"https://{serviceName}.search.windows.net");
+        return new SearchIndexClient(endpoint, credential, clientOptions);
     }
 
     private static void ConfigureSearchOptions(string q, SearchOptions options, SearchIndex indexDefinition, List<string> vectorFields)
