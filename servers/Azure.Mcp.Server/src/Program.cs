@@ -113,6 +113,7 @@ internal class Program
 
         services.AddMemoryCache();
         services.AddSingleton<ICacheService, CacheService>();
+        services.AddSingleton<ICacheService2, CacheService2>();
         services.AddSingleton<IExternalProcessService, ExternalProcessService>();
         services.AddSingleton<IDateTimeProvider, DateTimeProvider>();
         services.AddSingleton<ITenantService, TenantService>();

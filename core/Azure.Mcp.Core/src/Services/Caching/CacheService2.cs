@@ -65,7 +65,10 @@ public sealed class CacheService2 : ICacheService2, IDisposable
                 AddToIndex(_byGroup0, group0, full);
                 AddToIndex(_byGroup1, group1, full);
             }
-            finally { _indexLock.ExitWriteLock(); }
+            finally
+            {
+                _indexLock.ExitWriteLock();
+            }
         });
     }
 

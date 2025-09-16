@@ -178,6 +178,27 @@ public sealed class McpUserContext
     }
 
     /// <summary>
+    /// Gets a cache group key for user-scoped caching operations.
+    /// </summary>
+    /// <returns>
+    /// "default" for Default runtime mode, or "tenantId_userObjectId" for authenticated users.
+    /// </returns>
+    /// <remarks>
+    /// This method provides a consistent cache group key strategy for multi-user scenarios:
+    /// - Default mode: Returns "default" for shared DefaultAzureCredential scenarios
+    /// - OBO modes: Returns "tenantId_userObjectId" for user-specific cache isolation
+    /// 
+    /// Use this with ICacheService2 for user-scoped cache groups to ensure proper isolation
+    /// between different users while allowing shared caching for default scenarios.
+    /// </remarks>
+    public string GroupKey()
+    {
+        return Role == AzRuntimeMode.Default 
+            ? "default" 
+            : $"{TenantId}_{UserObjectId}";
+    }
+
+    /// <summary>
     /// Returns a string representation of this McpUserContext for debugging purposes.
     /// Does not include sensitive information like the full ClaimsPrincipal.
     /// </summary>
