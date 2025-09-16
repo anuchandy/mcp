@@ -7,9 +7,14 @@ using Azure.Mcp.Core.Areas.Server.Commands.ToolLoading;
 using Azure.Mcp.Core.Areas.Server.Options;
 using Azure.Mcp.Core.Models.Option;
 using Azure.Mcp.Core.Services.Telemetry;
+using Azure.Mcp.Core.Areas.Server.Commands.Discovery;
+using Azure.Mcp.Core.Services.Caching;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
 using ModelContextProtocol.Protocol;
+using ModelContextProtocol.Client;
+using System.Text.Json;
+using System.Text;
 using static Azure.Mcp.Core.Services.Telemetry.TelemetryConstants;
 
 namespace Azure.Mcp.Core.Areas.Server.Commands.Runtime;
@@ -82,6 +87,13 @@ public sealed class McpRuntime : IMcpRuntime
 
         activity?.AddTag(TagName.ToolName, request.Params.Name);
 
+        if (string.Equals(request.Params.Name, "azmcp_auth_signout", StringComparison.OrdinalIgnoreCase))
+        {
+            var result = await HandleAzMcpAuthSignOutAsync(request, cancellationToken);
+            activity?.SetStatus(ActivityStatusCode.Ok);
+            return result;
+        }
+
         var subscriptionArgument = request.Params?.Arguments?
             .Where(kvp => string.Equals(kvp.Key, OptionDefinitions.Common.Subscription.Name, StringComparison.OrdinalIgnoreCase))
             .Select(kvp => kvp.Value)
@@ -134,6 +146,117 @@ public sealed class McpRuntime : IMcpRuntime
 
             throw;
         }
+    }
+
+    private async ValueTask<CallToolResult> HandleAzMcpAuthSignOutAsync(RequestContext<CallToolRequestParams> request, CancellationToken ct)
+    {
+        var enriched = _contextFactory.Create(request!);
+        if (enriched.Role == AzRuntimeMode.Default)
+        {
+            _logger.LogInformation("Sign-out requested but runtime role is Default (no user context).");
+            return new CallToolResult
+            {
+                Content = [ new TextContentBlock { Text = "{\"tool\":\"azmcp_auth_signout\"}" } ],
+                IsError = false
+            };
+        }
+
+        var services = request.Services ?? request.Server?.Services;
+        if (services == null)
+        {
+            _logger.LogWarning("Sign-out requested but no DI service provider available.");
+            return new CallToolResult
+            {
+                Content = [ new TextContentBlock { Text = "{\"tool\":\"azmcp_auth_signout\"}" } ],
+                IsError = false
+            };
+        }
+
+        string userGroupCacheKey = $"{enriched.TenantId}_{enriched.UserObjectId}";
+
+        ICacheService2? cacheService = null;
+        try
+        {
+            cacheService = services.GetService(typeof(ICacheService2)) as ICacheService2;
+        }
+        catch
+        {
+        }
+
+        if (cacheService != null)
+        {
+            cacheService.RemoveByGroup0(userGroupCacheKey);
+        }
+
+        IEnumerable<IClientEnumerationDiscoveryStrategy> strategies = Enumerable.Empty<IClientEnumerationDiscoveryStrategy>();
+        try
+        {
+            var discovered = services.GetService(typeof(IEnumerable<IMcpDiscoveryStrategy>)) as IEnumerable<IMcpDiscoveryStrategy>;
+            if (discovered != null)
+            {
+                strategies = discovered.OfType<IClientEnumerationDiscoveryStrategy>();
+            }
+        }
+        catch (Exception ex)
+        {
+            _logger.LogDebug(ex, "Failed to resolve discovery strategies for signout recursion.");
+        }
+
+        foreach (var strategy in strategies)
+        {
+            IEnumerable<IMcpClient> clients;
+            try
+            {
+                clients = strategy.GetCachedClients();
+            }
+            catch (Exception ex)
+            {
+                _logger.LogDebug(ex, "Failed to enumerate clients from strategy {Strategy}", strategy.GetType().Name);
+                continue;
+            }
+
+            var toolArgs = new Dictionary<string, object?>(StringComparer.OrdinalIgnoreCase);
+            toolArgs["tenantId"] = enriched.TenantId;
+            toolArgs["userObjectId"] = enriched.UserObjectId;
+            toolArgs["serializedClaimsPrincipal"] = enriched.SerializedClaimsPrincipal;
+
+            foreach (var client in clients)
+            {
+                if (!IsAzureMcp(client))
+                {
+                    continue;
+                }
+                try
+                {
+                    await client.CallToolAsync("azmcp_auth_signout", toolArgs, progress: null, cancellationToken: ct);
+                }
+                catch (Exception ex)
+                {
+                    _logger.LogDebug(ex, "Child signout invocation failed against server {ServerName}", client.ServerInfo?.Name);
+                }
+            }
+        }
+
+        var json = $"{{\"tool\":\"azmcp_auth_signout\",\"user\":\"{userGroupCacheKey}\"}}";
+        var content = new TextContentBlock { Text = json };
+
+        return new CallToolResult
+        {
+            Content = [content],
+            IsError = false
+        };
+    }
+
+    // NOT SO CLEAN but for time being.
+    private static bool IsAzureMcp(IMcpClient client)
+    {
+        var name = client.ServerInfo?.Name;
+        if (string.IsNullOrWhiteSpace(name))
+        {
+            return false;
+        }
+        return string.Equals(name, "Azure MCP Server", StringComparison.OrdinalIgnoreCase)
+            || string.Equals(name, "Azure MCP", StringComparison.OrdinalIgnoreCase);
     }
 
     /// <summary>

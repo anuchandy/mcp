@@ -10,7 +10,7 @@ namespace Azure.Mcp.Core.Areas.Server.Commands.Discovery;
 /// Base class for MCP server discovery strategies that provides common functionality.
 /// Implements client caching and server provider lookup by name.
 /// </summary>
-public abstract class BaseDiscoveryStrategy(ILogger logger) : IMcpDiscoveryStrategy
+public abstract class BaseDiscoveryStrategy(ILogger logger) : IMcpDiscoveryStrategy, IClientEnumerationDiscoveryStrategy
 {
     /// <summary>
     /// Logger instance for this discovery strategy.
@@ -82,6 +82,12 @@ public abstract class BaseDiscoveryStrategy(ILogger logger) : IMcpDiscoveryStrat
         _clientCache[name] = client;
 
         return client;
+    }
+
+    /// <inheritdoc />
+    public IEnumerable<IMcpClient> GetCachedClients()
+    {
+        return _clientCache.Values.ToArray();
     }
 
     /// <summary>
