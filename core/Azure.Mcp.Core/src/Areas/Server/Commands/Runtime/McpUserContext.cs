@@ -75,7 +75,7 @@ public sealed class McpUserContext
 
     /// <summary>
     /// Gets an empty McpUserContext for scenarios where no user identity is available.
-    /// Typically used in Default runtime mode with DefaultAzureCredential.
+    /// Used in Default runtime mode with DefaultAzureCredential.
     /// </summary>
     public static McpUserContext Empty => new(null, null, null, AzRuntimeMode.Default);
 
