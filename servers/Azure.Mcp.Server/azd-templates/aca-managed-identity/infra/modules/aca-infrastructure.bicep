@@ -28,16 +28,13 @@ param appInsightsConnectionString string
 @description('Whether to collect telemetry')
 param azureMcpCollectTelemetry string
 
-@description('Azure AD Tenant ID')
-param azureAdTenantId string
-
-@description('Azure AD Client ID')
-param azureAdClientId string
-
 @description('Azure MCP Server namespaces to enable. Must specify at least one namespace and no more than three.')
 @minLength(1)
 @maxLength(3)
 param namespaces array
+
+var azureAdTenantId = '00000000-0000-0000-0000-000000000000'
+var azureAdClientId = '00000000-0000-0000-0000-000000000000'
 
 var baseArgs = [
   '--transport'
@@ -47,6 +44,7 @@ var baseArgs = [
   '--mode'
   'all'
   '--read-only'
+  '--dangerously-disable-http-incoming-auth'
 ]
 var namespaceArgs = [for ns in namespaces: ['--namespace', ns]]
 var serverArgs = flatten(concat([baseArgs], namespaceArgs))
@@ -102,7 +100,7 @@ resource containerApp 'Microsoft.App/containerApps@2024-03-01' = {
             }
             {
               name: 'ASPNETCORE_URLS'
-              value: 'http://+:8080'
+              value: 'http://0.0.0.0:8080'
             }
             {
               name: 'AZURE_TOKEN_CREDENTIALS'
@@ -117,17 +115,21 @@ resource containerApp 'Microsoft.App/containerApps@2024-03-01' = {
               value: azureMcpCollectTelemetry
             }
             {
-              name: 'AzureAd__Instance'
-              value: environment().authentication.loginEndpoint
+              name: 'ALLOW_INSECURE_EXTERNAL_BINDING'
+              value: 'true'
             }
-            {
-              name: 'AzureAd__TenantId'
-              value: azureAdTenantId
-            }
-            {
-              name: 'AzureAd__ClientId'
-              value: azureAdClientId
-            }
+            // {
+            //   name: 'AzureAd__Instance'
+            //   value: environment().authentication.loginEndpoint
+            // }
+            // {
+            //   name: 'AzureAd__TenantId'
+            //   value: azureAdTenantId
+            // }
+            // {
+            //   name: 'AzureAd__ClientId'
+            //   value: azureAdClientId
+            // }
             {
               name: 'AZURE_LOG_LEVEL'
               value: 'Verbose'

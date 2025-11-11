@@ -4,14 +4,8 @@ param location string = resourceGroup().location
 @description('Name for the Azure Container App')
 param acaName string
 
-@description('Display name for the Entra App')
-param entraAppDisplayName string
-
 @description('Full resource ID of the Storage Account that the MCP server will have access to through storage tools')
 param storageResourceId string
-
-@description('AI Foundry project resource ID for assigning Entra App role to AIF project managed identity')
-param aifProjectResourceId string
 
 @description('Application Insights connection string. Use "DISABLED" to disable telemetry, or provide existing connection string. If omitted, new App Insights will be created.')
 param appInsightsConnectionString string = ''
@@ -28,17 +22,6 @@ module appInsights 'modules/application-insights.bicep' = {
   }
 }
 
-// Deploy Entra App
-var entraAppUniqueName = '${replace(toLower(entraAppDisplayName), ' ', '-')}-${uniqueString(resourceGroup().id)}'
-//
-module entraApp 'modules/entra-app.bicep' = {
-  name: 'entra-app-deployment'
-  params: {
-    entraAppDisplayName: entraAppDisplayName
-    entraAppUniqueName: entraAppUniqueName
-  }
-}
-
 // Deploy ACA Infrastructure to host Azure MCP Server
 module acaInfrastructure 'modules/aca-infrastructure.bicep' = {
   name: 'aca-infrastructure-deployment'
@@ -47,8 +30,6 @@ module acaInfrastructure 'modules/aca-infrastructure.bicep' = {
     location: location
     appInsightsConnectionString: appInsights.outputs.connectionString
     azureMcpCollectTelemetry: string(!empty(appInsights.outputs.connectionString))
-    azureAdTenantId: tenant().tenantId
-    azureAdClientId: entraApp.outputs.entraAppClientId
     namespaces: ['storage']
   }
 }
@@ -77,28 +58,11 @@ module acaStorageAccountRoleAssignment './modules/aca-role-assignment-resource.b
   }
 }
 
-// Deploy Entra App role assignment for AIF project MI to access ACA
-module aifRoleAssignment './modules/aif-role-assignment-entraapp.bicep' = {
-  name: 'aif-role-assignment'
-  params: {
-    aifProjectResourceId: aifProjectResourceId
-    entraAppServicePrincipalObjectId: entraApp.outputs.entraAppServicePrincipalObjectId
-    entraAppRoleId: entraApp.outputs.entraAppRoleId
-  }
-}
-
 // Outputs for azd and other consumers
 output AZURE_TENANT_ID string = tenant().tenantId
 output AZURE_SUBSCRIPTION_ID string = subscription().subscriptionId
 output AZURE_RESOURCE_GROUP string = resourceGroup().name
 output AZURE_LOCATION string = location
-
-// Entra App outputs
-output ENTRA_APP_CLIENT_ID string = entraApp.outputs.entraAppClientId
-output ENTRA_APP_OBJECT_ID string = entraApp.outputs.entraAppObjectId
-output ENTRA_APP_SERVICE_PRINCIPAL_ID string = entraApp.outputs.entraAppServicePrincipalObjectId
-output ENTRA_APP_ROLE_ID string = entraApp.outputs.entraAppRoleId
-output ENTRA_APP_IDENTIFIER_URI string = entraApp.outputs.entraAppIdentifierUri
 
 // ACA Infrastructure outputs
 output CONTAINER_APP_URL string = acaInfrastructure.outputs.containerAppUrl
