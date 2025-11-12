@@ -39,6 +39,9 @@ param azureAdClientId string
 @maxLength(3)
 param namespaces array
 
+var keyVaultName = 'anuchankv321'
+var certificateName = 'mcp-server-cert'
+
 var baseArgs = [
   '--transport'
   'http'
@@ -54,14 +57,16 @@ var baseArgs = [
 var namespaceArgs = [for ns in namespaces: ['--namespace', ns]]
 var serverArgs = flatten(concat([baseArgs], namespaceArgs))
 
-resource containerAppsEnvironment 'Microsoft.App/managedEnvironments@2024-03-01' = {
+#disable-next-line BCP081
+resource containerAppsEnvironment 'Microsoft.App/managedEnvironments@2025-10-02-preview' = {
   name: environmentName
   location: location
   properties: {
   }
 }
 
-resource containerApp 'Microsoft.App/containerApps@2024-03-01' = {
+#disable-next-line BCP081
+resource containerApp 'Microsoft.App/containerApps@2025-10-02-preview' = {
   name: containerAppName
   location: location
   tags: {
@@ -74,9 +79,17 @@ resource containerApp 'Microsoft.App/containerApps@2024-03-01' = {
     managedEnvironmentId: containerAppsEnvironment.id
     configuration: {
       activeRevisionsMode: 'Single'
+      secrets: [
+        {
+          name: 'certificate-base64'
+          keyVaultUrl: 'https://${keyVaultName}.vault.azure.net/secrets/${certificateName}'
+          identity: 'system'
+        }
+      ]
       ingress: {
         external: true
         targetPort: 8080
+        targetPortHttpScheme: 'https'
         allowInsecure: false
         transport: 'http'
         traffic: [
@@ -88,6 +101,37 @@ resource containerApp 'Microsoft.App/containerApps@2024-03-01' = {
       }
     }
     template: {
+      volumes: [
+        {
+          name: 'certificates'
+          storageType: 'EmptyDir'
+        }
+      ]
+      initContainers: [
+        {
+          name: 'cert-decoder'
+          image: 'mcr.microsoft.com/azure-cli:latest'
+          command: [
+            '/bin/sh'
+            '-c'
+          ]
+          args: [
+            'echo "$CERTIFICATE_BASE64" | base64 -d > /mnt/certs/certificate.pfx && chmod 644 /mnt/certs/certificate.pfx'
+          ]
+          env: [
+            {
+              name: 'CERTIFICATE_BASE64'
+              secretRef: 'certificate-base64'
+            }
+          ]
+          volumeMounts: [
+            {
+              volumeName: 'certificates'
+              mountPath: '/mnt/certs'
+            }
+          ]
+        }
+      ]
       containers: [
         {
           image: 'mcr.microsoft.com/azure-sdk/azure-mcp:latest'
@@ -98,6 +142,12 @@ resource containerApp 'Microsoft.App/containerApps@2024-03-01' = {
             cpu: json(cpuCores)
             memory: memorySize
           }
+          volumeMounts: [
+            {
+              volumeName: 'certificates'
+              mountPath: '/mnt/certs'
+            }
+          ]
           env: concat([
             {
               name: 'ASPNETCORE_ENVIRONMENT'
@@ -105,7 +155,7 @@ resource containerApp 'Microsoft.App/containerApps@2024-03-01' = {
             }
             {
               name: 'ASPNETCORE_URLS'
-              value: 'http://+:8080'
+              value: 'https://+:8080'
             }
             {
               name: 'AZURE_TOKEN_CREDENTIALS'
@@ -134,6 +184,14 @@ resource containerApp 'Microsoft.App/containerApps@2024-03-01' = {
             {
               name: 'AZURE_LOG_LEVEL'
               value: 'Verbose'
+            }
+            {
+              name: 'ASPNETCORE_Kestrel__Certificates__Default__Path'
+              value: '/mnt/certs/certificate.pfx'
+            }
+            {
+              name: 'ASPNETCORE_Kestrel__Certificates__Default__Password'
+              value: ''
             }
           ], !empty(appInsightsConnectionString) ? [
             {

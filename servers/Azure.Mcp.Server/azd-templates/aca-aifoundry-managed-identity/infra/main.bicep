@@ -87,6 +87,15 @@ module aifRoleAssignment './modules/aif-role-assignment-entraapp.bicep' = {
   }
 }
 
+// Deploy Key Vault role assignment for ACA to read certificates
+module acaKeyVaultRoleAssignment './modules/aca-keyvault-role-assignment.bicep' = {
+  name: 'aca-keyvault-role-assignment'
+  scope: resourceGroup('4d042dc6-fe17-4698-a23f-ec6a8d1e98f4', 'SSS3PT_anuchan-mcp15ccd213')
+  params: {
+    acaPrincipalId: acaInfrastructure.outputs.containerAppPrincipalId
+  }
+}
+
 // Outputs for azd and other consumers
 output AZURE_TENANT_ID string = tenant().tenantId
 output AZURE_SUBSCRIPTION_ID string = subscription().subscriptionId
