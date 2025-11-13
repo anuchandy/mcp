@@ -39,8 +39,11 @@ param azureAdClientId string
 @maxLength(3)
 param namespaces array
 
-var keyVaultName = 'anuchankv321'
-var certificateName = 'mcp-server-cert'
+@description('Name of the Key Vault storing the HTTPS certificate')
+param keyVaultName string
+
+@description('Certificate name in Key Vault')
+param certificateName string
 
 var baseArgs = [
   '--transport'
@@ -81,7 +84,7 @@ resource containerApp 'Microsoft.App/containerApps@2025-10-02-preview' = {
       activeRevisionsMode: 'Single'
       secrets: [
         {
-          name: 'certificate-base64'
+          name: 'https-internal-cert-base64'
           keyVaultUrl: 'https://${keyVaultName}.vault.azure.net/secrets/${certificateName}'
           identity: 'system'
         }
@@ -116,12 +119,12 @@ resource containerApp 'Microsoft.App/containerApps@2025-10-02-preview' = {
             '-c'
           ]
           args: [
-            'echo "$CERTIFICATE_BASE64" | base64 -d > /mnt/certs/certificate.pfx && chmod 644 /mnt/certs/certificate.pfx'
+            'echo "$CERTIFICATE_BASE64" | base64 -d > /mnt/certs/https-internal-cert.pfx && chmod 644 /mnt/certs/https-internal-cert.pfx'
           ]
           env: [
             {
               name: 'CERTIFICATE_BASE64'
-              secretRef: 'certificate-base64'
+              secretRef: 'https-internal-cert-base64'
             }
           ]
           volumeMounts: [
@@ -158,6 +161,15 @@ resource containerApp 'Microsoft.App/containerApps@2025-10-02-preview' = {
               value: 'https://+:8080'
             }
             {
+              name: 'ASPNETCORE_Kestrel__Certificates__Default__Path'
+              value: '/mnt/certs/https-internal-cert.pfx'
+            }
+            // No password required for Key Vault-managed certificates
+            {
+              name: 'ASPNETCORE_Kestrel__Certificates__Default__Password'
+              value: ''
+            }
+            {
               name: 'AZURE_TOKEN_CREDENTIALS'
               value: 'managedidentitycredential'
             }
@@ -184,14 +196,6 @@ resource containerApp 'Microsoft.App/containerApps@2025-10-02-preview' = {
             {
               name: 'AZURE_LOG_LEVEL'
               value: 'Verbose'
-            }
-            {
-              name: 'ASPNETCORE_Kestrel__Certificates__Default__Path'
-              value: '/mnt/certs/certificate.pfx'
-            }
-            {
-              name: 'ASPNETCORE_Kestrel__Certificates__Default__Password'
-              value: ''
             }
           ], !empty(appInsightsConnectionString) ? [
             {

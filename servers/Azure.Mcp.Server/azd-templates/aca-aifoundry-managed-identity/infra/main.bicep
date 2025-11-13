@@ -39,6 +39,15 @@ module entraApp 'modules/entra-app.bicep' = {
   }
 }
 
+// Deploy Key Vault with self-signed certificate for container's internal https
+module keyVault 'modules/keyvault.bicep' = {
+  name: 'keyvault-deployment'
+  params: {
+    name: acaName
+    location: location
+  }
+}
+
 // Deploy ACA Infrastructure to host Azure MCP Server
 module acaInfrastructure 'modules/aca-infrastructure.bicep' = {
   name: 'aca-infrastructure-deployment'
@@ -50,6 +59,8 @@ module acaInfrastructure 'modules/aca-infrastructure.bicep' = {
     azureAdTenantId: tenant().tenantId
     azureAdClientId: entraApp.outputs.entraAppClientId
     namespaces: ['storage']
+    keyVaultName: keyVault.outputs.keyVaultName
+    certificateName: keyVault.outputs.certificateName
   }
 }
 
@@ -90,9 +101,9 @@ module aifRoleAssignment './modules/aif-role-assignment-entraapp.bicep' = {
 // Deploy Key Vault role assignment for ACA to read certificates
 module acaKeyVaultRoleAssignment './modules/aca-keyvault-role-assignment.bicep' = {
   name: 'aca-keyvault-role-assignment'
-  scope: resourceGroup('4d042dc6-fe17-4698-a23f-ec6a8d1e98f4', 'SSS3PT_anuchan-mcp15ccd213')
   params: {
     acaPrincipalId: acaInfrastructure.outputs.containerAppPrincipalId
+    keyVaultName: keyVault.outputs.keyVaultName
   }
 }
 
