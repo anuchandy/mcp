@@ -121,6 +121,10 @@ resource containerApp 'Microsoft.App/containerApps@2025-10-02-preview' = {
           args: [
             'echo "$CERTIFICATE_BASE64" | base64 -d > /mnt/certs/https-internal-cert.pfx && chmod 644 /mnt/certs/https-internal-cert.pfx'
           ]
+          resources: {
+            cpu: json('0.25')
+            memory: '0.5Gi'
+          }
           env: [
             {
               name: 'CERTIFICATE_BASE64'
