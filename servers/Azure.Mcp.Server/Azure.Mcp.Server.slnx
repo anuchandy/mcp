@@ -13,6 +13,10 @@
   <Folder Name="/core/Microsoft.Mcp.Core/src/">
     <Project Path="../../core/Microsoft.Mcp.Core/src/Microsoft.Mcp.Core.csproj" />
   </Folder>
+  <Folder Name="/core/Microsoft.Mcp.Core.IdWebBinder/" />
+  <Folder Name="/core/Microsoft.Mcp.Core.IdWebBinder/src/">
+    <Project Path="../../core/Microsoft.Mcp.Core.IdWebBinder/src/Microsoft.Mcp.Core.IdWebBinder.csproj" />
+  </Folder>
   <Folder Name="/core/Microsoft.Mcp.Core/tests/">
     <Project Path="../../core/Microsoft.Mcp.Core/tests/Microsoft.Mcp.Core.UnitTests/Microsoft.Mcp.Core.UnitTests.csproj" />
     <Project Path="../../core/Microsoft.Mcp.Core/tests/Microsoft.Mcp.Tests/Microsoft.Mcp.Tests.csproj" />

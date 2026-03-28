@@ -24,6 +24,7 @@ using Microsoft.Extensions.Primitives;
 using Microsoft.Identity.Abstractions;
 using Microsoft.Identity.Web;
 using Microsoft.Mcp.Core.Areas.Server.Models;
+using Microsoft.Mcp.Core.IdWebBinder;
 using Microsoft.Mcp.Core.Areas.Server.Options;
 using Microsoft.Mcp.Core.Commands;
 using Microsoft.Mcp.Core.Extensions;
@@ -486,7 +487,7 @@ public sealed class ServiceStartCommand : BaseCommand<ServiceStartOptions>
         AuthenticationBuilder authBuilder = services
             .AddAuthentication(JwtBearerDefaults.AuthenticationScheme)
             .AddMicrosoftIdentityWebApiAot(
-                options => azureAdSection.Bind(options),
+                IdWebBinderHelper.CreateBindAction(azureAdSection),
                 JwtBearerDefaults.AuthenticationScheme,
                 jwtOptions =>
                 {
